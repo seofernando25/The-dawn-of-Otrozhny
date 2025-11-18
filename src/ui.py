@@ -1,22 +1,20 @@
 # Classes that wrap around ui elements
 # as a layer of abstraction to increase productivity
-import gameIO
-import renderer
+import rendering as renderer
 import mathHelpers
 import colors
 import pygame.constants as pyConst
 import pygame
 import textDraw
 import textHelpers
-import renderer
 
 
 class HudScreen():
 
     def __init__(self, interactable=True, dynamic=False):
-        self.viewPort = renderer.generate_hud_viewport()
+        self.viewPort = _generate_hud_viewport()
         self.viewPort.fill(colors.GRAY_VARIATION_2)
-        self.hud_buttons = renderer.generate_hud_surfaces(self.viewPort)
+        self.hud_buttons = _generate_hud_surfaces(self.viewPort)
         self.interactable = interactable
         self.dynamic = dynamic
         self.selected_button = 0
@@ -44,8 +42,9 @@ class HudScreen():
         if self.interactable:
             pygame.draw.rect(self.viewPort, colors.BLACK, [int(
                 self.cursorX * (self.viewPort.get_width()/5) + renderer.HUD_CELL_OFFSET + 5), self.viewPort.get_height(), 100, -10])
-        renderer.SCREEN.blit(self.viewPort, (renderer.VIEWPORT_X_OFFSET,
-                                             renderer.SCREEN_HEIGHT - self.viewPort.get_height() - renderer.VIEWPORT_Y_OFFSET//4))
+        screen = renderer.get_screen()
+        screen.blit(self.viewPort, (renderer.VIEWPORT_X_OFFSET,
+                                    renderer.SCREEN_HEIGHT - self.viewPort.get_height() - renderer.VIEWPORT_Y_OFFSET//4))
 
     def change_selected_button(self, amount, change_to=False):
         for x in self.onChangedButton:
@@ -108,8 +107,9 @@ class VerticalList():
     def draw(self):
         for buttons in self.objects:
             buttons.redraw()
+        screen = renderer.get_screen()
         for x in range(len(self.objects)):
-            renderer.SCREEN.blit(
+            screen.blit(
                 self.objects[x], (self.px, self.py + x * renderer.HUD_CELL_TITLE_FONT_SIZE + x * 10))
 
 
@@ -151,7 +151,7 @@ class MapSelectionScreen(pygame.Surface):
 
         pygame.draw.circle(self, colors.WHITE, (int(
             self._pointer_x), int(self._pointer_y)), 10)
-        renderer.SCREEN.blit(self, (0, 0))
+        renderer.get_screen().blit(self, (0, 0))
 
     def update(self, dt, events):
         pos = (100 + self.selected_button_x*100 + self.selected_button_x * renderer.HUD_CELL_OFFSET,
@@ -226,7 +226,6 @@ class HudButton(pygame.Surface):
         self.text = str(text)
         wrapped_text = textHelpers.wrapline(
             self.text, self.get_width(), renderer.HUD_CELL_TITLE_FONT_SIZE)
-        row = 1
         py = self.get_height()//2
         if self.subtitle != "":
             py += renderer.HUD_CELL_TITLE_OFFSET
@@ -258,6 +257,33 @@ class HudButton(pygame.Surface):
         self.redraw()
 
 
+def _generate_hud_surfaces(hud_surface):
+    hud_cell_surfaces = []
+    cell_height = hud_surface.get_height() - renderer.VIEWPORT_Y_OFFSET//2
+    cell_width = (hud_surface.get_width() -
+                  (renderer.HUD_CELL_OFFSET + 1) * renderer.HUD_NUM_OF_CELLS)
+    cell_width /= renderer.HUD_NUM_OF_CELLS
+    surf_count = 0
+    while surf_count < renderer.HUD_NUM_OF_CELLS:
+        surf_count += 1
+        window = HudButton(cell_width, cell_height)
+        window.fill(colors.NAVY_BLUE)
+        hud_cell_surfaces.append(window)
+    return hud_cell_surfaces
+
+
+def _generate_hud_viewport():
+    renderer.get_screen()
+    hud_width = renderer.SCREEN_WIDTH - renderer.VIEWPORT_X_OFFSET * 2
+    hud_height = (renderer.SCREEN_HEIGHT -
+                  renderer.VIEWPORT_HEIGHT -
+                  renderer.VIEWPORT_Y_OFFSET * 2)
+
+    hud_viewport = pygame.Surface([hud_width, hud_height]).convert()
+    hud_viewport.fill(colors.BLUE)
+    return hud_viewport
+
+
 if __name__ == "__main__":
     import pygame
     pygame.init()
@@ -271,8 +297,9 @@ if __name__ == "__main__":
         fps = clock.get_fps()
         keys = pygame.key.get_pressed()
         events = pygame.event.get()
-        renderer.SCREEN.fill(colors.BLACK)
+        screen = renderer.get_screen()
+        screen.fill(colors.BLACK)
         X.update(deltaTime, events)
-        renderer.SCREEN.blit(X, (0, 0))
+        screen.blit(X, (0, 0))
         pygame.display.flip()
         clock.tick(60)

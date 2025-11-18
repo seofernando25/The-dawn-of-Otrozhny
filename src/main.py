@@ -5,20 +5,23 @@
 # the program
 # :D
 
+from pathlib import Path
 import pygame
 import colors
-import entities
-import renderer
+from entities.enemies import Enemy, EnemyStatus
+from entities.player import Player
+import rendering as renderer
 import levelEditor
 import textDraw
 import levelData
 import ui
 import sys
+import assets
+import audio
 import gameIO
 from gameState import GameState
 
-pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
-
+BASE_DIR = Path(__file__).resolve().parent
 
 def tutorialLoop():
     import menuTabs
@@ -42,7 +45,8 @@ def tutorialLoop():
                 if event.key == pygame.K_q:
                     return GameState.Menu
 
-        renderer.SCREEN.fill(colors.BLACK)
+        screen = renderer.get_screen()
+        screen.fill(colors.BLACK)
 
         if hud.selected_button == 0:
             menuTabs.render_tutorial_tab_4()
@@ -57,7 +61,7 @@ def tutorialLoop():
 
         hud.update(deltaTime, events)
         hud.draw()
-        textDraw.message_display_L(renderer.SCREEN, "Press \"q\" to go back",
+        textDraw.message_display_L(screen, "Press \"q\" to go back",
                                    renderer.VIEWPORT_X_OFFSET,
                                    renderer.VIEWPORT_Y_OFFSET,
                                    renderer.HUD_CELL_TITLE_FONT_SIZE)
@@ -86,13 +90,14 @@ def aboutLoop():
         sub_title_size += deltaTime * 10
         if sub_title_size > 20:
             sub_title_size = 20
-        renderer.SCREEN.fill(colors.BLACK)
+        screen = renderer.get_screen()
+        screen.fill(colors.BLACK)
         if sub_title_size != 20:
-            textDraw.message_display(renderer.SCREEN,
+            textDraw.message_display(screen,
                                      "Made By Fernando Nogueira",
                                      renderer.SCREEN_WIDTH // 2,
                                      renderer.VIEWPORT_Y_OFFSET, 20)
-            textDraw.message_display(renderer.SCREEN,
+            textDraw.message_display(screen,
                                      "with some help from the internet",
                                      renderer.SCREEN_WIDTH // 2,
                                      renderer.VIEWPORT_Y_OFFSET * 2,
@@ -102,20 +107,20 @@ def aboutLoop():
             if second_sub_title_size > 20:
                 second_sub_title_size = 1
                 sub_title_size = 1
-            textDraw.message_display(renderer.SCREEN, "Made By Stack Overflow",
+            textDraw.message_display(screen, "Made By Stack Overflow",
                                      renderer.SCREEN_WIDTH // 2,
                                      renderer.VIEWPORT_Y_OFFSET, 20)
-            textDraw.message_display(renderer.SCREEN, "not really",
+            textDraw.message_display(screen, "not really",
                                      renderer.SCREEN_WIDTH - 50,
                                      renderer.VIEWPORT_Y_OFFSET, 8)
-            textDraw.message_display(renderer.SCREEN,
+            textDraw.message_display(screen,
                                      "with some help from fernando",
                                      renderer.SCREEN_WIDTH // 2,
                                      renderer.VIEWPORT_Y_OFFSET * 2,
                                      int(second_sub_title_size))
 
         textDraw.message_display_L(
-            renderer.SCREEN, "Press \"q\" to go back",
+            screen, "Press \"q\" to go back",
             renderer.VIEWPORT_X_OFFSET,
             renderer.SCREEN_HEIGHT - renderer.VIEWPORT_Y_OFFSET,
             renderer.HUD_CELL_TITLE_FONT_SIZE)
@@ -146,7 +151,7 @@ def menuLoop():
     hud.onChangedButton.append(s_field.change_speed)
     while not done:
         deltaTime = clock.get_time() / 1000
-
+        screen = renderer.get_screen()
         events = pygame.event.get()
         flag = hud.update(deltaTime, events)
         for event in events:
@@ -171,12 +176,12 @@ def menuLoop():
         # region Buttons
 
         s_field.draw()
-        renderer.SCREEN.blit(s_field, (0, 0))
-        fractal.draw(renderer.SCREEN)
+        screen.blit(s_field, (0, 0))
+        fractal.draw(screen)
 
-        textDraw.message_display_MT(renderer.SCREEN, "The dawn of Otrozhny",
+        textDraw.message_display_MT(screen, "The dawn of Otrozhny",
                                     renderer.SCREEN_WIDTH // 2, 100, 30)
-        textDraw.message_display_MT(renderer.SCREEN, "Containment breach",
+        textDraw.message_display_MT(screen, "Containment breach",
                                     renderer.SCREEN_WIDTH // 2, 150, 30)
 
         if flag is not None:
@@ -216,7 +221,7 @@ def setupGame():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     if actual_map_list[hud.selected_button_x][
-                            hud.selected_button_y] != None:
+                            hud.selected_button_y] is not None:
                         mapObj = actual_map_list[hud.selected_button_x][
                             hud.selected_button_y]
                         levelData.Level.load(mapObj)
@@ -226,9 +231,10 @@ def setupGame():
 
         hud.update(deltaTime, events)
 
-        renderer.SCREEN.fill(colors.BLACK)
+        screen = renderer.get_screen()
+        screen.fill(colors.BLACK)
         hud.draw()
-        textDraw.message_display_L(renderer.SCREEN, "Press \"q\" to go back",
+        textDraw.message_display_L(screen, "Press \"q\" to go back",
                                    renderer.VIEWPORT_X_OFFSET,
                                    renderer.VIEWPORT_Y_OFFSET,
                                    renderer.HUD_CELL_TITLE_FONT_SIZE)
@@ -240,15 +246,11 @@ def setupGame():
 def preLoadAssets():
     # Pre load all sprites in the game
     # See: LRU Cache documentation
-    folders = gameIO.get_files_paths_from_folder("Assets")
-    folderNames = []
-    for i in folders:
-        folderName = i.split("\\")[-1]
-        folderNames.append(folderName)
-
-    for folder in folderNames:
-        gameIO.get_sprite(folder, 0)
-    gameIO.get_sprite("", 0)
+    for pack in assets.list_asset_packs():
+        assets.get_sprite(pack, 0)
+    default_pack = assets.ASSETS_DIR / "Sprites"
+    if default_pack.exists():
+        assets.get_sprite("", 0)
 
 
 def postGameLoop(won, time=0):
@@ -279,17 +281,18 @@ def postGameLoop(won, time=0):
             msg_accumulated = len(msg)
 
         # region Buttons
-        renderer.SCREEN.fill(colors.BLACK)
-        textDraw.message_display_MT(renderer.SCREEN,
+        screen = renderer.get_screen()
+        screen.fill(colors.BLACK)
+        textDraw.message_display_MT(screen,
                                     msg[:int(msg_accumulated)],
                                     renderer.SCREEN_WIDTH // 2, 100, 30)
-        textDraw.message_display_L(renderer.SCREEN, "Press \"q\" to go back",
+        textDraw.message_display_L(screen, "Press \"q\" to go back",
                                    renderer.VIEWPORT_X_OFFSET,
                                    renderer.VIEWPORT_Y_OFFSET,
                                    renderer.HUD_CELL_TITLE_FONT_SIZE)
         if won:
             textDraw.message_display_MT(
-                renderer.SCREEN,
+                screen,
                 "{}.{}.{}".format(time.seconds // 60, time.seconds % 60,
                                   round(time.microseconds / 1000)),
                 renderer.SCREEN_WIDTH // 2, 150, 30)
@@ -299,8 +302,7 @@ def postGameLoop(won, time=0):
 
 
 def gameLoop():
-    import cy_renderer
-    import datetime
+    from renderer import minimap as renderer_minimap
     quit_intent = False
     hud = ui.HudScreen(interactable=False)
     hud.set_button_title(0, "Health")
@@ -312,17 +314,18 @@ def gameLoop():
 
     #Allowing Loop to control hud button surface draw calls
     hud.hud_buttons[-1].protected = False
-    if entities.Player.instance == None:
+    try:
+        player = Player.require_instance()
+    except RuntimeError:
         return -1
-    entities.Player.instance.keys = 0
-    entities.Enemy.enemy_status = entities.EnemyStatus.Normal
-    entities.Enemy.enemy_status_time_left = 0
+    player.keys = 0
+    Enemy.enemy_status = EnemyStatus.Normal
+    Enemy.enemy_status_time_left = 0
 
     time = 0
 
     while not quit_intent:
         deltaTime = clock.get_time() / 1000
-        fps = clock.get_fps()
         events = pygame.event.get()
         hud.update(deltaTime, events)
         kb = pygame.key.get_pressed()
@@ -331,28 +334,26 @@ def gameLoop():
 
         time += deltaTime
 
-        if entities.Player.instance.health <= 0:
-            entities.Enemy.enemy_status = entities.EnemyStatus.Normal
-            entities.Enemy.enemy_status_time_left = 0
+        if player.health <= 0:
+            Enemy.enemy_status = EnemyStatus.Normal
+            Enemy.enemy_status_time_left = 0
             return postGameLoop(False)
 
-        if levelData.Level.currentMap.num_of_collected == levelData.Level.currentMap.num_of_collectibles:
+        current_map = levelData.require_current_map()
+        if current_map.num_of_collected == current_map.num_of_collectibles:
             return postGameLoop(True, time)
 
         # Think
-        [
-            e.update(deltaTime, events)
-            for e in levelData.Level.currentMap.grid_entities
-        ]
+        [e.update(deltaTime, events) for e in current_map.grid_entities]
 
         # region Rendering
-        renderer.SCREEN.fill(colors.BLACK)
+        screen = renderer.get_screen()
+        screen.fill(colors.BLACK)
 
         # region 3D View Rendering
 
-        view_port = renderer.render_first_person_canvas(
-            entities.Player.instance)
-        renderer.SCREEN.blit(
+        view_port = renderer.render_first_person_canvas(player)
+        screen.blit(
             view_port,
             (renderer.VIEWPORT_X_OFFSET, renderer.VIEWPORT_Y_OFFSET))
 
@@ -360,31 +361,31 @@ def gameLoop():
 
         # region Heads Up Display Rendering
 
-        hud.set_button_text(2, entities.Player.instance.keys)
-        hud.set_button_subtitle(3, entities.Enemy.enemy_status.value[0])
-        hud.set_button_color(3, 1, entities.Enemy.enemy_status.value[1])
-        hud.set_button_text(3, round(entities.Enemy.enemy_status_time_left, 2))
+        hud.set_button_text(2, player.keys)
+        hud.set_button_subtitle(3, Enemy.enemy_status.value[0])
+        hud.set_button_color(3, 1, Enemy.enemy_status.value[1])
+        hud.set_button_text(3, round(Enemy.enemy_status_time_left, 2))
         hud.set_button_text(
             1,
-            "{} of {}".format(levelData.Level.currentMap.num_of_collected,
-                              levelData.Level.currentMap.num_of_collectibles))
-        hud.set_button_text(0, int(entities.Player.instance.health))
+            "{} of {}".format(current_map.num_of_collected,
+                              current_map.num_of_collectibles))
+        hud.set_button_text(0, int(player.health))
 
-        cy_renderer.render_map(hud.hud_buttons[-1], entities.Player.instance)
+        renderer_minimap.render_map(hud.hud_buttons[-1], player)
 
         hud.draw()
 
         # endregion
 
         # region Other Information
-        textDraw.message_display_L(renderer.SCREEN,
+        textDraw.message_display_L(screen,
                                    "FPS: " + str(int(clock.get_fps())), 15, 10,
                                    15)
 
         textDraw.message_display_MT(
-            renderer.SCREEN,
-            "X:" + str(round(entities.Player.instance.px, 2)) + " Y: " +
-            str(round(entities.Player.instance.py, 2)),
+            screen,
+            "X:" + str(round(player.px, 2)) + " Y: " +
+            str(round(player.py, 2)),
             renderer.SCREEN_WIDTH // 2, 10, 15)
         # endregion
         # Flip FrameBuffer
@@ -399,17 +400,19 @@ def preClose():
 
 
 def preInit():
-    gameIO.get_cached_audio("Music", "Menu")
-    gameIO.get_cached_audio("Music", "Game")
-    ui.HudButton.activated_sound = gameIO.get_cached_audio(
+    assets.get_cached_audio("Music", "Menu")
+    assets.get_cached_audio("Music", "Game")
+    ui.HudButton.activated_sound = assets.get_cached_audio(
         "Music", "Active_UI")
 
 
 def mainLoop():
-    pygame.mixer.pre_init(44100, -16, 1, 512)
+    audio.ensure_initialized()
     pygame.init()
+    pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
     pygame.display.set_caption('The dawn of Otrozhny')
-    logo = pygame.image.load("icon.png")
+    logo_path = BASE_DIR / "icon.png"
+    logo = pygame.image.load(str(logo_path))
     pygame.display.set_icon(logo)
     #TODO do some kind of intro
 
@@ -417,13 +420,13 @@ def mainLoop():
     done = False
     preInit()
     music_channel = pygame.mixer.Channel(0)
-    music_channel.play(gameIO.get_cached_audio("Music", "Menu"))
+    music_channel.play(assets.get_cached_audio("Music", "Menu"))
 
     while not done:
-        if music_channel.get_sound() != gameIO.get_cached_audio(
+        if music_channel.get_sound() != assets.get_cached_audio(
                 "Music", "Menu"):
             music_channel.stop()
-            music_channel.play(gameIO.get_cached_audio("Music", "Menu"))
+            music_channel.play(assets.get_cached_audio("Music", "Menu"))
 
         state = menuLoop()
 
@@ -432,7 +435,7 @@ def mainLoop():
         elif state == GameState.Play:
             while state == GameState.Play:
                 music_channel.stop()
-                music_channel.play(gameIO.get_cached_audio("Music", "Game"))
+                music_channel.play(assets.get_cached_audio("Music", "Game"))
                 state = setupGame()
 
         elif state == GameState.About:
@@ -476,7 +479,9 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
     if len(sys.argv) > 1 and sys.argv[-1] == "PLOG":  #Performance log
 
-        import cProfile, pstats, io
+        import cProfile
+        import pstats
+        import io
         #from pstats import SortKey
         print("Profiling...")
         pr = cProfile.Profile()

@@ -1,0 +1,88 @@
+import math
+
+import pygame
+
+import colors
+import levelData
+from entities.enemies import Enemy
+from entities.items import Collectible, Gate
+from entities.player import Player
+from .raycast import calculate_fov_polygon
+
+
+def translate_to_map(coord_list, scale_x, scale_y):
+    newCoordList = []
+    for x, y in coord_list:
+        newCoordList.append((y * scale_x, x * scale_y))
+    return newCoordList
+
+
+def _calculate_fov_points(scale_x, scale_y):
+    current_map = levelData.require_current_map()
+    all_fovs = []
+    for enemy in current_map.grid_entities:
+        if issubclass(type(enemy), Enemy):
+            enemy_fov = calculate_fov_polygon(enemy)
+            enemy_fov = translate_to_map(enemy_fov, scale_x, scale_y)
+
+            color = colors.ALMOST_BLACK
+            if enemy.canSeePlayer:
+                color = colors.RED
+            all_fovs.append((color, enemy_fov))
+    return all_fovs
+
+
+def draw_grid(surface, level_map, scale_x, scale_y, color_fn):
+    for x in range(level_map.level_width):
+        for y in range(level_map.level_height):
+            color = color_fn(x, y, level_map.grid[x][y])
+            if color is None:
+                continue
+            pygame.draw.rect(
+                surface,
+                color,
+                [scale_x * y, scale_y * x, scale_x + 1, scale_y + 1])
+
+
+def render_map(screen, entity):
+    current_map = levelData.require_current_map()
+    scale_x = screen.get_width() / current_map.level_width
+    scale_y = screen.get_height() / current_map.level_height
+
+    fov_points = calculate_fov_polygon(entity)
+    fov_points = translate_to_map(fov_points, scale_x, scale_y)
+
+    all_fovs = _calculate_fov_points(scale_x, scale_y)
+
+    draw_grid(
+        screen,
+        current_map,
+        scale_x,
+        scale_y,
+        lambda _x, _y, value: colors.GRAY_VARIATION_3 if value != 0 else colors.DARK_GRAY)
+
+    if len(fov_points) > 2:
+        pygame.draw.polygon(screen, colors.WHITE, fov_points)
+
+    for enemy in current_map.grid_entities:
+        px = int(enemy.px * scale_y)
+        py = int(enemy.py * scale_x)
+        if issubclass(type(enemy), Enemy):
+            pygame.draw.circle(screen, colors.RED, [py, px], 2)
+        if issubclass(type(enemy), Collectible) and enemy.collected:
+            pygame.draw.circle(screen, colors.YELLOW_WHITE, [py, px], 2)
+
+    pygame.draw.circle(screen, colors.WHITE,
+                       [int(entity.py * scale_x),
+                        int(entity.px * scale_y)], 2)
+
+    [pygame.draw.polygon(screen, c, points) for c, points in all_fovs]
+
+    color = colors.DARK_GRAY
+    for e in current_map.grid_entities:
+        if issubclass(type(e), Gate) and not e.open:
+            pygame.draw.rect(screen, color, [
+                scale_x * math.floor(e.py), scale_y * math.floor(e.px),
+                scale_x + 1, scale_y + 1
+            ])
+

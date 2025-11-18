@@ -90,15 +90,14 @@ def message_display(screen, text, x, y, size, color=colors.WHITE):
     return screen.blit(text_surf, text_rect)
 
 def truncline(text, maxwidth, font):
-    
+
     real = len(text)
     stext = text
-    l = font.size(text)[0]
+    text_width = font.size(text)[0]
     cut = 0
     a = 0
     done = 1
-    old = None
-    while l > maxwidth:
+    while text_width > maxwidth:
         a = a + 1
         n = text.rsplit(None, a)[0]
         if stext == n:
@@ -106,7 +105,7 @@ def truncline(text, maxwidth, font):
             stext = n[:-cut]
         else:
             stext = n
-        l = font.size(stext)[0]
+        text_width = font.size(stext)[0]
         real = len(stext)
         done = 0
     return real, done, stext

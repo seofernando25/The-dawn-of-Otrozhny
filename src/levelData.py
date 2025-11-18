@@ -1,8 +1,15 @@
 
 
-import entities
+from __future__ import annotations
+
+from typing import Optional
+
+from entities.items import Collectible
+from entities.player import Player
+
+
 class Level():
-    currentMap = None
+    currentMap: Optional["Level"] = None
 
     def __init__(self, grid, grid_entities, node_entities=None):
         self.grid = grid
@@ -12,13 +19,14 @@ class Level():
         self.level_height = len(grid) 
 
         # Sorry I did not had time to organize it in a better way :/
-        self.num_of_collectibles = sum(isinstance(x, entities.Collectible) for x in self.grid_entities)
+        self.num_of_collectibles = sum(isinstance(x, Collectible) for x in self.grid_entities)
         self.num_of_collected = 0
-        entities.Player.instance = next((x for x in self.grid_entities if type(x) == entities.Player), None)
+        Player.instance = next(
+            (x for x in self.grid_entities if isinstance(x, Player)),
+            None)
 
     @staticmethod
     def load(level_object):
-        
         Level.currentMap = Level(level_object.grid, level_object.grid_entities)
     
   
@@ -34,4 +42,11 @@ class Level():
                 random_h = random.randint(0, self.level_height - 1)
                 random_position =  (random_w, random_h) 
         return random_position
+
+
+def require_current_map() -> Level:
+    current_map = Level.currentMap
+    if current_map is None:
+        raise RuntimeError("Level.currentMap is not set. Call Level.load first.")
+    return current_map
     

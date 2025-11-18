@@ -1,10 +1,9 @@
 import pygame
 import levelData
 
-import renderer
 import colors
-import math
 import mathHelpers
+from renderer import config as renderer_settings
 
 # See: http://www.sfu.ca/~arashr/warren.pdf
 
@@ -20,6 +19,7 @@ def go_to(start, target):
     fScore[start] = get_heuristic(start, target)
     openSet.append(start)
 
+    grid = levelData.require_current_map().grid
     while len(openSet) > 0:
         winner = openSet[0]
         for coord in openSet:
@@ -28,13 +28,12 @@ def go_to(start, target):
 
         current = winner
         if current == target:
-            found = True
             return reconstruct_path(cameFrom, current)
         else:
             openSet.remove(current)
             closedSet.append(current)
 
-            for neighbor in get_neighbors(current, levelData.Level.currentMap.grid):
+            for neighbor in get_neighbors(current, grid):
                 if neighbor in closedSet:
                     continue
 
@@ -90,24 +89,26 @@ def reconstruct_path(cameFrom, current):
 
 if __name__ == "__main__":
     print("Pathfinding Example")
-    SCREEN_WIDTH = 640
-    SCREEN_HEIGHT = 480
+    SCREEN_WIDTH = renderer_settings.SCREEN_WIDTH
+    SCREEN_HEIGHT = renderer_settings.SCREEN_HEIGHT
 
-    SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
+    SCREEN_SIZE = renderer_settings.SCREEN_SIZE
 
-    SCREEN = pygame.display.set_mode(SCREEN_SIZE)
+    screen = renderer_settings.get_screen()
     clock = pygame.time.Clock()
     done = False
 
     start = (2, 2)
     target = (14, 14)
 
+    demo_grid = levelData.require_current_map().grid
+
     cached_result = go_to(start, target)
 
     temp_result = cached_result.copy()
     temp_result_temp = temp_result.copy()
-    w = SCREEN_WIDTH / len(levelData.worldMap[0])
-    h = SCREEN_HEIGHT / len(levelData.worldMap)
+    w = SCREEN_WIDTH / len(demo_grid[0])
+    h = SCREEN_HEIGHT / len(demo_grid)
 
     while not done:
         deltaTime = clock.get_time() / 1000
@@ -135,27 +136,27 @@ if __name__ == "__main__":
             temp_result = temp_result_temp.copy()
             start = temp_result_temp[0]
 
-        SCREEN.fill(colors.WHITE)
+        screen.fill(colors.WHITE)
 
-        for x in range(len(levelData.worldMap[0])):
-            for y in range(len(levelData.worldMap)):
+        for x in range(len(demo_grid[0])):
+            for y in range(len(demo_grid)):
 
-                color_flag = levelData.worldMap[x][y]
+                color_flag = demo_grid[x][y]
 
                 if color_flag == 0:
                     wall_color = colors.WHITE
                 else:
                     wall_color = colors.BLACK
 
-                pygame.draw.rect(SCREEN, wall_color, [(x*w), (y*h), w-1, h-1])
+                pygame.draw.rect(screen, wall_color, [(x*w), (y*h), w-1, h-1])
 
         for x, y in cached_result:
-            pygame.draw.rect(SCREEN, colors.GREEN, [
+            pygame.draw.rect(screen, colors.GREEN, [
                              int(x*w), int(y*h), w-1, h-1])
 
-        pygame.draw.circle(SCREEN, colors.BLUE, [int(
+        pygame.draw.circle(screen, colors.BLUE, [int(
             start[0] * w + w/2), int(start[1] * h + h/2)], 10)
-        pygame.draw.circle(SCREEN, colors.RED, [int(
+        pygame.draw.circle(screen, colors.RED, [int(
             target[0] * w + (w/2)), int(target[1] * h + (h/2))], 10)
 
         pygame.display.update()

@@ -16,7 +16,7 @@ class ChaosObject(pygame.Surface):
         self.points = mathHelpers.points_from_polygon_sides(
             n_sides, size/2, adjusted=True)
         self.color = colors.WHITE
-        self.size = size
+        self.surface_size = size
         self.center = center
         self.n_of_itterations = 0
         self.drawn_points = []
@@ -31,7 +31,8 @@ class ChaosObject(pygame.Surface):
                 [int(x) for x in point]), 1)
         self.updates_before_draw = 0
         screen.blit(
-            self, (self.center[0] - self.size//2, self.center[1] - self.size//2))
+            self,
+            (self.center[0] - self.surface_size//2, self.center[1] - self.surface_size//2))
 
     def update(self):
         import random
@@ -93,8 +94,8 @@ class StarField(pygame.Surface):
         super().__init__(size)
 
         self.speed = random.randint(1, 5)
-        self.width = self.get_width()
-        self.height = self.get_height()
+        self.surface_width = self.get_width()
+        self.surface_height = self.get_height()
 
         self.stars = []
         for x in range(250):
@@ -105,10 +106,10 @@ class StarField(pygame.Surface):
         for star in self.stars:
 
             if (star.screenX < -5
-                    or star.screenX > self.width + 5
+                    or star.screenX > self.surface_width + 5
                     or star.screenY < -5
-                    or star.screenY > self.height + 5):
-                star.z = self.width
+                    or star.screenY > self.surface_height + 5):
+                star.z = self.surface_width
 
             star.lastZ = star.z
             star.z -= dt * 10 * self.speed
@@ -117,25 +118,25 @@ class StarField(pygame.Surface):
                 star.z = -0.1
 
             star.screenX = mathHelpers.translate(
-                star.x/star.z, 0, 1, 0, self.width)
+                star.x/star.z, 0, 1, 0, self.surface_width)
             star.screenY = mathHelpers.translate(
-                star.y/star.z, 0, 1, 0, self.height)
-            star.screenX += self.width//2
-            star.screenY += self.height//2
+                star.y/star.z, 0, 1, 0, self.surface_height)
+            star.screenX += self.surface_width//2
+            star.screenY += self.surface_height//2
 
             star.screenLastX = mathHelpers.translate(
-                star.x/star.lastZ, 0, 1, 0, self.width)
+                star.x/star.lastZ, 0, 1, 0, self.surface_width)
             star.screenLastY = mathHelpers.translate(
-                star.y/star.lastZ, 0, 1, 0, self.height)
-            star.screenLastX += self.width//2
-            star.screenLastY += self.height//2
+                star.y/star.lastZ, 0, 1, 0, self.surface_height)
+            star.screenLastX += self.surface_width//2
+            star.screenLastY += self.surface_height//2
 
     def draw(self):
         self.fill((0, 0, 0))
         for star in self.stars:
-            starSize = mathHelpers.translate(star.z, self.width, 0, 1, 4)
+            starSize = mathHelpers.translate(star.z, self.surface_width, 0, 1, 4)
             if starSize > 8:
-                star.z = self.width
+                star.z = self.surface_width
             starSize = int(starSize)
 
             pygame.draw.line(self, (255, 255, 255), (star.screenX, star.screenY),
@@ -152,30 +153,26 @@ class StarField(pygame.Surface):
 # Just a demo
 if __name__ == "__main__":
     import pygame
+    from renderer import config as renderer_settings
 
     TICK = 60
     pygame.init()
 
-    SCREEN_WIDTH = 640
-    SCREEN_HEIGHT = 480
-
-    SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-
     clock = pygame.time.Clock()
     done = False
 
-    SCREEN = pygame.display.set_mode(SCREEN_SIZE)
+    screen = renderer_settings.get_screen()
 
-    star_field = StarField(SCREEN_SIZE)
+    star_field = StarField(renderer_settings.SCREEN_SIZE)
     star_field.draw()
 
     while not done:
         deltaTime = clock.get_time() / 1000
         events = pygame.event.get()
         star_field.update(deltaTime)
-        SCREEN.fill((0, 0, 0))
+        screen.fill((0, 0, 0))
         star_field.draw()
-        SCREEN.blit(star_field, (0, 0))
+        screen.blit(star_field, (0, 0))
 
         pygame.display.flip()
         clock.tick(TICK)
