@@ -1,7 +1,3 @@
-"""
-Pydantic models for level serialization format.
-This replaces pickle-based serialization with a JSON-compatible format.
-"""
 from __future__ import annotations
 
 from typing import Literal, List, Optional, Union

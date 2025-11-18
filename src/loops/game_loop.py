@@ -5,10 +5,12 @@ Game loop module - handles the main game loop with updated HUD, timing, and win/
 import datetime
 import pygame
 
-import colors
-import rendering as renderer
+from core import colors
+from renderer import config as renderer_config
+from renderer import utils as renderer_utils
+from renderer.first_person import render_first_person_canvas
 from renderer.text import message_display_L, message_display_MT
-import ui
+from ui import HudScreen
 from entities.base import EnemyStatus
 from renderer import minimap as renderer_minimap
 from core.game_state import GameState
@@ -77,7 +79,7 @@ def run_game_loop(context: GameContext):
         GameState: The next game state (Quit or continue playing).
     """
     # Initialize HUD
-    hud = ui.HudScreen(interactable=False)
+    hud = HudScreen(interactable=False)
     hud.set_button_title(0, "Health")
     hud.set_button_title(1, "Stars")
     hud.set_button_subtitle(1, "Found")
@@ -146,15 +148,15 @@ def run_game_loop(context: GameContext):
         hud_controller.update_health(player.health)
 
         # Rendering
-        screen = context.screen or renderer.get_screen()
+        screen = context.screen or renderer_config.get_screen()
         screen.fill(colors.BLACK)
 
         # 3D View Rendering
-        view_port = renderer.render_first_person_canvas(
+        view_port = render_first_person_canvas(
             player, canvas=context.services.get("first_person_surface")
         )
         context.services["first_person_surface"] = view_port
-        screen.blit(view_port, (renderer.VIEWPORT_X_OFFSET, renderer.VIEWPORT_Y_OFFSET))
+        screen.blit(view_port, (renderer_utils.VIEWPORT_X_OFFSET, renderer_utils.VIEWPORT_Y_OFFSET))
 
         # Minimap
         renderer_minimap.render_map(hud.hud_buttons[-1], player)
@@ -167,7 +169,7 @@ def run_game_loop(context: GameContext):
         message_display_MT(
             screen,
             f"X:{round(player.px, 2)} Y:{round(player.py, 2)}",
-            renderer.SCREEN_WIDTH // 2,
+            renderer_utils.SCREEN_WIDTH // 2,
             10,
             15,
         )
@@ -205,16 +207,16 @@ class PostGameScene(SceneHandler):
         message_display_MT(
             screen,
             self.msg[: int(self.msg_accumulated)],
-            renderer.SCREEN_WIDTH // 2,
+            renderer_utils.SCREEN_WIDTH // 2,
             100,
             30,
         )
         message_display_L(
             screen,
             'Press "q" to go back',
-            renderer.VIEWPORT_X_OFFSET,
-            renderer.VIEWPORT_Y_OFFSET,
-            renderer.HUD_CELL_TITLE_FONT_SIZE,
+            renderer_utils.VIEWPORT_X_OFFSET,
+            renderer_utils.VIEWPORT_Y_OFFSET,
+            renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
         )
 
         if self.won and self.elapsed_time is not None:
@@ -226,7 +228,7 @@ class PostGameScene(SceneHandler):
             message_display_MT(
                 screen,
                 time_str,
-                renderer.SCREEN_WIDTH // 2,
+                renderer_utils.SCREEN_WIDTH // 2,
                 150,
                 30,
             )

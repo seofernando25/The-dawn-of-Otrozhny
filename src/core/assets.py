@@ -10,7 +10,7 @@ import pygame
 
 LOGGER = logging.getLogger(__name__)
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 ASSETS_DIR = ROOT / "Assets"
 MAPS_DIR = ROOT / "Maps"
 
@@ -94,3 +94,4 @@ def list_asset_packs():
         if path.is_dir() and (path / "Sprites").exists():
             packs.append(path.name)
     return sorted(packs)
+

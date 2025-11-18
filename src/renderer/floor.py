@@ -1,5 +1,5 @@
 """Floor rendering for first-person view."""
-import colors
+from core import colors
 import pygame
 
 

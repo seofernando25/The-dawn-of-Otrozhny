@@ -10,13 +10,13 @@ from core.context import build_editor_context
 from core.game_state import GameState
 from core.io import save_level
 from core.level import Level
-from entities.enemies import Enemy
+from entities.enemy import Enemy
 from entities.items import Collectible, Gate, Key
 from entities.player import Player
-import rendering as renderer
-import colors
+from renderer import utils as renderer_utils
+from core import colors
 from renderer.text import message_display
-import ui
+from ui import HudScreen
 from loops.loop_runner import SceneHandler, run_scene
 from . import tools as editor_tools
 
@@ -60,7 +60,8 @@ class GridManager:
         self.mouse_b = pygame.mouse.get_pressed()
         self.mouseRel: Optional[Tuple[int, int]] = None
 
-        self.hud_draw_obj_help = ui.VerticalList(
+        from ui import VerticalList
+        self.hud_draw_obj_help = VerticalList(
             [
                 "Z: Player",
                 "X: Enemy",
@@ -70,10 +71,10 @@ class GridManager:
                 "F: Key",
                 "G: Gate",
             ],
-            renderer.SCREEN_WIDTH - 150,
+            renderer_utils.SCREEN_WIDTH - 150,
             10,
         )
-        self.hud_draw_pos_help = ui.VerticalList(
+        self.hud_draw_pos_help = VerticalList(
             ["(000, 000)", "1234567890123"], 10, 10
         )
         self.tools = {
@@ -256,7 +257,7 @@ class EditorScene(SceneHandler):
     def __init__(self):
         self.context = build_editor_context()
         self.grid_manager = self.context.ensure_grid_manager(GridManager(20, 20))
-        self.hud = ui.HudScreen()
+        self.hud = HudScreen()
         self.hud.set_button_text(0, "Node Editor")
         self.hud.set_button_text(1, "Draw  Mode")
         self.hud.set_button_text(2, "Wall Editor")

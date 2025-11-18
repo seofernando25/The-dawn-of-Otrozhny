@@ -1,6 +1,6 @@
 """Map preview rendering for level selection."""
 import math
-import colors
+from core import colors
 import pygame
 from entities.items import Gate
 from entities.player import Player

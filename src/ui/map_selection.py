@@ -1,9 +1,9 @@
 """Map selection screen component."""
 from typing import List, Optional
 import pygame
-import rendering as renderer
+from renderer import utils as renderer_utils
 from utils import math_helpers
-import colors
+from core import colors
 from ui.button import HudButton
 from ui.helpers import _resolve_screen
 
@@ -12,7 +12,7 @@ class MapSelectionScreen(pygame.Surface):
     """Screen for selecting maps in a grid layout."""
     
     def __init__(self):
-        pygame.Surface.__init__(self, (renderer.SCREEN_WIDTH, renderer.SCREEN_HEIGHT))
+        pygame.Surface.__init__(self, (renderer_utils.SCREEN_WIDTH, renderer_utils.SCREEN_HEIGHT))
         self.hud_buttons: List[List[HudButton]] = [
             [HudButton(100, 100, text=str((x, y))) for y in range(3)] for x in range(5)
         ]
@@ -33,8 +33,8 @@ class MapSelectionScreen(pygame.Surface):
                 self.blit(
                     self.hud_buttons[x][y],
                     (
-                        50 + x * 100 + x * renderer.HUD_CELL_OFFSET,
-                        100 + y * 100 + y * renderer.HUD_CELL_OFFSET,
+                        50 + x * 100 + x * renderer_utils.HUD_CELL_OFFSET,
+                        100 + y * 100 + y * renderer_utils.HUD_CELL_OFFSET,
                     ),
                 )
 
@@ -48,10 +48,10 @@ class MapSelectionScreen(pygame.Surface):
         pos = (
             100
             + self.selected_button_x * 100
-            + self.selected_button_x * renderer.HUD_CELL_OFFSET,
+            + self.selected_button_x * renderer_utils.HUD_CELL_OFFSET,
             150
             + self.selected_button_y * 100
-            + self.selected_button_y * renderer.HUD_CELL_OFFSET,
+            + self.selected_button_y * renderer_utils.HUD_CELL_OFFSET,
         )
         self._pointer_x = math_helpers.lerp(self._pointer_x, pos[0], dt * 10)
         self._pointer_y = math_helpers.lerp(self._pointer_y, pos[1], dt * 10)

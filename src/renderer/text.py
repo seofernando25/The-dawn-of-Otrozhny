@@ -1,5 +1,5 @@
 # Functions to draw text on the screen
-import colors
+from core import colors
 import os
 import pygame
 

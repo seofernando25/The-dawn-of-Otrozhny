@@ -2,8 +2,8 @@ import math
 
 import pygame
 
-import colors
-from entities.enemies import Enemy
+from core import colors
+from entities.enemy import Enemy
 from entities.items import Collectible, Gate
 from .raycast import calculate_fov_polygon
 from .utils import translate_to_map, get_static_surfaces_cache

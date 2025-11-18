@@ -6,9 +6,11 @@ Each tool handles its own input/update/draw logic.
 """
 
 import pygame
-import rendering as renderer
-import colors
-from entities.enemies import Enemy, Node
+from renderer import utils as renderer_utils
+from core import colors
+from entities.enemy import Enemy
+from entities.node import Node
+from entities.factory import EntityFactory
 
 
 
@@ -157,26 +159,31 @@ class PlaceTool(BaseTool):
 
     def place_entity_at(self, cell, grid_manager):
         from entities.player import Player
-        from entities.enemies import Monster, Node
+        from entities.enemy import Enemy
         from entities.items import Collectible, Key, Gate
 
         position_adjust = (cell[0] + 0.5, cell[1] + 0.5)
 
-        if self.current_type_index == 0:  # Player
-            self.object_to_place = Player(position_adjust)
-        elif self.current_type_index == 1:  # Enemy
-            self.object_to_place = Monster(position_adjust)
-        elif self.current_type_index == 2:  # Node
-            self.object_to_place = Node(position_adjust)
-        elif self.current_type_index == 3:  # Wall
+        entity_type_map = {
+            0: "player",
+            1: "enemy",
+            2: "node",
+            3: None,  # Wall - handled separately
+            4: "collectible",
+            5: "key",
+            6: "gate",
+        }
+
+        if self.current_type_index == 3:  # Wall
             grid_manager.grid[cell[1]][cell[0]] = 1
             return
-        elif self.current_type_index == 4:  # Collectible
-            self.object_to_place = Collectible(position_adjust)
-        elif self.current_type_index == 5:  # Key
-            self.object_to_place = Key(position_adjust)
-        elif self.current_type_index == 6:  # Gate
-            self.object_to_place = Gate(position_adjust)
+
+        entity_type = entity_type_map.get(self.current_type_index)
+        if entity_type is None:
+            return
+
+        # Create entity using factory (editor doesn't need context)
+        self.object_to_place = EntityFactory.create(entity_type, position_adjust)
 
         if self.object_to_place:
             current_map = grid_manager.level
@@ -372,16 +379,16 @@ class NavigationTool(BaseTool):
 
         if grid_manager.adjust[0] < -grid_width:
             grid_manager.adjust = (
-                renderer.SCREEN_WIDTH + grid_width,
+                renderer_utils.SCREEN_WIDTH + grid_width,
                 grid_manager.adjust[1],
             )
-        elif grid_manager.adjust[0] > renderer.SCREEN_WIDTH + grid_width:
+        elif grid_manager.adjust[0] > renderer_utils.SCREEN_WIDTH + grid_width:
             grid_manager.adjust = (-grid_width, grid_manager.adjust[1])
 
         if grid_manager.adjust[1] < -grid_height:
             grid_manager.adjust = (
                 grid_manager.adjust[0],
-                renderer.SCREEN_HEIGHT + grid_height,
+                renderer_utils.SCREEN_HEIGHT + grid_height,
             )
-        elif grid_manager.adjust[1] > renderer.SCREEN_HEIGHT + grid_height:
+        elif grid_manager.adjust[1] > renderer_utils.SCREEN_HEIGHT + grid_height:
             grid_manager.adjust = (grid_manager.adjust[0], -grid_height)

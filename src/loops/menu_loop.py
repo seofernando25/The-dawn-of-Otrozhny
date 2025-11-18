@@ -3,10 +3,10 @@ Menu loop module - handles the main menu with fractal background and other effec
 """
 
 import pygame
-import ui
+from ui import HudScreen
 from renderer import effects as otherEffects
 from renderer.text import message_display_MT
-import rendering as renderer
+from renderer import utils as renderer_utils
 from loops.loop_runner import SceneHandler
 from core.game_state import GameState
 
@@ -15,7 +15,7 @@ class MenuScene(SceneHandler):
     """Scene handler for the main menu."""
 
     def __init__(self):
-        self.hud = ui.HudScreen()
+        self.hud = HudScreen()
         self.hud.set_button_text(0, "Play")
         self.hud.set_button_text(1, "Editor")
         self.hud.set_button_text(2, "Tutorial")
@@ -23,9 +23,9 @@ class MenuScene(SceneHandler):
         self.hud.set_button_text(4, "Exit")
 
         self.fractal = otherEffects.ChaosObject(
-            (renderer.SCREEN_WIDTH // 2, (renderer.SCREEN_HEIGHT // 2) + 15), 225, 3
+            (renderer_utils.SCREEN_WIDTH // 2, (renderer_utils.SCREEN_HEIGHT // 2) + 15), 225, 3
         )
-        self.star_field = otherEffects.StarField(renderer.SCREEN_SIZE)
+        self.star_field = otherEffects.StarField((renderer_utils.SCREEN_WIDTH, renderer_utils.SCREEN_HEIGHT))
 
         # Connect fractal speed to HUD button changes
         self.hud.onChangedButton.append(self.star_field.change_speed)
@@ -66,10 +66,10 @@ class MenuScene(SceneHandler):
 
         # Draw menu text
         message_display_MT(
-            screen, "The dawn of Otrozhny", renderer.SCREEN_WIDTH // 2, 100, 30
+            screen, "The dawn of Otrozhny", renderer_utils.SCREEN_WIDTH // 2, 100, 30
         )
         message_display_MT(
-            screen, "Containment breach", renderer.SCREEN_WIDTH // 2, 150, 30
+            screen, "Containment breach", renderer_utils.SCREEN_WIDTH // 2, 150, 30
         )
 
 

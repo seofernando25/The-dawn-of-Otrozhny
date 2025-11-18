@@ -10,7 +10,7 @@ from entities.player import Player
 if TYPE_CHECKING:
     from core.context import GameContext
     from entities.base import Entity
-    from entities.enemies import Node
+    from entities.node import Node
 
 
 class Level:

@@ -4,8 +4,7 @@ from typing import Optional, TYPE_CHECKING
 
 import pygame
 
-import assets
-import colors
+from core import assets, colors
 from utils import math_helpers
 from config import ENTITY_DEFAULTS
 from physics import movement

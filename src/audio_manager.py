@@ -8,7 +8,7 @@ Provides caching and centralized audio management.
 import logging
 from typing import Optional, Tuple
 import pygame
-import assets
+from core import assets
 import audio
 
 LOGGER = logging.getLogger(__name__)

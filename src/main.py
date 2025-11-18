@@ -3,10 +3,10 @@ import sys
 
 import pygame
 
-import assets
+from core import assets
 import audio_manager
 from level_editor import editor as levelEditor
-import ui
+from ui import HudScreen, HudButton
 from core.game_state import GameState
 from loops import about_loop, menu_loop, setup_game, tutorial_loop
 
@@ -23,7 +23,7 @@ def pre_init():
     audio_manager.set_ui_sound("Active_UI", "Music")
     assets.get_cached_audio("Music", "Menu")
     assets.get_cached_audio("Music", "Game")
-    ui.HudButton.activated_sound = assets.get_cached_audio("Music", "Active_UI")
+    HudButton.activated_sound = assets.get_cached_audio("Music", "Active_UI")
 
 
 def main_loop():

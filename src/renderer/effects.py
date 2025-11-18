@@ -2,7 +2,7 @@
 # eg: main menu's Sierpinski triangle
 import random
 
-import colors
+from core import colors
 import pygame
 from utils import math_helpers
 

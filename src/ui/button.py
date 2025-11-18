@@ -1,7 +1,7 @@
 """HUD button component."""
 import pygame
-import rendering as renderer
-import colors
+from renderer import utils as renderer_utils
+from core import colors
 from renderer.text import message_display, message_display_MT, wrapline
 
 
@@ -60,8 +60,8 @@ class HudButton(pygame.Surface):
                 self,
                 self.title,
                 self.get_width() // 2,
-                renderer.HUD_CELL_TITLE_OFFSET,
-                renderer.HUD_CELL_TITLE_FONT_SIZE,
+                renderer_utils.HUD_CELL_TITLE_OFFSET,
+                renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
                 self.indexColor[0],
             )
         if self.subtitle:
@@ -69,20 +69,20 @@ class HudButton(pygame.Surface):
                 self,
                 self.subtitle,
                 self.get_width() // 2,
-                renderer.HUD_CELL_TITLE_OFFSET * 3,
-                renderer.HUD_CELL_TITLE_FONT_SIZE,
+                renderer_utils.HUD_CELL_TITLE_OFFSET * 3,
+                renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
                 self.indexColor[1],
             )
 
         if self.text:
             wrapped_text = wrapline(
-                self.text, self.get_width(), renderer.HUD_CELL_TITLE_FONT_SIZE
+                self.text, self.get_width(), renderer_utils.HUD_CELL_TITLE_FONT_SIZE
             )
             py = self.get_height() // 2
             if self.subtitle:
-                py += renderer.HUD_CELL_TITLE_OFFSET
+                py += renderer_utils.HUD_CELL_TITLE_OFFSET
             if len(wrapped_text) > 1:
-                py -= (len(wrapped_text) // 2) * renderer.HUD_CELL_TITLE_FONT_SIZE
+                py -= (len(wrapped_text) // 2) * renderer_utils.HUD_CELL_TITLE_FONT_SIZE
 
             for line in wrapped_text:
                 message_display(
@@ -90,10 +90,10 @@ class HudButton(pygame.Surface):
                     line,
                     self.get_width() // 2,
                     py,
-                    renderer.HUD_CELL_TITLE_FONT_SIZE,
+                    renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
                     self.indexColor[2],
                 )
-                py += renderer.HUD_CELL_TITLE_FONT_SIZE + renderer.HUD_CELL_OFFSET
+                py += renderer_utils.HUD_CELL_TITLE_FONT_SIZE + renderer_utils.HUD_CELL_OFFSET
 
     def redraw(self):
         """Redraw the button if it's marked as dirty."""

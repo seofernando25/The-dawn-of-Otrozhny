@@ -6,12 +6,15 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-from assets import MAPS_DIR, list_asset_files
+from core.assets import MAPS_DIR, list_asset_files
 from core.level import Level
 from entities.base import Entity
 from entities.player import Player
-from entities.enemies import Enemy, Monster, Node
+from entities.enemy import Enemy
+from entities.monster import Monster
+from entities.node import Node
 from entities.items import Collectible, Gate, Key
+from entities.factory import EntityFactory
 
 MAPS_PATH = MAPS_DIR
 
@@ -134,36 +137,29 @@ def load_level_object(level_path: Path | str):
     for idx, entity_data in enumerate(data["entities"]):
         if entity_data["type"] == "node":
             pos = entity_data["position"]
-            node = Node((pos["px"], pos["py"]))
+            node = EntityFactory.create("node", (pos["px"], pos["py"]))
             nodes_by_index[idx] = node
             node_entities.append(node)
     
     # Second pass: create other entities and link nodes
     for idx, entity_data in enumerate(data["entities"]):
-        pos = entity_data["position"]
-        entity_pos = (pos["px"], pos["py"])
-        
-        if entity_data["type"] == "player":
-            grid_entities.append(Player(entity_pos))
-        elif entity_data["type"] == "collectible":
-            grid_entities.append(Collectible(entity_pos))
-        elif entity_data["type"] == "key":
-            grid_entities.append(Key(entity_pos))
-        elif entity_data["type"] == "gate":
-            grid_entities.append(Gate(entity_pos))
-        elif entity_data["type"] == "enemy":
-            patrol_point = None
-            if entity_data.get("patrol_point_node_index") is not None:
-                patrol_idx = entity_data["patrol_point_node_index"]
-                if patrol_idx in nodes_by_index:
-                    patrol_point = nodes_by_index[patrol_idx]
-            grid_entities.append(Monster(entity_pos, patrolPoint=patrol_point))
-        elif entity_data["type"] == "node":
+        if entity_data["type"] == "node":
             # Link nodes
             node = nodes_by_index[idx]
             for connected_idx in entity_data.get("connected_node_indices", []):
-                    if connected_idx in nodes_by_index:
-                        node.join_node(nodes_by_index[connected_idx])
+                if connected_idx in nodes_by_index:
+                    node.join_node(nodes_by_index[connected_idx])
+        else:
+            # Create entity using factory
+            entity = EntityFactory.create_from_data(
+                entity_data,
+                nodes_by_index=nodes_by_index
+            )
+            
+            if isinstance(entity, Node):
+                node_entities.append(entity)
+            else:
+                grid_entities.append(entity)
     
     # Create level object (compatible with existing Level.load)
     return LevelObject(

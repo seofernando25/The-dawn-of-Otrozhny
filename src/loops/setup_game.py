@@ -4,12 +4,13 @@ Setup game module - handles level selection and asset preloading.
 
 import pygame
 
-import assets
+from core import assets
 from core.io import load_level_object, list_maps
 from core.level import Level
-import rendering as renderer
+from renderer import config as renderer_config
+from renderer import utils as renderer_utils
 from renderer.text import message_display_L
-import ui
+from ui import MapSelectionScreen
 from core.context import build_game_context
 from entities.player import Player
 from core.game_state import GameState
@@ -44,7 +45,8 @@ def _build_map_grid(hud, map_list):
             map_path, _ = available_maps.pop()
             map_obj = load_level_object(map_path)
             actual_map_list[px][py] = map_obj
-            renderer.draw_map_preview(button, map_obj, cache_key=map_path)
+            from renderer.preview import draw_map_preview
+            draw_map_preview(button, map_obj, cache_key=map_path)
             button.redraw()
 
     return actual_map_list
@@ -100,9 +102,9 @@ class MapSelectionScene(SceneHandler):
         message_display_L(
             screen,
             'Press "q" to go back',
-            renderer.VIEWPORT_X_OFFSET,
-            renderer.VIEWPORT_Y_OFFSET,
-            renderer.HUD_CELL_TITLE_FONT_SIZE,
+            renderer_utils.VIEWPORT_X_OFFSET,
+            renderer_utils.VIEWPORT_Y_OFFSET,
+            renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
         )
 
 
@@ -116,7 +118,7 @@ def setup_game():
     pre_load_assets()
 
     map_list = list_maps()
-    hud = ui.MapSelectionScreen()
+    hud = MapSelectionScreen()
     actual_map_list = _build_map_grid(hud, map_list)
 
     scene = MapSelectionScene(hud, actual_map_list)

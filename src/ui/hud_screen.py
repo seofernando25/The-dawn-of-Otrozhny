@@ -2,9 +2,9 @@
 from typing import Optional
 import pygame
 import pygame.constants as pyConst
-import rendering as renderer
+from renderer import utils as renderer_utils
 from utils import math_helpers
-import colors
+from core import colors
 from ui.button import HudButton
 from ui.helpers import (
     _generate_hud_viewport,
@@ -57,7 +57,7 @@ class HudScreen:
                 [
                     int(
                         self.cursorX * (self.viewPort.get_width() / 5)
-                        + renderer.HUD_CELL_OFFSET
+                        + renderer_utils.HUD_CELL_OFFSET
                         + 5
                     ),
                     self.viewPort.get_height(),
@@ -69,10 +69,10 @@ class HudScreen:
         target_screen.blit(
             self.viewPort,
             (
-                renderer.VIEWPORT_X_OFFSET,
-                renderer.SCREEN_HEIGHT
+                renderer_utils.VIEWPORT_X_OFFSET,
+                renderer_utils.SCREEN_HEIGHT
                 - self.viewPort.get_height()
-                - renderer.VIEWPORT_Y_OFFSET // 4,
+                - renderer_utils.VIEWPORT_Y_OFFSET // 4,
             ),
         )
 
@@ -86,8 +86,8 @@ class HudScreen:
         if change_to:
             self.selected_button = amount
         if self.selected_button < 0:
-            self.selected_button = renderer.HUD_NUM_OF_CELLS - 1
-        elif self.selected_button > renderer.HUD_NUM_OF_CELLS - 1:
+            self.selected_button = renderer_utils.HUD_NUM_OF_CELLS - 1
+        elif self.selected_button > renderer_utils.HUD_NUM_OF_CELLS - 1:
             self.selected_button = 0
         self.hud_buttons[self.selected_button].set_active(True)
 

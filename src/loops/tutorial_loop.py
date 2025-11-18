@@ -3,19 +3,18 @@ Tutorial loop module - displays tutorial tabs with briefing/map editor/items/ene
 """
 
 import pygame
-import menuTabs
+from ui import menu_tabs
 from renderer.text import message_display_L
-import rendering as renderer
+from renderer import utils as renderer_utils
 from loops.loop_runner import SceneHandler
+from ui import HudScreen
 
 
 class TutorialScene(SceneHandler):
     """Scene handler for the tutorial screen."""
 
     def __init__(self):
-        import ui
-
-        self.hud = ui.HudScreen()
+        self.hud = HudScreen()
         self.hud.set_button_text(0, "Briefing")
         self.hud.set_button_text(1, "Map Editor")
         self.hud.set_button_text(2, "Items")
@@ -39,15 +38,15 @@ class TutorialScene(SceneHandler):
     def draw(self, screen):
         """Draw tutorial content based on selected tab."""
         if self.hud.selected_button == 0:
-            menuTabs.render_tutorial_tab_4()
+            menu_tabs.render_tutorial_tab_4()
         if self.hud.selected_button == 1:
-            menuTabs.render_tutorial_tab_2()
+            menu_tabs.render_tutorial_tab_2()
         if self.hud.selected_button == 2:
-            menuTabs.render_tutorial_tab_3()
+            menu_tabs.render_tutorial_tab_3()
         if self.hud.selected_button == 3:
-            menuTabs.render_tutorial_tab_1()
+            menu_tabs.render_tutorial_tab_1()
         if self.hud.selected_button == 4:
-            menuTabs.render_tutorial_tab_5()
+            menu_tabs.render_tutorial_tab_5()
 
         self.hud.update(0, [])  # Update HUD visuals
         self.hud.draw(screen)
@@ -55,9 +54,9 @@ class TutorialScene(SceneHandler):
         message_display_L(
             screen,
             'Press "q" to go back',
-            renderer.VIEWPORT_X_OFFSET,
-            renderer.VIEWPORT_Y_OFFSET,
-            renderer.HUD_CELL_TITLE_FONT_SIZE,
+            renderer_utils.VIEWPORT_X_OFFSET,
+            renderer_utils.VIEWPORT_Y_OFFSET,
+            renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
         )
 
 

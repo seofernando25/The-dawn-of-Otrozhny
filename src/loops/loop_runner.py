@@ -6,7 +6,7 @@ This module provides a reusable implementation.
 """
 
 import pygame
-import colors
+from core import colors
 from typing import Protocol, Optional
 from core.game_state import GameState
 

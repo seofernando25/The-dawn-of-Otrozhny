@@ -1,5 +1,5 @@
 """First-person view rendering."""
-import colors
+from core import colors
 import pygame
 from renderer import raycast
 from renderer import utils

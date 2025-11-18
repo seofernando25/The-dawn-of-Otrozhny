@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pygame
 
-import colors
+from core import colors
 from utils import math_helpers
 from renderer import config as renderer_settings
 from entities.base import SpriteEntity
