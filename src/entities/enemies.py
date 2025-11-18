@@ -49,11 +49,12 @@ class Enemy(SpriteAgent):
         if Enemy.enemy_status == EnemyStatus.Normal:
             self.change_target(self.patrolPoint)
 
-        if player in [x[0] for x in self.entitiesInSight]:
-            self.canSeePlayer = True
+        player_entry = next(
+            (entry for entry in self.entitiesInSight if entry[0] is player),
+            None)
+        self.canSeePlayer = player_entry is not None
+        if self.canSeePlayer:
             Enemy.change_enemy_status(EnemyStatus.Alert)
-        else:
-            self.canSeePlayer = False
 
         if self.canSeePlayer or Enemy.enemy_status == EnemyStatus.Alert:
             self.change_target(player)
@@ -61,28 +62,16 @@ class Enemy(SpriteAgent):
         if Enemy.enemy_status == EnemyStatus.Evasion:
             if self.pathFindingNodesTarget != player:
                 self.change_target(player)
-            if self.pathFindingComplete:
-                path_nodes = self.pathFindingNodes or []
-                while len(path_nodes) == 0:
-                    random_pos = Entity(current_map.pick_random_point())
-                    self.change_target(random_pos)
-                    path_nodes = self.pathFindingNodes or []
+            if self.pathFindingComplete and not self.pathFindingNodes:
+                self._retarget_random_point(current_map)
 
         if Enemy.enemy_status == EnemyStatus.Caution:
-            if self.pathFindingComplete:
-                random_pos = Entity(current_map.pick_random_point())
-                dx, dy = mathHelpers.slope(self.get_pos(), random_pos.get_pos())
-                targetDistance = math.hypot(dx, dy)
-                path_nodes = self.pathFindingNodes or []
-                if len(path_nodes) == 0 or targetDistance < 1:
-                    while len(path_nodes) == 0 and targetDistance < 1:
-                        random_pos = Entity(current_map.pick_random_point())
-                        dx, dy = mathHelpers.slope(
-                            self.get_pos(), random_pos.get_pos())
-                        targetDistance = math.hypot(dx, dy)
-                        path_nodes = self.pathFindingNodes or []
-
-                self.change_target(random_pos)
+            if self.pathFindingComplete and (
+                    not self.pathFindingNodes or
+                    self.target is None or
+                    mathHelpers.distance_to(
+                        self.get_pos(), self.target.get_pos()) < 1):
+                self._retarget_random_point(current_map, min_distance=1.0)
 
         if (Enemy.enemy_status in (EnemyStatus.Evasion, EnemyStatus.Alert,
                                    EnemyStatus.Caution)):
@@ -135,6 +124,19 @@ class Enemy(SpriteAgent):
         self.patrolPoint = self.target.pick_random_node()
         self.timeGuarded = 0
         self.change_target(self.patrolPoint)
+
+    def _retarget_random_point(self, current_map, min_distance=0.0,
+                               attempts=10):
+        for _ in range(attempts):
+            random_entity = Entity(current_map.pick_random_point())
+            distance = mathHelpers.distance_to(
+                self.get_pos(), random_entity.get_pos())
+            if distance < min_distance:
+                continue
+            self.change_target(random_entity)
+            if self.pathFindingNodes:
+                return True
+        return False
 
     @staticmethod
     def change_enemy_status(status):

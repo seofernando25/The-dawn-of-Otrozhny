@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parent
 ASSETS_DIR = ROOT / "Assets"
 MAPS_DIR = ROOT / "Maps"
 
+_AUDIO_CACHE = {}
+
 
 def _ensure_dir(path: Path) -> Path:
     path.mkdir(parents=True, exist_ok=True)
@@ -55,12 +57,18 @@ def get_sprite(sprite_pack: str, sprite_position: int):
 
 
 def get_audio(folder: str, state: str):
+    cache_key = (folder, state)
+    cached_sounds = _AUDIO_CACHE.get(cache_key)
+    if cached_sounds:
+        return random.choice(cached_sounds)
+
     filenames = list_asset_files(folder, state)
     if not filenames:
         LOGGER.warning("Audio folder '%s/%s' is missing.", folder, state)
         return None
-    audio_path = random.choice(filenames)
-    return pygame.mixer.Sound(audio_path)
+    sounds = [pygame.mixer.Sound(path) for path in filenames]
+    _AUDIO_CACHE[cache_key] = sounds
+    return random.choice(sounds)
 
 
 @lru_cache(maxsize=8)

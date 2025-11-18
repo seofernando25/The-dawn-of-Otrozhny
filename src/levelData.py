@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Optional
 
+import numpy as np
+
 from entities.items import Collectible
 from entities.player import Player
 
@@ -11,8 +13,10 @@ from entities.player import Player
 class Level():
     currentMap: Optional["Level"] = None
 
-    def __init__(self, grid, grid_entities, node_entities=None):
+    def __init__(self, grid, grid_entities, node_entities=None, grid_np=None):
         self.grid = grid
+        self.grid_np = grid_np if grid_np is not None else np.array(
+            grid, dtype=np.int16)
         self.grid_entities = grid_entities
         self.node_entities = node_entities
         self.level_width = len(grid[0]) 
@@ -27,7 +31,10 @@ class Level():
 
     @staticmethod
     def load(level_object):
-        Level.currentMap = Level(level_object.grid, level_object.grid_entities)
+        grid_np = getattr(level_object, "grid_np", None)
+        Level.currentMap = Level(level_object.grid, level_object.grid_entities,
+                                 getattr(level_object, "node_entities", None),
+                                 grid_np=grid_np)
     
   
 

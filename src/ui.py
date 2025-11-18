@@ -200,49 +200,72 @@ class HudButton(pygame.Surface):
         self.isActive = False
         # If false the surface have to be redrawn step by step
         self.protected = True
-        self.text = text
+        self.text = str(text)
         self.subtitle = ""
         self.title = ""
         self.indexColor = [colors.WHITE] * 3
+        self._dirty = True
+
+    def _mark_dirty(self):
+        if self.protected:
+            self._dirty = True
 
     def set_color(self, textIndex, color):
-        self.indexColor[textIndex] = color
+        if self.indexColor[textIndex] != color:
+            self.indexColor[textIndex] = color
+            self._mark_dirty()
 
     def set_subtitle(self, text):
-        self.subtitle = str(text)
-        textDraw.message_display_MT(
-            self, text,
-            self.get_width()//2, renderer.HUD_CELL_TITLE_OFFSET * 3,
-            renderer.HUD_CELL_TITLE_FONT_SIZE, self.indexColor[1])
+        text = "" if text is None else str(text)
+        if text != self.subtitle:
+            self.subtitle = text
+            self._mark_dirty()
 
     def set_title(self, text):
-        self.title = str(text)
-        textDraw.message_display_MT(
-            self, text,
-            self.get_width()//2, renderer.HUD_CELL_TITLE_OFFSET,
-            renderer.HUD_CELL_TITLE_FONT_SIZE, self.indexColor[0])
+        text = "" if text is None else str(text)
+        if text != self.title:
+            self.title = text
+            self._mark_dirty()
 
     def set_text(self, text):
-        self.text = str(text)
-        wrapped_text = textHelpers.wrapline(
-            self.text, self.get_width(), renderer.HUD_CELL_TITLE_FONT_SIZE)
-        py = self.get_height()//2
-        if self.subtitle != "":
-            py += renderer.HUD_CELL_TITLE_OFFSET
-        if len(wrapped_text) > 1:
-            py -= (len(wrapped_text)//2) * renderer.HUD_CELL_TITLE_FONT_SIZE
+        text = "" if text is None else str(text)
+        if text != self.text:
+            self.text = text
+            self._mark_dirty()
 
-        for line in wrapped_text:
-            textDraw.message_display(self, line, self.get_width(
-            )//2, py, renderer.HUD_CELL_TITLE_FONT_SIZE, self.indexColor[2])
-            py += renderer.HUD_CELL_TITLE_FONT_SIZE + renderer.HUD_CELL_OFFSET
+    def _render_contents(self):
+        if self.title:
+            textDraw.message_display_MT(
+                self, self.title,
+                self.get_width()//2, renderer.HUD_CELL_TITLE_OFFSET,
+                renderer.HUD_CELL_TITLE_FONT_SIZE, self.indexColor[0])
+        if self.subtitle:
+            textDraw.message_display_MT(
+                self, self.subtitle,
+                self.get_width()//2, renderer.HUD_CELL_TITLE_OFFSET * 3,
+                renderer.HUD_CELL_TITLE_FONT_SIZE, self.indexColor[1])
+
+        if self.text:
+            wrapped_text = textHelpers.wrapline(
+                self.text, self.get_width(), renderer.HUD_CELL_TITLE_FONT_SIZE)
+            py = self.get_height()//2
+            if self.subtitle:
+                py += renderer.HUD_CELL_TITLE_OFFSET
+            if len(wrapped_text) > 1:
+                py -= (len(wrapped_text)//2) * renderer.HUD_CELL_TITLE_FONT_SIZE
+
+            for line in wrapped_text:
+                textDraw.message_display(
+                    self, line, self.get_width()//2, py,
+                    renderer.HUD_CELL_TITLE_FONT_SIZE, self.indexColor[2])
+                py += renderer.HUD_CELL_TITLE_FONT_SIZE + renderer.HUD_CELL_OFFSET
 
     def redraw(self):
-        if self.protected:
-            self.fill(self.get_color())
-            self.set_text(self.text)
-            self.set_title(self.title)
-            self.set_subtitle(self.subtitle)
+        if not self.protected or not self._dirty:
+            return
+        self.fill(self.get_color())
+        self._render_contents()
+        self._dirty = False
 
     def get_color(self):
         if self.isActive:
@@ -251,9 +274,12 @@ class HudButton(pygame.Surface):
             return colors.GRAY_VARIATION_3
 
     def set_active(self, active):
-        if active:
-            HudButton.activated_sound.play()
+        if self.isActive == active:
+            return
         self.isActive = active
+        if active and HudButton.activated_sound is not None:
+            HudButton.activated_sound.play()
+        self._mark_dirty()
         self.redraw()
 
 

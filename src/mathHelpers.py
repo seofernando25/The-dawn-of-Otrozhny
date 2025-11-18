@@ -15,11 +15,24 @@ def lerp(v0, v1, t) -> float:
 # Scales one number to another
 
 
+_TRANSLATE_CACHE = {}
+
+
 def translate(value, value_min, value_max, final_min, final_max):
-    left_lenght = value_max - value_min
-    right_lenght = final_max - final_min
-    scaled_value = float(value - value_min) / float(left_lenght)
-    return final_min + (scaled_value * right_lenght)
+    key = (value_min, value_max, final_min, final_max)
+    cached = _TRANSLATE_CACHE.get(key)
+    if cached is None:
+        left_length = value_max - value_min
+        if left_length == 0:
+            scale = 0.0
+            offset = final_min
+        else:
+            scale = (final_max - final_min) / left_length
+            offset = final_min - value_min * scale
+        cached = (scale, offset)
+        _TRANSLATE_CACHE[key] = cached
+    scale, offset = cached
+    return value * scale + offset
 
 # y2 - y1 over
 # x2 - x1

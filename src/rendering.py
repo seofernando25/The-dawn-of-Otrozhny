@@ -34,6 +34,8 @@ RAY_ANGLE_STEP = renderer_settings.RAY_ANGLE_STEP
 
 MAP_SCALE = 4
 
+_MAP_PREVIEW_CACHE = {}
+
 HUD_NUM_OF_CELLS = renderer_settings.HUD_NUM_OF_CELLS
 HUD_CELL_SIZE = renderer_settings.HUD_CELL_SIZE
 HUD_CELL_OFFSET = renderer_settings.HUD_CELL_OFFSET
@@ -86,30 +88,40 @@ def render_first_person(screen, entity):
     # todo  <= I won't. Tts a stealth game!
 
 
-def draw_map_preview(screen, map_obj):
-    screen.fill(colors.GRAY)
-    scale_x = screen.get_width()/map_obj.level_width
-    scale_y = screen.get_height()/map_obj.level_height
-    minimap.draw_grid(
-        screen,
-        map_obj,
-        scale_x,
-        scale_y,
-        lambda _x, _y, value: colors.GRAY_VARIATION_3 if value != 0 else None)
+def draw_map_preview(screen, map_obj, cache_key=None):
+    signature = (cache_key or getattr(map_obj, "map_name", None)
+                 or getattr(map_obj, "name", None) or id(map_obj),
+                 screen.get_size())
+    cached_surface = _MAP_PREVIEW_CACHE.get(signature)
+    if cached_surface is None:
+        preview = pygame.Surface(screen.get_size()).convert()
+        preview.fill(colors.GRAY)
+        scale_x = preview.get_width()/map_obj.level_width
+        scale_y = preview.get_height()/map_obj.level_height
+        minimap.draw_grid(
+            preview,
+            map_obj,
+            scale_x,
+            scale_y,
+            lambda _x, _y, value: colors.GRAY_VARIATION_3 if value != 0 else None)
 
-    color = colors.DARK_GRAY
-    for e in map_obj.grid_entities:
-        if issubclass(type(e), Gate):
-            pygame.draw.rect(screen,
-                             color,
-                             [scale_x * math.floor(e.py),
-                              scale_y * math.floor(e.px),
-                              scale_x + 1,
-                              scale_y + 1])
-        if issubclass(type(e), Player):
-            pygame.draw.rect(screen,
-                             colors.WHITE,
-                             [scale_x * math.floor(e.py),
-                              scale_y * math.floor(e.px),
-                              scale_x + 1,
-                              scale_y + 1])
+        color = colors.DARK_GRAY
+        for e in map_obj.grid_entities:
+            if issubclass(type(e), Gate):
+                pygame.draw.rect(preview,
+                                 color,
+                                 [scale_x * math.floor(e.py),
+                                  scale_y * math.floor(e.px),
+                                  scale_x + 1,
+                                  scale_y + 1])
+            if issubclass(type(e), Player):
+                pygame.draw.rect(preview,
+                                 colors.WHITE,
+                                 [scale_x * math.floor(e.py),
+                                  scale_y * math.floor(e.px),
+                                  scale_x + 1,
+                                  scale_y + 1])
+        cached_surface = preview
+        _MAP_PREVIEW_CACHE[signature] = cached_surface
+
+    screen.blit(cached_surface, (0, 0))

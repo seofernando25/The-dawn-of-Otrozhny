@@ -2,6 +2,8 @@
 # and deserialization of files in the game
 import pickle
 
+import numpy as np
+
 import levelData
 from assets import MAPS_DIR, list_asset_files, list_maps as _list_maps
 
@@ -54,6 +56,11 @@ def load_level_object(level_path):
     _ensure_entity_aliases()
     with open(level_path, "rb") as level:
         level_data = pickle.load(level)
+        if getattr(level_data, "grid_np", None) is None:
+            try:
+                level_data.grid_np = np.array(level_data.grid, dtype=np.int16)
+            except Exception:
+                pass
         return level_data
 
 

@@ -9,6 +9,8 @@ from entities.items import Collectible, Gate
 from entities.player import Player
 from .raycast import calculate_fov_polygon
 
+_STATIC_SURFACES = {}
+
 
 def translate_to_map(coord_list, scale_x, scale_y):
     newCoordList = []
@@ -44,22 +46,39 @@ def draw_grid(surface, level_map, scale_x, scale_y, color_fn):
                 [scale_x * y, scale_y * x, scale_x + 1, scale_y + 1])
 
 
+def _build_static_surface(screen, level_map, scale_x, scale_y):
+    surface = pygame.Surface(screen.get_size()).convert()
+    draw_grid(
+        surface,
+        level_map,
+        scale_x,
+        scale_y,
+        lambda _x, _y, value: colors.GRAY_VARIATION_3
+        if value != 0 else colors.DARK_GRAY)
+    return surface
+
+
+def _get_static_surface(screen, level_map, scale_x, scale_y):
+    signature = (id(level_map), screen.get_size())
+    surface = _STATIC_SURFACES.get(signature)
+    if surface is None:
+        surface = _build_static_surface(screen, level_map, scale_x, scale_y)
+        _STATIC_SURFACES[signature] = surface
+    return surface
+
+
 def render_map(screen, entity):
     current_map = levelData.require_current_map()
     scale_x = screen.get_width() / current_map.level_width
     scale_y = screen.get_height() / current_map.level_height
 
+    static_surface = _get_static_surface(screen, current_map, scale_x, scale_y)
+    screen.blit(static_surface, (0, 0))
+
     fov_points = calculate_fov_polygon(entity)
     fov_points = translate_to_map(fov_points, scale_x, scale_y)
 
     all_fovs = _calculate_fov_points(scale_x, scale_y)
-
-    draw_grid(
-        screen,
-        current_map,
-        scale_x,
-        scale_y,
-        lambda _x, _y, value: colors.GRAY_VARIATION_3 if value != 0 else colors.DARK_GRAY)
 
     if len(fov_points) > 2:
         pygame.draw.polygon(screen, colors.WHITE, fov_points)

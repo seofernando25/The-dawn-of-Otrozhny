@@ -234,14 +234,16 @@ class GridManager():
             if self.current_entity_being_edited is not None:
                 position_adjust = (self.current_cell[0] + 0.5, self.current_cell[1] + 0.5)
                 
-                self.current_entity_being_edited.patrolPoint = None
+                if hasattr(self.current_entity_being_edited, "patrolPoint"):
+                    self.current_entity_being_edited.patrolPoint = None
                 alreadyHas = False
                 if issubclass(type(self.current_entity_being_edited), Agent):
                     for entity in _current_level().grid_entities:
                         if self.current_cell ==  (int(entity.px), int(entity.py)):
                             if issubclass(type(entity), Agent) and entity != self.current_entity_being_edited:
                                 alreadyHas = True
-                                self.current_entity_being_edited.patrolPoint = None
+                                if hasattr(self.current_entity_being_edited, "patrolPoint"):
+                                    self.current_entity_being_edited.patrolPoint = None
                 
                 if issubclass(type(self.current_entity_being_edited), Enemy):
                     for node in _current_level().node_entities:  
@@ -256,7 +258,7 @@ class GridManager():
                         if self.current_cell ==  (int(entity.px), int(entity.py)):
                             if issubclass(type(entity), Enemy):
                                 entity.patrolPoint = self.current_entity_being_edited
-                            elif entity.patrolPoint == self.current_entity_being_edited:
+                            elif hasattr(entity, "patrolPoint") and entity.patrolPoint == self.current_entity_being_edited:
                                 entity.patrolPoint = None
                 if not alreadyHas:
                     self.current_entity_being_edited.px = position_adjust[0]

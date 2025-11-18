@@ -202,9 +202,10 @@ def setupGame():
     for px, button_list in enumerate(hud.hud_buttons):
         for py, button in enumerate(button_list):
             if len(map_list) > 0:
-                map_obj = gameIO.load_level_object(map_list.pop()[0])
+                map_path, _ = map_list.pop()
+                map_obj = gameIO.load_level_object(map_path)
                 actual_map_list[px][py] = map_obj
-                renderer.draw_map_preview(button, map_obj)
+                renderer.draw_map_preview(button, map_obj, cache_key=map_path)
                 button.redraw()
             else:
                 break
@@ -257,10 +258,11 @@ def postGameLoop(won, time=0):
     import datetime
     done = False
     if won:
-        time = datetime.timedelta(seconds=time)
+        elapsed_time = datetime.timedelta(seconds=time)
         msg = "You won"
     else:
         msg = "You lost"
+        elapsed_time = None
     msg_accumulated = 0
 
     while not done:
@@ -290,11 +292,12 @@ def postGameLoop(won, time=0):
                                    renderer.VIEWPORT_X_OFFSET,
                                    renderer.VIEWPORT_Y_OFFSET,
                                    renderer.HUD_CELL_TITLE_FONT_SIZE)
-        if won:
+        if won and elapsed_time is not None:
             textDraw.message_display_MT(
                 screen,
-                "{}.{}.{}".format(time.seconds // 60, time.seconds % 60,
-                                  round(time.microseconds / 1000)),
+                "{}.{}.{}".format(elapsed_time.seconds // 60,
+                                  elapsed_time.seconds % 60,
+                                  round(elapsed_time.microseconds / 1000)),
                 renderer.SCREEN_WIDTH // 2, 150, 30)
 
         pygame.display.update()
@@ -324,6 +327,21 @@ def gameLoop():
 
     time = 0
 
+    hud_cache = {
+        "keys": None,
+        "status_subtitle": None,
+        "status_color": None,
+        "status_time": None,
+        "collectibles": None,
+        "health": None,
+    }
+
+    def _update_hud_value(name, value, setter):
+        if hud_cache.get(name) == value:
+            return
+        hud_cache[name] = value
+        setter(value)
+
     while not quit_intent:
         deltaTime = clock.get_time() / 1000
         events = pygame.event.get()
@@ -344,7 +362,8 @@ def gameLoop():
             return postGameLoop(True, time)
 
         # Think
-        [e.update(deltaTime, events) for e in current_map.grid_entities]
+        for entity in current_map.grid_entities:
+            entity.update(deltaTime, events)
 
         # region Rendering
         screen = renderer.get_screen()
@@ -361,15 +380,22 @@ def gameLoop():
 
         # region Heads Up Display Rendering
 
-        hud.set_button_text(2, player.keys)
-        hud.set_button_subtitle(3, Enemy.enemy_status.value[0])
-        hud.set_button_color(3, 1, Enemy.enemy_status.value[1])
-        hud.set_button_text(3, round(Enemy.enemy_status_time_left, 2))
-        hud.set_button_text(
-            1,
-            "{} of {}".format(current_map.num_of_collected,
-                              current_map.num_of_collectibles))
-        hud.set_button_text(0, int(player.health))
+        _update_hud_value("keys", player.keys, lambda v: hud.set_button_text(2, v))
+        status_title = Enemy.enemy_status.value[0]
+        status_color = Enemy.enemy_status.value[1]
+        status_time = round(Enemy.enemy_status_time_left, 2)
+        _update_hud_value("status_subtitle", status_title,
+                          lambda v: hud.set_button_subtitle(3, v))
+        _update_hud_value("status_color", status_color,
+                          lambda v: hud.set_button_color(3, 1, v))
+        _update_hud_value("status_time", status_time,
+                          lambda v: hud.set_button_text(3, v))
+        collectibles_text = "{} of {}".format(
+            current_map.num_of_collected, current_map.num_of_collectibles)
+        _update_hud_value("collectibles", collectibles_text,
+                          lambda v: hud.set_button_text(1, v))
+        _update_hud_value("health", int(player.health),
+                          lambda v: hud.set_button_text(0, v))
 
         renderer_minimap.render_map(hud.hud_buttons[-1], player)
 

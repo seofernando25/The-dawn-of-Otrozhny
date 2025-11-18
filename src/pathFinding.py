@@ -1,3 +1,6 @@
+import heapq
+import math
+
 import pygame
 import levelData
 
@@ -9,46 +12,35 @@ from renderer import config as renderer_settings
 
 
 def go_to(start, target):
-    openSet = []
-    closedSet = []
-
-    cameFrom = {}
-    gScore = {}
-    gScore[start] = 0
-    fScore = {}
-    fScore[start] = get_heuristic(start, target)
-    openSet.append(start)
-
     grid = levelData.require_current_map().grid
-    while len(openSet) > 0:
-        winner = openSet[0]
-        for coord in openSet:
-            if fScore[coord] < fScore[winner]:
-                winner = coord
 
-        current = winner
+    open_heap = []
+    heapq.heappush(open_heap, (get_heuristic(start, target), start))
+    cameFrom = {}
+    gScore = {start: 0}
+    closed_set = set()
+
+    while open_heap:
+        _, current = heapq.heappop(open_heap)
+        if current in closed_set:
+            continue
         if current == target:
             return reconstruct_path(cameFrom, current)
-        else:
-            openSet.remove(current)
-            closedSet.append(current)
 
-            for neighbor in get_neighbors(current, grid):
-                if neighbor in closedSet:
-                    continue
+        closed_set.add(current)
 
-                tentative_gScore = gScore[current] + 1
-                if neighbor in openSet:
-                    if tentative_gScore < gScore[neighbor]:
-                        gScore[neighbor] = tentative_gScore
-                else:
-                    gScore[neighbor] = tentative_gScore
-                    openSet.append(neighbor)
+        for neighbor in get_neighbors(current, grid):
+            if neighbor in closed_set:
+                continue
 
-                cameFrom[neighbor] = current
-                gScore[neighbor] = tentative_gScore
-                fScore[neighbor] = gScore[neighbor] + \
-                    get_heuristic(neighbor, target)
+            tentative_gScore = gScore[current] + 1
+            if tentative_gScore >= gScore.get(neighbor, math.inf):
+                continue
+
+            cameFrom[neighbor] = current
+            gScore[neighbor] = tentative_gScore
+            f_score = tentative_gScore + get_heuristic(neighbor, target)
+            heapq.heappush(open_heap, (f_score, neighbor))
 
 # Get NSEW neighboors if possible
 
@@ -80,11 +72,10 @@ def get_heuristic(coord, end):
 
 def reconstruct_path(cameFrom, current):
     result = [current]
-    while current in cameFrom.keys():
+    while current in cameFrom:
         current = cameFrom[current]
         result.append(current)
-    result = list(reversed(result))
-    return result
+    return list(reversed(result))
 
 
 if __name__ == "__main__":
