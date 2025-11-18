@@ -109,12 +109,7 @@ class MapSelectionScene(SceneHandler):
 
 
 def setup_game():
-    """
-    Set up the game by preloading assets and showing level selection.
-
-    Returns:
-        GameState: The result of the setup process (Menu or Quit).
-    """
+    """Set up the game by preloading assets and showing level selection."""
     pre_load_assets()
 
     map_list = list_maps()

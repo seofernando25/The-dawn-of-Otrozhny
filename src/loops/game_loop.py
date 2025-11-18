@@ -72,12 +72,7 @@ class HudController:
 
 
 def run_game_loop(context: GameContext):
-    """
-    Main game loop handling player movement, entity updates, rendering, and game state.
-
-    Returns:
-        GameState: The next game state (Quit or continue playing).
-    """
+    """Main game loop handling player movement, entity updates, rendering, and game state."""
     # Initialize HUD
     hud = HudScreen(interactable=False)
     hud.set_button_title(0, "Health")
@@ -130,14 +125,11 @@ def run_game_loop(context: GameContext):
         if current_map.num_of_collected == current_map.num_of_collectibles:
             return post_game_loop(won=True, time=time)
 
-        # Update shared enemy state (once per frame, before individual enemy updates)
         enemy_state.update(delta_time)
 
-        # Update entities
         for entity in current_map.grid_entities:
             entity.update(delta_time, events)
 
-        # Update HUD values through controller
         hud_controller.update_keys(player.keys)
         hud_controller.update_enemy_status(
             enemy_state.status, enemy_state.status_time_left
@@ -147,24 +139,19 @@ def run_game_loop(context: GameContext):
         )
         hud_controller.update_health(player.health)
 
-        # Rendering
         screen = context.screen or renderer_config.get_screen()
         screen.fill(colors.BLACK)
 
-        # 3D View Rendering
         view_port = render_first_person_canvas(
             player, canvas=context.services.get("first_person_surface")
         )
         context.services["first_person_surface"] = view_port
         screen.blit(view_port, (renderer_utils.VIEWPORT_X_OFFSET, renderer_utils.VIEWPORT_Y_OFFSET))
 
-        # Minimap
         renderer_minimap.render_map(hud.hud_buttons[-1], player)
 
-        # Draw HUD
         hud.draw(screen)
 
-        # Debug info
         message_display_L(screen, f"FPS: {int(clock.get_fps())}", 15, 10, 15)
         message_display_MT(
             screen,

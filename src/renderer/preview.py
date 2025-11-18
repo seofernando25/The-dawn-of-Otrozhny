@@ -9,13 +9,7 @@ from renderer import utils
 
 
 def draw_map_preview(screen, map_obj, cache_key=None):
-    """Draw a preview of a map on the given screen surface.
-    
-    Args:
-        screen: The surface to draw the preview on
-        map_obj: The level object to preview
-        cache_key: Optional cache key for the preview. If None, uses object id.
-    """
+    """Draw a preview of a map on the given screen surface."""
     signature = (
         cache_key or id(map_obj),
         screen.get_size(),

@@ -34,14 +34,7 @@ class Enemy(SpriteAgent):
         self.cameraYawSens = ENEMY_CONFIG["camera_yaw_sensitivity"]
 
     def _enemy_state(self):
-        """Get the shared enemy state manager from context.
-        
-        Returns:
-            The EnemyStateManager instance from the game context.
-            
-        Raises:
-            RuntimeError: If context is not set or enemy_state is not available.
-        """
+        """Get the shared enemy state manager from context."""
         context = self.requires_context()
         if not hasattr(context, "enemy_state") or context.enemy_state is None:
             raise RuntimeError(
@@ -154,16 +147,7 @@ class Enemy(SpriteAgent):
         self.change_target(self.patrolPoint)
 
     def _retarget_random_point(self, current_map, min_distance=0.0, attempts=None):
-        """Retarget to a random point on the map.
-        
-        Args:
-            current_map: The current level/map
-            min_distance: Minimum distance from current position
-            attempts: Number of attempts to find a valid point
-        
-        Returns:
-            True if a valid target was found, False otherwise
-        """
+        """Retarget to a random point on the map."""
         if attempts is None:
             retarget_attempts = ENEMY_CONFIG["retarget_attempts"]
             attempts = int(retarget_attempts) if isinstance(retarget_attempts, (int, float)) else 10

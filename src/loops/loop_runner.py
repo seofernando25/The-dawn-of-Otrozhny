@@ -60,14 +60,11 @@ def run_scene(
         events = pygame.event.get()
         keys_pressed = pygame.key.get_pressed()
 
-        # Handle events - quit if handler returns True
         if scene_handler.handle_events(events, keys_pressed):
             return False
 
-        # Update logic
         scene_handler.update(delta_time)
 
-        # Draw
         screen = pygame.display.get_surface()
         if screen is None:
             raise RuntimeError("pygame display surface is not initialized")
@@ -96,29 +93,23 @@ def run_scene_with_hud(
         events = pygame.event.get()
         keys_pressed = pygame.key.get_pressed()
 
-        # Update HUD first
         result = hud.update(delta_time, events)
         if result is not None:
-            # Convert button index to GameState
             if isinstance(result, int) and 0 <= result <= 4:
                 return GameState(result)
-            return result  # Return HUD change result (like selected button)
+            return result
 
-        # Handle events - quit if handler returns True
         if scene_handler.handle_events(events, keys_pressed):
             return False
 
-        # Update logic
         scene_handler.update(delta_time)
 
-        # Draw
         screen = pygame.display.get_surface()
         if screen is None:
             raise RuntimeError("pygame display surface is not initialized")
         screen.fill(bg_color)
         scene_handler.draw(screen)
 
-        # Draw HUD on top
         hud.draw(screen)
 
         pygame.display.flip()

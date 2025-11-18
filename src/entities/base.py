@@ -26,26 +26,11 @@ class Entity:
         return (self.px, self.py)
 
     def set_context(self, context: "GameContext") -> None:
-        """Set the game context for this entity.
-        
-        Args:
-            context: The game context containing level, player, and other game state.
-        """
+        """Set the game context for this entity."""
         self.context = context
 
     def requires_context(self) -> "GameContext":
-        """Check if context is available and return it.
-        
-        This helper method provides clear error messages when context-dependent
-        operations are attempted without a context being set.
-        
-        Returns:
-            The GameContext instance.
-            
-        Raises:
-            RuntimeError: If context is not set, with a helpful error message
-                explaining how to fix it.
-        """
+        """Check if context is available and return it."""
         if self.context is None:
             raise RuntimeError(
                 f"{self.__class__.__name__} requires a GameContext for this operation. "
@@ -55,14 +40,7 @@ class Entity:
         return self.context
 
     def _current_map(self):
-        """Get the current level/map from context.
-        
-        Returns:
-            The Level instance from the game context.
-            
-        Raises:
-            RuntimeError: If context is not set or level is not available.
-        """
+        """Get the current level/map from context."""
         context = self.requires_context()
         if not hasattr(context, "level") or context.level is None:
             raise RuntimeError(
@@ -73,14 +51,7 @@ class Entity:
         return context.level
 
     def _player(self):
-        """Get the player entity from context.
-        
-        Returns:
-            The Player instance from the game context.
-            
-        Raises:
-            RuntimeError: If context is not set or player is not available.
-        """
+        """Get the player entity from context."""
         context = self.requires_context()
         if not hasattr(context, "player") or context.player is None:
             raise RuntimeError(

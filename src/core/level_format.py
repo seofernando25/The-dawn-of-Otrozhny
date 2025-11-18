@@ -62,5 +62,8 @@ class LevelData(BaseModel):
     grid: List[List[int]] = Field(description="2D grid where 0=empty, 1=wall")
     entities: List[
         Union[PlayerData, CollectibleData, KeyData, GateData, EnemyData, NodeData]
-    ] = Field(description="All entities in the level")
+    ] = Field(
+        description="All entities in the level",
+        discriminator="type"
+    )
 

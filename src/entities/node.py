@@ -26,14 +26,7 @@ class Node(Entity):
             node.remove_node(self)
 
     def pick_random_node(self, biased=False):
-        """Pick a random connected node.
-        
-        Args:
-            biased: If True, apply bias factor to favor the last node in the list.
-        
-        Returns:
-            A random connected node, or self if no connections exist.
-        """
+        """Pick a random connected node."""
         node_list = self.nodes.copy()
 
         if biased:

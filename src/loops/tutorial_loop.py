@@ -61,12 +61,7 @@ class TutorialScene(SceneHandler):
 
 
 def run_tutorial_loop():
-    """
-    Run the tutorial screen loop.
-
-    Returns:
-        bool: Always returns False (quit to menu).
-    """
+    """Run the tutorial screen loop."""
     from loops.loop_runner import run_scene_with_hud
 
     scene = TutorialScene()

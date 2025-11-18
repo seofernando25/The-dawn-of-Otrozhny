@@ -45,13 +45,11 @@ class MenuScene(SceneHandler):
 
     def update(self, delta_time):
         """Update menu animations."""
-        # Update fractal - create new ones periodically
         for _ in range(10):
             self.fractal.update()
 
         self.star_field.update(delta_time)
 
-        # Speed up stars when exit is selected
         if self.hud.selected_button == GameState.Quit.value:
             self.star_field.speed += delta_time * 75
             if self.star_field.speed > 100:
@@ -59,12 +57,10 @@ class MenuScene(SceneHandler):
 
     def draw(self, screen):
         """Draw the menu screen."""
-        # Draw star field background
         self.star_field.draw()
         screen.blit(self.star_field, (0, 0))
         self.fractal.draw(screen)
 
-        # Draw menu text
         message_display_MT(
             screen, "The dawn of Otrozhny", renderer_utils.SCREEN_WIDTH // 2, 100, 30
         )
@@ -74,12 +70,7 @@ class MenuScene(SceneHandler):
 
 
 def run_menu_loop():
-    """
-    Run the main menu loop.
-
-    Returns:
-        GameState: The next game state based on user selection.
-    """
+    """Run the main menu loop."""
     from loops.loop_runner import run_scene_with_hud
 
     scene = MenuScene()

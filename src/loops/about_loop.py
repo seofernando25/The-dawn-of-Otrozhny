@@ -87,12 +87,7 @@ class AboutScene(SceneHandler):
 
 
 def run_about_loop():
-    """
-    Run the about screen loop.
-
-    Returns:
-        bool: Always returns False (quit to menu).
-    """
+    """Run the about screen loop."""
     from loops.loop_runner import run_scene
 
     scene = AboutScene()

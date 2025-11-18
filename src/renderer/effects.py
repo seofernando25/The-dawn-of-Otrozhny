@@ -40,9 +40,6 @@ class ChaosObject(pygame.Surface):
         )
 
     def update(self):
-        # I add updates before draw because I dont want to have to draw all
-        # points from zero in case I have 235252 points, just the last
-        # 62 ones :)
         self.updates_before_draw += 1
         self.n_of_itterations += 1
         rand_pos = random.randint(0, len(self.points) - 1)
@@ -50,10 +47,6 @@ class ChaosObject(pygame.Surface):
         newPy = math_helpers.lerp(self.current_point[1], self.points[rand_pos][1], 0.5)
         self.current_point = (newPx, newPy)
         self.drawn_points.append(self.current_point)
-
-
-# The same as the last class but the update function changes
-# See: https://en.wikipedia.org/wiki/Chaos_game#/media/File:Chaos_Game_pentagon-EH-1.png
 
 
 class ChaosSnowFlake(ChaosObject):

@@ -32,7 +32,6 @@ class Level:
         self.level_width = len(grid[0])
         self.level_height = len(grid)
 
-        # Sorry I did not had time to organize it in a better way :/
         self.num_of_collectibles = sum(
             isinstance(x, Collectible) for x in self.grid_entities
         )
@@ -56,17 +55,12 @@ class Level:
         context.update_level(self)  # type: ignore[arg-type]
         for entity in self.grid_entities:
             entity.set_context(context)
-        # Find player and update context
         player = next((x for x in self.grid_entities if isinstance(x, Player)), None)
         if player is not None and context.player is None:
             context.update_player(player)
 
     def pick_random_point(self):
-        """Pick a random empty point in the level grid.
-        
-        Raises:
-            RuntimeError: If no empty point is found after maximum attempts.
-        """
+        """Pick a random empty point in the level grid."""
         import random
 
         max_attempts = self.level_width * self.level_height * 2

@@ -24,11 +24,7 @@ class EnemyStateManager:
     status_time_left: float = 0.0
 
     def update(self, dt: float) -> None:
-        """Update the shared enemy status timer. Call once per frame from game loop.
-        
-        Args:
-            dt: Delta time in seconds since last frame
-        """
+        """Update the shared enemy status timer. Call once per frame from game loop."""
         self.status_time_left -= dt
         if self.status_time_left < 0:
             self.status_time_left = 0
@@ -43,11 +39,7 @@ class EnemyStateManager:
                 self.reset_status_time()
 
     def change_status(self, status: EnemyStatus) -> None:
-        """Change the shared enemy status and reset the timer.
-        
-        Args:
-            status: The new enemy status to set
-        """
+        """Change the shared enemy status and reset the timer."""
         self.status = status
         self.status_time_left = status.value[2]
 

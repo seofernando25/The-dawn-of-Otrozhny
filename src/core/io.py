@@ -1,13 +1,23 @@
-"""Level serialization using JSON format."""
+"""Level serialization using JSON format with Pydantic validation."""
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import List, Union
 
 import numpy as np
 
 from core.assets import MAPS_DIR, list_asset_files
 from core.level import Level
+from core.level_format import (
+    LevelData,
+    PlayerData,
+    CollectibleData,
+    KeyData,
+    GateData,
+    NodeData,
+    EnemyData,
+    Position,
+)
 from entities.base import Entity
 from entities.player import Player
 from entities.enemy import Enemy
@@ -54,26 +64,25 @@ def get_files_paths_from_folder(folder, *folders):
     return files or None
 
 
-def _entity_to_dict(entity: Entity, all_entities: List[Entity]) -> Dict[str, Any]:
-    """Convert an entity to a dictionary representation."""
-    base_data = {
-        "position": {"px": entity.px, "py": entity.py}
-    }
+def _entity_to_data(entity: Entity, all_entities: List[Entity]) -> Union[
+    PlayerData, CollectibleData, KeyData, GateData, NodeData, EnemyData
+]:
+    """Convert an entity to a Pydantic model representation."""
+    position = Position(px=entity.px, py=entity.py)
     
     if isinstance(entity, Player):
-        return {"type": "player", **base_data}
+        return PlayerData(position=position)
     
     elif isinstance(entity, Collectible):
-        return {"type": "collectible", **base_data}
+        return CollectibleData(position=position)
     
     elif isinstance(entity, Key):
-        return {"type": "key", **base_data}
+        return KeyData(position=position)
     
     elif isinstance(entity, Gate):
-        return {"type": "gate", **base_data}
+        return GateData(position=position)
     
     elif isinstance(entity, Node):
-        # Find connected nodes by their indices in all_entities
         connected_indices = []
         for connected_node in entity.nodes:
             try:
@@ -82,11 +91,10 @@ def _entity_to_dict(entity: Entity, all_entities: List[Entity]) -> Dict[str, Any
             except ValueError:
                 # Node not found in all_entities, skip
                 pass
-        return {
-            "type": "node",
-            **base_data,
-            "connected_node_indices": connected_indices
-        }
+        return NodeData(
+            position=position,
+            connected_node_indices=connected_indices
+        )
     
     elif isinstance(entity, (Enemy, Monster)):
         patrol_point_index = None
@@ -96,22 +104,21 @@ def _entity_to_dict(entity: Entity, all_entities: List[Entity]) -> Dict[str, Any
             except ValueError:
                 # Patrol point node not in all_entities, skip
                 pass
-        return {
-            "type": "enemy",
-            **base_data,
-            "patrol_point_node_index": patrol_point_index
-        }
+        return EnemyData(
+            position=position,
+            patrol_point_node_index=patrol_point_index
+        )
     
     else:
-        # Unknown entity type - try to preserve basic info
-        return {
-            "type": entity.__class__.__name__.lower(),
-            **base_data
-        }
+        # Unknown entity type - raise error instead of silently failing
+        raise ValueError(
+            f"Unknown entity type: {entity.__class__.__name__}. "
+            f"Supported types: Player, Collectible, Key, Gate, Node, Enemy, Monster"
+        )
 
 
 def load_level_object(level_path: Path | str):
-    """Load a level from JSON format."""
+    """Load a level from JSON format with Pydantic validation."""
     level_path = Path(level_path)
     
     # Ensure .json extension
@@ -122,10 +129,19 @@ def load_level_object(level_path: Path | str):
         raise FileNotFoundError(f"Level file not found: {level_path}")
     
     with open(level_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+        json_data = json.load(f)
+    
+    # Parse and validate using Pydantic model
+    try:
+        level_data = LevelData.model_validate(json_data)
+    except Exception as e:
+        raise ValueError(
+            f"Invalid level data in {level_path}: {e}. "
+            f"Please check the level file format."
+        ) from e
     
     # Extract grid
-    grid = data["grid"]
+    grid = level_data.grid
     grid_np = np.array(grid, dtype=np.int16)
     
     # Reconstruct entities
@@ -134,25 +150,27 @@ def load_level_object(level_path: Path | str):
     nodes_by_index = {}
     
     # First pass: create all nodes
-    for idx, entity_data in enumerate(data["entities"]):
-        if entity_data["type"] == "node":
-            pos = entity_data["position"]
-            node = EntityFactory.create("node", (pos["px"], pos["py"]))
+    for idx, entity_data in enumerate(level_data.entities):
+        if isinstance(entity_data, NodeData):
+            node = EntityFactory.create(
+                "node",
+                (entity_data.position.px, entity_data.position.py)
+            )
             nodes_by_index[idx] = node
             node_entities.append(node)
     
     # Second pass: create other entities and link nodes
-    for idx, entity_data in enumerate(data["entities"]):
-        if entity_data["type"] == "node":
+    for idx, entity_data in enumerate(level_data.entities):
+        if isinstance(entity_data, NodeData):
             # Link nodes
             node = nodes_by_index[idx]
-            for connected_idx in entity_data.get("connected_node_indices", []):
+            for connected_idx in entity_data.connected_node_indices:
                 if connected_idx in nodes_by_index:
                     node.join_node(nodes_by_index[connected_idx])
         else:
-            # Create entity using factory
+            entity_dict = entity_data.model_dump()
             entity = EntityFactory.create_from_data(
-                entity_data,
+                entity_dict,
                 nodes_by_index=nodes_by_index
             )
             
@@ -161,7 +179,6 @@ def load_level_object(level_path: Path | str):
             else:
                 grid_entities.append(entity)
     
-    # Create level object (compatible with existing Level.load)
     return LevelObject(
         grid=grid,
         grid_np=grid_np,
@@ -171,7 +188,7 @@ def load_level_object(level_path: Path | str):
 
 
 def save_level(level_name: str, level: Level) -> None:
-    """Save a level to JSON format."""
+    """Save a level to JSON format using Pydantic models for validation."""
     # Convert grid (Level always has grid_np)
     grid = level.grid_np.tolist()
     
@@ -180,21 +197,20 @@ def save_level(level_name: str, level: Level) -> None:
     node_entities = level.node_entities
     all_entities = list(grid_entities) + list(node_entities)
     
-    # Convert entities to dictionaries
-    entities = []
+    # Convert entities to Pydantic models
+    entity_data_list = []
     for entity in all_entities:
-        entity_dict = _entity_to_dict(entity, all_entities)
-        entities.append(entity_dict)
+        entity_data = _entity_to_data(entity, all_entities)
+        entity_data_list.append(entity_data)
     
-    # Create level data structure
-    level_data = {
-        "version": 1,
-        "grid": grid,
-        "entities": entities
-    }
+    level_data = LevelData(
+        version=1,
+        grid=grid,
+        entities=entity_data_list
+    )
     
-    # Write JSON file
     output_path = MAPS_PATH / f"{level_name}.json"
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(level_data, f, indent=2, ensure_ascii=False)
+        json_str = level_data.model_dump_json(indent=2, exclude_none=False)
+        f.write(json_str)
 

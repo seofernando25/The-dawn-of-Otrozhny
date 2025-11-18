@@ -22,7 +22,6 @@ GRAY = (144, 144, 144)
 DARK_GRAY = (100, 100, 100)
 ALMOST_BLACK = (25, 25, 25)
 
-# I ended up using only these colors for the wall by desing
 GRAY_VARIATION_1 = (153, 153, 153)
 GRAY_VARIATION_2 = (119, 119, 119)
 GRAY_VARIATION_3 = (85, 85, 85)

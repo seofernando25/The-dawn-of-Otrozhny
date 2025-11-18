@@ -85,7 +85,6 @@ def points_from_polygon_sides(n_sides, radius, adjusted=False):
     points = []
 
     for x in range(n_sides):
-        # PS: I add the radius later so the points wont be negative
         px = math.sin(segment_size * x) * radius + radius
         py = math.cos(segment_size * x) * radius + radius
         points.append((px, py))

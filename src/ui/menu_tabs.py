@@ -1,5 +1,4 @@
-# Just placed some draw functions here because
-# otherwise it would become messy
+"""Menu tab rendering functions."""
 from renderer.text import message_display_MB, message_display_L
 from renderer import config as renderer_config
 from renderer import utils as renderer_utils

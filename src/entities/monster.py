@@ -33,13 +33,7 @@ class Monster(Enemy):
             self.play_sound(dist_to_player, enemy_state.status.name)
 
     def play_sound(self, distance, flag, force=False):
-        """Play a sound effect with distance-based volume.
-        
-        Args:
-            distance: Distance to the sound source
-            flag: Sound type/state name
-            force: Whether to force play the sound
-        """
+        """Play a sound effect with distance-based volume."""
         volume = math_helpers.translate(
             distance,
             SOUND_CONFIG["volume_distance_min"],
@@ -56,12 +50,7 @@ class Monster(Enemy):
         )
 
     def attack(self, target, dt):
-        """Attack a target entity.
-        
-        Args:
-            target: The entity to attack
-            dt: Delta time for the attack
-        """
+        """Attack a target entity."""
         if target is None:
             return
         look_mult = ENEMY_CONFIG["attack_look_speed_multiplier"]

@@ -1,6 +1,4 @@
-# This mess is the thing I used to create levels faster
-# press f5! It's standalone
-# PS: The options and save/load button are not finished
+"""Level editor for creating and editing game levels."""
 import enum
 from typing import Optional, Tuple
 
