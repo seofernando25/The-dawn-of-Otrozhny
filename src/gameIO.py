@@ -67,4 +67,3 @@ def load_level_object(level_path):
 def save_level(level_name, level):
     with open(MAPS_PATH / f"{level_name}.map", "wb") as dest:
         pickle.dump(level, dest)
-

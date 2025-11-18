@@ -75,8 +75,7 @@ def get_audio(folder: str, state: str):
 def get_cached_audio(folder_name: str, sub_folder: str):
     filenames = list_asset_files(folder_name, sub_folder)
     if not filenames:
-        LOGGER.warning("Cached audio folder '%s/%s' missing.", folder_name,
-                       sub_folder)
+        LOGGER.warning("Cached audio folder '%s/%s' missing.", folder_name, sub_folder)
         return None
     return pygame.mixer.Sound(filenames[0])
 
@@ -95,4 +94,3 @@ def list_asset_packs():
         if path.is_dir() and (path / "Sprites").exists():
             packs.append(path.name)
     return sorted(packs)
-

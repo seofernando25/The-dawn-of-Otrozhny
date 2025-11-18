@@ -4,6 +4,7 @@ Audio manager - unified API for audio playback.
 Abstracts pygame.mixer calls into a simple audio.play(sound_id) API.
 Provides caching and centralized audio management.
 """
+
 import logging
 from typing import Optional, Tuple
 import pygame
@@ -11,6 +12,7 @@ import assets
 import audio
 
 LOGGER = logging.getLogger(__name__)
+
 
 class AudioManager:
     """
@@ -24,7 +26,13 @@ class AudioManager:
         self._active_ui_sound = None
         audio.ensure_initialized()
 
-    def play_sound(self, sound_id: str, pack: str = "Assets", volume: Optional[Tuple[float, float]] = None, force: bool = False) -> Optional[pygame.mixer.Channel]:
+    def play_sound(
+        self,
+        sound_id: str,
+        pack: str = "Assets",
+        volume: Optional[Tuple[float, float]] = None,
+        force: bool = False,
+    ) -> Optional[pygame.mixer.Channel]:
         """Play a sound from the requested pack and return the mixer channel if one was available."""
         try:
             sound = assets.get_audio(pack, sound_id)
@@ -44,7 +52,9 @@ class AudioManager:
             LOGGER.error(f"Failed to play sound {pack}/{sound_id}: {e}")
             return None
 
-    def play_music(self, music_id: str, pack: str = "Music") -> Optional[pygame.mixer.Channel]:
+    def play_music(
+        self, music_id: str, pack: str = "Music"
+    ) -> Optional[pygame.mixer.Channel]:
         """Play looping background music and return the dedicated music channel if successful."""
         try:
             music = assets.get_cached_audio(pack, music_id)
@@ -86,7 +96,7 @@ class AudioManager:
 
     def _get_music_channel(self) -> Optional[pygame.mixer.Channel]:
         """Get or create the dedicated music channel."""
-        if not hasattr(self, '_music_channel'):
+        if not hasattr(self, "_music_channel"):
             self._music_channel = audio.ensure_channel()
         return self._music_channel
 
@@ -94,7 +104,7 @@ class AudioManager:
     _instance = None
 
     @classmethod
-    def get_instance(cls) -> 'AudioManager':
+    def get_instance(cls) -> "AudioManager":
         """Get the singleton AudioManager instance."""
         if cls._instance is None:
             cls._instance = cls()
@@ -102,7 +112,12 @@ class AudioManager:
 
 
 # Global convenience functions
-def play_sound(sound_id: str, pack: str = "Assets", volume: Optional[Tuple[float, float]] = None, force: bool = False) -> Optional[pygame.mixer.Channel]:
+def play_sound(
+    sound_id: str,
+    pack: str = "Assets",
+    volume: Optional[Tuple[float, float]] = None,
+    force: bool = False,
+) -> Optional[pygame.mixer.Channel]:
     """Convenience wrapper around AudioManager.play_sound."""
     return AudioManager.get_instance().play_sound(sound_id, pack, volume, force)
 

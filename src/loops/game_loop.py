@@ -1,6 +1,7 @@
 """
 Game loop module - handles the main game loop with updated HUD, timing, and win/lose conditions.
 """
+
 import datetime
 import pygame
 
@@ -13,6 +14,7 @@ from entities.enemies import Enemy, EnemyStatus
 from entities.player import Player
 from renderer import minimap as renderer_minimap
 from gameState import GameState
+from loops.loop_runner import SceneHandler, run_scene
 
 
 class HudController:
@@ -131,8 +133,12 @@ def run_game_loop():
 
         # Update HUD values through controller
         hud_controller.update_keys(player.keys)
-        hud_controller.update_enemy_status(Enemy.enemy_status, Enemy.enemy_status_time_left)
-        hud_controller.update_collectibles(current_map.num_of_collected, current_map.num_of_collectibles)
+        hud_controller.update_enemy_status(
+            Enemy.enemy_status, Enemy.enemy_status_time_left
+        )
+        hud_controller.update_collectibles(
+            current_map.num_of_collected, current_map.num_of_collectibles
+        )
         hud_controller.update_health(player.health)
 
         # Rendering
@@ -154,7 +160,9 @@ def run_game_loop():
         textDraw.message_display_MT(
             screen,
             f"X:{round(player.px, 2)} Y:{round(player.py, 2)}",
-            renderer.SCREEN_WIDTH // 2, 10, 15
+            renderer.SCREEN_WIDTH // 2,
+            10,
+            15,
         )
 
         pygame.display.flip()
@@ -163,49 +171,61 @@ def run_game_loop():
     return GameState.Quit
 
 
-def post_game_loop(won, time=0):
-    """Show the win/lose summary screen and always return GameState.Quit."""
-    done = False
+class PostGameScene(SceneHandler):
+    """Scene handler for the post-game summary screen."""
 
-    if won:
-        elapsed_time = datetime.timedelta(seconds=time)
-        msg = "You won"
-    else:
-        msg = "You lost"
-        elapsed_time = None
+    def __init__(self, won, time_seconds):
+        self.won = won
+        self.elapsed_time = datetime.timedelta(seconds=time_seconds) if won else None
+        self.msg = "You won" if won else "You lost"
+        self.msg_accumulated = 0
 
-    msg_accumulated = 0
-    clock = pygame.time.Clock()
-
-    while not done:
-        delta_time = clock.get_time() / 1000
-        events = pygame.event.get()
-
+    def handle_events(self, events, keys_pressed):
         for event in events:
             if event.type == pygame.QUIT:
-                return GameState.Quit
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:
-                    return GameState.Quit
+                return True
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                return True
+        return False
 
-        msg_accumulated += delta_time * 5
-        if msg_accumulated > len(msg):
-            msg_accumulated = len(msg)
+    def update(self, delta_time):
+        self.msg_accumulated += delta_time * 5
+        if self.msg_accumulated > len(self.msg):
+            self.msg_accumulated = len(self.msg)
 
-        # Rendering
-        screen = renderer.get_screen()
-        screen.fill(colors.BLACK)
+    def draw(self, screen):
+        textDraw.message_display_MT(
+            screen,
+            self.msg[: int(self.msg_accumulated)],
+            renderer.SCREEN_WIDTH // 2,
+            100,
+            30,
+        )
+        textDraw.message_display_L(
+            screen,
+            'Press "q" to go back',
+            renderer.VIEWPORT_X_OFFSET,
+            renderer.VIEWPORT_Y_OFFSET,
+            renderer.HUD_CELL_TITLE_FONT_SIZE,
+        )
 
-        textDraw.message_display_MT(screen, msg[:int(msg_accumulated)], renderer.SCREEN_WIDTH // 2, 100, 30)
-        textDraw.message_display_L(screen, "Press \"q\" to go back",
-                                   renderer.VIEWPORT_X_OFFSET, renderer.VIEWPORT_Y_OFFSET,
-                                   renderer.HUD_CELL_TITLE_FONT_SIZE)
+        if self.won and self.elapsed_time is not None:
+            time_str = (
+                f"{self.elapsed_time.seconds // 60}."
+                f"{self.elapsed_time.seconds % 60}."
+                f"{round(self.elapsed_time.microseconds / 1000)}"
+            )
+            textDraw.message_display_MT(
+                screen,
+                time_str,
+                renderer.SCREEN_WIDTH // 2,
+                150,
+                30,
+            )
 
-        if won and elapsed_time is not None:
-            time_str = f"{elapsed_time.seconds // 60}.{elapsed_time.seconds % 60}.{round(elapsed_time.microseconds / 1000)}"
-            textDraw.message_display_MT(screen, time_str, renderer.SCREEN_WIDTH // 2, 150, 30)
 
-        pygame.display.update()
-        clock.tick()
-
+def post_game_loop(won, time=0):
+    """Show the win/lose summary screen and always return GameState.Quit."""
+    scene = PostGameScene(won, time)
+    run_scene(scene)
     return GameState.Quit

@@ -4,6 +4,7 @@ Unified loop runner system - provides a common base for all screen loops.
 All loops follow the same pattern: while not done → handle events → draw → tick.
 This module provides a reusable implementation.
 """
+
 import pygame
 import colors
 from typing import Protocol, Any, Optional
@@ -43,7 +44,11 @@ class SimpleSceneHandler:
         pass
 
 
-def run_scene(scene_handler: SceneHandler, clock: Optional[pygame.time.Clock] = None, bg_color=colors.BLACK):
+def run_scene(
+    scene_handler: SceneHandler,
+    clock: Optional[pygame.time.Clock] = None,
+    bg_color=colors.BLACK,
+):
     """Run a scene via the unified loop pattern and return False when it requests to quit."""
     if clock is None:
         clock = pygame.time.Clock()
@@ -74,7 +79,12 @@ def run_scene(scene_handler: SceneHandler, clock: Optional[pygame.time.Clock] = 
     return True
 
 
-def run_scene_with_hud(scene_handler: SceneHandler, hud, clock: Optional[pygame.time.Clock] = None, bg_color=colors.BLACK):
+def run_scene_with_hud(
+    scene_handler: SceneHandler,
+    hud,
+    clock: Optional[pygame.time.Clock] = None,
+    bg_color=colors.BLACK,
+):
     """Run a HUD-enabled scene loop and return False when the handler or HUD requests exit."""
     if clock is None:
         clock = pygame.time.Clock()
@@ -91,6 +101,7 @@ def run_scene_with_hud(scene_handler: SceneHandler, hud, clock: Optional[pygame.
             # Convert button index to GameState if we have GameState available
             try:
                 from gameState import GameState
+
                 if isinstance(result, int) and 0 <= result <= 4:
                     return GameState(result)
             except ImportError:

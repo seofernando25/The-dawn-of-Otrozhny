@@ -42,6 +42,7 @@ def go_to(start, target):
             f_score = tentative_gScore + get_heuristic(neighbor, target)
             heapq.heappush(open_heap, (f_score, neighbor))
 
+
 # Get NSEW neighboors if possible
 
 
@@ -111,7 +112,7 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 done = True
             if event.type == pygame.MOUSEBUTTONDOWN:
-                start = (int(mouse[0]//w), int(mouse[1]//h))
+                start = (int(mouse[0] // w), int(mouse[1] // h))
                 cached_result = go_to(start, target)
                 temp_result = cached_result.copy()
                 temp_result_temp = temp_result.copy()
@@ -131,7 +132,6 @@ if __name__ == "__main__":
 
         for x in range(len(demo_grid[0])):
             for y in range(len(demo_grid)):
-
                 color_flag = demo_grid[x][y]
 
                 if color_flag == 0:
@@ -139,16 +139,25 @@ if __name__ == "__main__":
                 else:
                     wall_color = colors.BLACK
 
-                pygame.draw.rect(screen, wall_color, [(x*w), (y*h), w-1, h-1])
+                pygame.draw.rect(screen, wall_color, [(x * w), (y * h), w - 1, h - 1])
 
         for x, y in cached_result:
-            pygame.draw.rect(screen, colors.GREEN, [
-                             int(x*w), int(y*h), w-1, h-1])
+            pygame.draw.rect(
+                screen, colors.GREEN, [int(x * w), int(y * h), w - 1, h - 1]
+            )
 
-        pygame.draw.circle(screen, colors.BLUE, [int(
-            start[0] * w + w/2), int(start[1] * h + h/2)], 10)
-        pygame.draw.circle(screen, colors.RED, [int(
-            target[0] * w + (w/2)), int(target[1] * h + (h/2))], 10)
+        pygame.draw.circle(
+            screen,
+            colors.BLUE,
+            [int(start[0] * w + w / 2), int(start[1] * h + h / 2)],
+            10,
+        )
+        pygame.draw.circle(
+            screen,
+            colors.RED,
+            [int(target[0] * w + (w / 2)), int(target[1] * h + (h / 2))],
+            10,
+        )
 
         pygame.display.update()
         clock.tick(60)

@@ -1,16 +1,17 @@
 """
 Setup game module - handles level selection and asset preloading.
 """
+
 import pygame
 
 import assets
-import colors
 import gameIO
 import levelData
 import rendering as renderer
 import textDraw
 import ui
 from gameState import GameState
+from loops.loop_runner import SceneHandler, run_scene_with_hud
 
 from .game_loop import run_game_loop
 
@@ -27,8 +28,10 @@ def pre_load_assets():
 
 def _build_map_grid(hud, map_list):
     """Populate HUD buttons with map previews and cached level objects."""
-    actual_map_list = [[None for _ in range(len(hud.hud_buttons[0]))]
-                       for _ in range(len(hud.hud_buttons))]
+    actual_map_list = [
+        [None for _ in range(len(hud.hud_buttons[0]))]
+        for _ in range(len(hud.hud_buttons))
+    ]
 
     available_maps = list(map_list)
 
@@ -45,6 +48,50 @@ def _build_map_grid(hud, map_list):
     return actual_map_list
 
 
+class MapSelectionScene(SceneHandler):
+    """Scene handler for the map selection screen."""
+
+    def __init__(self, hud, actual_map_list):
+        self.hud = hud
+        self.actual_map_list = actual_map_list
+        self.result = None
+
+    def handle_events(self, events, keys_pressed):
+        for event in events:
+            if event.type == pygame.QUIT:
+                self.result = GameState.Quit
+                return True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    map_obj = self.actual_map_list[self.hud.selected_button_x][
+                        self.hud.selected_button_y
+                    ]
+                    if map_obj is not None:
+                        levelData.Level.load(map_obj)
+                        self.result = run_game_loop()
+                    else:
+                        self.result = GameState.Menu
+                    return True
+                if event.key == pygame.K_q:
+                    self.result = GameState.Menu
+                    return True
+        return False
+
+    def update(self, delta_time):
+        """No additional per-frame update logic required."""
+        pass
+
+    def draw(self, screen):
+        """Draw helper text over the HUD-controlled map grid."""
+        textDraw.message_display_L(
+            screen,
+            'Press "q" to go back',
+            renderer.VIEWPORT_X_OFFSET,
+            renderer.VIEWPORT_Y_OFFSET,
+            renderer.HUD_CELL_TITLE_FONT_SIZE,
+        )
+
+
 def setup_game():
     """
     Set up the game by preloading assets and showing level selection.
@@ -58,38 +105,11 @@ def setup_game():
     hud = ui.MapSelectionScreen()
     actual_map_list = _build_map_grid(hud, map_list)
 
-    clock = pygame.time.Clock()
+    scene = MapSelectionScene(hud, actual_map_list)
+    run_result = run_scene_with_hud(scene, hud)
 
-    while True:
-        delta_time = clock.get_time() / 1000
-        events = pygame.event.get()
-
-        for event in events:
-            if event.type == pygame.QUIT:
-                return GameState.Quit
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    map_obj = actual_map_list[hud.selected_button_x][
-                        hud.selected_button_y]
-                    if map_obj is not None:
-                        levelData.Level.load(map_obj)
-                        return run_game_loop()
-                if event.key == pygame.K_q:
-                    return GameState.Menu
-
-        hud.update(delta_time, events)
-
-        screen = renderer.get_screen()
-        screen.fill(colors.BLACK)
-        hud.draw()
-        textDraw.message_display_L(
-            screen,
-            'Press "q" to go back',
-            renderer.VIEWPORT_X_OFFSET,
-            renderer.VIEWPORT_Y_OFFSET,
-            renderer.HUD_CELL_TITLE_FONT_SIZE,
-        )
-
-        pygame.display.update()
-        clock.tick()
+    if isinstance(run_result, GameState):
+        return run_result
+    if scene.result is not None:
+        return scene.result
+    return GameState.Menu

@@ -35,4 +35,3 @@ def reset_screen():
     """Dispose of the cached screen so tests/demos can recreate it."""
     global _SCREEN
     _SCREEN = None
-

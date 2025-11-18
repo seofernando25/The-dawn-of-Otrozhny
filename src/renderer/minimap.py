@@ -34,9 +34,8 @@ def draw_grid(surface, level_map, scale_x, scale_y, color_fn):
             if color is None:
                 continue
             pygame.draw.rect(
-                surface,
-                color,
-                [scale_x * y, scale_y * x, scale_x + 1, scale_y + 1])
+                surface, color, [scale_x * y, scale_y * x, scale_x + 1, scale_y + 1]
+            )
 
 
 def _build_static_surface(screen, level_map, scale_x, scale_y):
@@ -47,7 +46,9 @@ def _build_static_surface(screen, level_map, scale_x, scale_y):
         scale_x,
         scale_y,
         lambda _x, _y, value: colors.GRAY_VARIATION_3
-        if value != 0 else colors.DARK_GRAY)
+        if value != 0
+        else colors.DARK_GRAY,
+    )
     return surface
 
 
@@ -84,16 +85,22 @@ def render_map(screen, entity):
         if issubclass(type(enemy), Collectible) and enemy.collected:
             pygame.draw.circle(screen, colors.YELLOW_WHITE, [py, px], 2)
 
-    pygame.draw.circle(screen, colors.WHITE,
-                       [int(entity.py * scale_x),
-                        int(entity.px * scale_y)], 2)
+    pygame.draw.circle(
+        screen, colors.WHITE, [int(entity.py * scale_x), int(entity.px * scale_y)], 2
+    )
 
     [pygame.draw.polygon(screen, c, points) for c, points in all_fovs]
 
     color = colors.DARK_GRAY
     for e in current_map.grid_entities:
         if issubclass(type(e), Gate) and not e.open:
-            pygame.draw.rect(screen, color, [
-                scale_x * math.floor(e.py), scale_y * math.floor(e.px),
-                scale_x + 1, scale_y + 1
-            ])
+            pygame.draw.rect(
+                screen,
+                color,
+                [
+                    scale_x * math.floor(e.py),
+                    scale_y * math.floor(e.px),
+                    scale_x + 1,
+                    scale_y + 1,
+                ],
+            )

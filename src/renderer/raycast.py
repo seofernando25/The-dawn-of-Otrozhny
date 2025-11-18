@@ -103,8 +103,7 @@ def generate_distance_table(entity):
         steps = steps + active.astype(np.int16)
 
         out_of_bounds = active & (
-            (map_x < 0) | (map_x >= level_width) | (map_y < 0)
-            | (map_y >= level_height)
+            (map_x < 0) | (map_x >= level_width) | (map_y < 0) | (map_y >= level_height)
         )
         miss_mask |= out_of_bounds
         active &= ~out_of_bounds
@@ -135,21 +134,25 @@ def generate_distance_table(entity):
         sides = last_side[hit_indices]
 
         dist_x = (
-            (map_x[hit_indices] - entity_px + (1.0 - step_x[hit_indices]) / 2.0)
-            / ray_dir_x[hit_indices]
-        )
+            map_x[hit_indices] - entity_px + (1.0 - step_x[hit_indices]) / 2.0
+        ) / ray_dir_x[hit_indices]
         dist_y = (
-            (map_y[hit_indices] - entity_py + (1.0 - step_y[hit_indices]) / 2.0)
-            / ray_dir_y[hit_indices]
-        )
+            map_y[hit_indices] - entity_py + (1.0 - step_y[hit_indices]) / 2.0
+        ) / ray_dir_y[hit_indices]
         wall_distances[hit_indices] = np.where(sides == 0, dist_x, dist_y)
 
         wall_dirs[hit_indices] = np.where(
             sides == 1,
-            np.where(ray_dir_y[hit_indices] < 0, WallDirection.EAST.value,
-                     WallDirection.WEST.value),
-            np.where(ray_dir_x[hit_indices] < 0, WallDirection.SOUTH.value,
-                     WallDirection.NORTH.value),
+            np.where(
+                ray_dir_y[hit_indices] < 0,
+                WallDirection.EAST.value,
+                WallDirection.WEST.value,
+            ),
+            np.where(
+                ray_dir_x[hit_indices] < 0,
+                WallDirection.SOUTH.value,
+                WallDirection.NORTH.value,
+            ),
         )
 
     miss_mask |= active
@@ -164,7 +167,8 @@ def generate_distance_table(entity):
                     float(ray_dir_y[idx]),
                     int(wall_tiles[idx]),
                     WallDirection(int(wall_dirs[idx])),
-                ))
+                )
+            )
         else:
             ray_table.append(None)
 
@@ -180,8 +184,9 @@ def _calculate_entities_in_sight(entity):
         if e != entity:
             collided = polygonPointCollision(fov_polygons, e.get_pos())
             if collided:
-                ent_list = ((entity.px - e.px) * (entity.px - e.px) +
-                            (entity.py - e.py) * (entity.py - e.py))
+                ent_list = (entity.px - e.px) * (entity.px - e.px) + (
+                    entity.py - e.py
+                ) * (entity.py - e.py)
                 entity.entitiesInSight.append((e, ent_list))
 
 
@@ -200,10 +205,12 @@ def polygonPointCollision(vertices, p):
         vc = list(vertices[current])
         vn = list(vertices[nextP])
 
-        if (((vc[1] > point[1] and vn[1] < point[1]) or
-             (vc[1] < point[1] and vn[1] > point[1]))
-                and (point[0] < (vn[0] - vc[0]) * (point[1] - vc[1]) /
-                     (vn[1] - vc[1]) + vc[0])):
+        if (
+            (vc[1] > point[1] and vn[1] < point[1])
+            or (vc[1] < point[1] and vn[1] > point[1])
+        ) and (
+            point[0] < (vn[0] - vc[0]) * (point[1] - vc[1]) / (vn[1] - vc[1]) + vc[0]
+        ):
             collision = not collision
     return collision
 
@@ -250,12 +257,11 @@ def render_walls(screen, entity):
         floor = line_height + half_height + entity.angleY
         wall_color = _get_wall_color(table_side)
         draw_commands.append(
-            (abs(wall_distance), "wall", idx * thickness, ceiling, floor,
-             wall_color))
+            (abs(wall_distance), "wall", idx * thickness, ceiling, floor, wall_color)
+        )
 
     entity.entitiesInSight.sort(key=lambda x: x[1])
-    projection_disit = (entity.planeX * entity.dirY -
-                        entity.dirX * entity.planeY)
+    projection_disit = entity.planeX * entity.dirY - entity.dirX * entity.planeY
     if projection_disit != 0:
         inverse_projection_dist = 1 / projection_disit
         for enemy, _ in entity.entitiesInSight:
@@ -263,10 +269,8 @@ def render_walls(screen, entity):
                 continue
 
             dx, dy = mathHelpers.slope(entity.get_pos(), enemy.get_pos())
-            new_x = inverse_projection_dist * (
-                entity.dirY * dx - entity.dirX * dy)
-            new_y = inverse_projection_dist * (
-                -entity.planeY * dx + entity.planeX * dy)
+            new_x = inverse_projection_dist * (entity.dirY * dx - entity.dirX * dy)
+            new_y = inverse_projection_dist * (-entity.planeY * dx + entity.planeX * dy)
 
             if abs(new_y) < 0.1:
                 continue
@@ -276,8 +280,9 @@ def render_walls(screen, entity):
             ceiling = -line_height + half_height + entity.angleY
             floor = line_height + half_height + entity.angleY
             screen_x = (screen_width / 2) * (1 + new_x / new_y)
-            draw_commands.append((sprite_distance, "sprite", screen_x, ceiling,
-                                  floor, enemy))
+            draw_commands.append(
+                (sprite_distance, "sprite", screen_x, ceiling, floor, enemy)
+            )
 
     draw_commands.sort(key=lambda cmd: cmd[0], reverse=True)
 
@@ -285,32 +290,36 @@ def render_walls(screen, entity):
         ceiling = int(ceiling)
         floor = int(floor)
         if cmd_type == "wall":
-            pygame.draw.line(screen, data, [int(pos_x), int(ceiling)],
-                             [int(pos_x), int(floor)], max(1, math.ceil(thickness)))
+            pygame.draw.line(
+                screen,
+                data,
+                [int(pos_x), int(ceiling)],
+                [int(pos_x), int(floor)],
+                max(1, math.ceil(thickness)),
+            )
         elif isinstance(data, SpriteEntity):
             scale_multiplier = abs(
-                mathHelpers.translate(floor - ceiling, 0, VIEWPORT_HEIGHT, 0,
-                                      4))
+                mathHelpers.translate(floor - ceiling, 0, VIEWPORT_HEIGHT, 0, 4)
+            )
             scale_multiplier = max(0, min(scale_multiplier, 5))
             sprite = data.get_sprite(entity)
             if sprite is None or scale_multiplier <= 0:
                 continue
 
             scaled_sprite = pygame.transform.scale(
-                sprite, ((50 * sprite.get_height()) // sprite.get_width(), 50))
+                sprite, ((50 * sprite.get_height()) // sprite.get_width(), 50)
+            )
             target_width = int(scaled_sprite.get_width() * scale_multiplier)
-            target_height = int(
-                scaled_sprite.get_height() * scale_multiplier)
+            target_height = int(scaled_sprite.get_height() * scale_multiplier)
 
             if target_width <= 0 or target_height <= 0:
                 continue
 
-            img = pygame.transform.scale(
-                scaled_sprite, (target_width, target_height))
-            screen.blit(img, [
-                int(pos_x - img.get_width() / 2),
-                int(floor - img.get_rect().height)
-            ])
+            img = pygame.transform.scale(scaled_sprite, (target_width, target_height))
+            screen.blit(
+                img,
+                [int(pos_x - img.get_width() / 2), int(floor - img.get_rect().height)],
+            )
 
 
 def _get_wall_color(table_side):

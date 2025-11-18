@@ -5,12 +5,14 @@ import math
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
 
+
 # Linear interpolation
 # Sauce: https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
 
 
 def lerp(v0, v1, t) -> float:
     return (1 - t) * v0 + t * v1
+
 
 # Scales one number to another
 
@@ -34,6 +36,7 @@ def translate(value, value_min, value_max, final_min, final_max):
     scale, offset = cached
     return value * scale + offset
 
+
 # y2 - y1 over
 # x2 - x1
 
@@ -47,6 +50,7 @@ def slope(aCoord, bCoord):
 def distance_to(aCoord, bCoord):
     dx, dy = slope(aCoord, bCoord)
     return math.hypot(dx, dy)
+
 
 # Wraps angle to 360 deg
 
@@ -66,10 +70,11 @@ def project(camera, p2, table_angle):
 
     proportional_angle = angle + camera.FOV + table_angle + -camera.angle * 2
 
-    a = dx * math.cos(proportional_angle/2)
-    b = dy * math.sin(proportional_angle/2)
+    a = dx * math.cos(proportional_angle / 2)
+    b = dy * math.sin(proportional_angle / 2)
     projected = a + b
     return projected
+
 
 # Simple math function to create polygons
 

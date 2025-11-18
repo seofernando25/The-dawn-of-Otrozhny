@@ -55,8 +55,10 @@ def render_floor(screen, entity):
     floor_start = max(0, min(screen_height, floor_start))
     if floor_start >= screen_height:
         return
-    screen.fill(colors.DARK_GRAY, [(0, floor_start),
-                                   (screen_width, screen_height - floor_start)])
+    screen.fill(
+        colors.DARK_GRAY,
+        [(0, floor_start), (screen_width, screen_height - floor_start)],
+    )
 
 
 cached_first_person_canvas = None
@@ -69,8 +71,8 @@ def render_first_person_canvas(entity):
         return cached_first_person_canvas
     else:
         cached_first_person_canvas = pygame.Surface(
-            [SCREEN_WIDTH - VIEWPORT_X_OFFSET * 2,
-             VIEWPORT_HEIGHT]).convert()
+            [SCREEN_WIDTH - VIEWPORT_X_OFFSET * 2, VIEWPORT_HEIGHT]
+        ).convert()
         return render_first_person_canvas(entity)
 
 
@@ -88,39 +90,52 @@ def render_first_person(screen, entity):
 
 
 def draw_map_preview(screen, map_obj, cache_key=None):
-    signature = (cache_key or getattr(map_obj, "map_name", None)
-                 or getattr(map_obj, "name", None) or id(map_obj),
-                 screen.get_size())
+    signature = (
+        cache_key
+        or getattr(map_obj, "map_name", None)
+        or getattr(map_obj, "name", None)
+        or id(map_obj),
+        screen.get_size(),
+    )
     cache = utils.get_map_preview_cache()
     cached_surface = cache.get(signature)
     if cached_surface is None:
         preview = pygame.Surface(screen.get_size()).convert()
         preview.fill(colors.GRAY)
-        scale_x = preview.get_width()/map_obj.level_width
-        scale_y = preview.get_height()/map_obj.level_height
+        scale_x = preview.get_width() / map_obj.level_width
+        scale_y = preview.get_height() / map_obj.level_height
         minimap.draw_grid(
             preview,
             map_obj,
             scale_x,
             scale_y,
-            lambda _x, _y, value: colors.GRAY_VARIATION_3 if value != 0 else None)
+            lambda _x, _y, value: colors.GRAY_VARIATION_3 if value != 0 else None,
+        )
 
         color = colors.DARK_GRAY
         for e in map_obj.grid_entities:
             if issubclass(type(e), Gate):
-                pygame.draw.rect(preview,
-                                 color,
-                                 [scale_x * math.floor(e.py),
-                                  scale_y * math.floor(e.px),
-                                  scale_x + 1,
-                                  scale_y + 1])
+                pygame.draw.rect(
+                    preview,
+                    color,
+                    [
+                        scale_x * math.floor(e.py),
+                        scale_y * math.floor(e.px),
+                        scale_x + 1,
+                        scale_y + 1,
+                    ],
+                )
             if issubclass(type(e), Player):
-                pygame.draw.rect(preview,
-                                 colors.WHITE,
-                                 [scale_x * math.floor(e.py),
-                                  scale_y * math.floor(e.px),
-                                  scale_x + 1,
-                                  scale_y + 1])
+                pygame.draw.rect(
+                    preview,
+                    colors.WHITE,
+                    [
+                        scale_x * math.floor(e.py),
+                        scale_y * math.floor(e.px),
+                        scale_x + 1,
+                        scale_y + 1,
+                    ],
+                )
         cached_surface = preview
         cache[signature] = cached_surface
 

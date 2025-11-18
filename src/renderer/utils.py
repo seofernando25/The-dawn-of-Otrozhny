@@ -1,6 +1,7 @@
 """
 Renderer utilities - shared cache system and math helpers for rendering modules.
 """
+
 import numpy as np
 from renderer import config as renderer_settings
 

@@ -4,6 +4,7 @@ Level editor tools - modular tool classes for level editor operations.
 Breaks down the monolithic GridManager into smaller, focused tool classes.
 Each tool handles its own input/update/draw logic.
 """
+
 import pygame
 import rendering as renderer
 import colors
@@ -37,8 +38,12 @@ class BaseTool:
         cellY = mouse_pos[1] - grid_manager.adjust[1]
         cellY = cellY // grid_manager.scale
 
-        if (cellX < 0 or cellX >= len(grid_manager.grid[0]) or
-            cellY < 0 or cellY >= len(grid_manager.grid)):
+        if (
+            cellX < 0
+            or cellX >= len(grid_manager.grid[0])
+            or cellY < 0
+            or cellY >= len(grid_manager.grid)
+        ):
             return None
 
         return round(cellX), round(cellY)
@@ -75,11 +80,22 @@ class MoveTool(BaseTool):
 
     def draw(self, screen, grid_manager):
         if self.selected_entity:
-            pygame.draw.circle(screen,
-                             colors.ACCENTUADED_BLUE,
-                             (int(self.selected_entity.px * grid_manager.scale + grid_manager.adjust[0]),
-                              int(self.selected_entity.py * grid_manager.scale + grid_manager.adjust[1])),
-                             grid_manager.scale, 2)
+            pygame.draw.circle(
+                screen,
+                colors.ACCENTUADED_BLUE,
+                (
+                    int(
+                        self.selected_entity.px * grid_manager.scale
+                        + grid_manager.adjust[0]
+                    ),
+                    int(
+                        self.selected_entity.py * grid_manager.scale
+                        + grid_manager.adjust[1]
+                    ),
+                ),
+                grid_manager.scale,
+                2,
+            )
 
 
 class PlaceTool(BaseTool):
@@ -90,18 +106,48 @@ class PlaceTool(BaseTool):
         self.name = "Draw Mode"
         self.object_to_place = None
         self.current_type_index = 0
-        self.entity_types = ["Player", "Enemy", "Node", "Wall", "Collectible", "Key", "Gate"]
-        self.entity_classes = [None, None, Node, None, None, None, None]  # Will be imported
+        self.entity_types = [
+            "Player",
+            "Enemy",
+            "Node",
+            "Wall",
+            "Collectible",
+            "Key",
+            "Gate",
+        ]
+        self.entity_classes = [
+            None,
+            None,
+            Node,
+            None,
+            None,
+            None,
+            None,
+        ]  # Will be imported
 
     def update(self, events, keys, delta_time, grid_manager):
         # Handle keyboard input for type selection
-        for i, key in enumerate([pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_v, pygame.K_b, pygame.K_f, pygame.K_g]):
+        for i, key in enumerate(
+            [
+                pygame.K_z,
+                pygame.K_x,
+                pygame.K_c,
+                pygame.K_v,
+                pygame.K_b,
+                pygame.K_f,
+                pygame.K_g,
+            ]
+        ):
             if keys[key]:
                 self.current_type_index = i
-                grid_manager.hud_draw_obj_help.objects[self.current_type_index].set_active(True)
+                grid_manager.hud_draw_obj_help.objects[
+                    self.current_type_index
+                ].set_active(True)
                 # Deactivate others
                 for j, obj in enumerate(grid_manager.hud_draw_obj_help.objects):
-                    if j != self.current_type_index and j < len(grid_manager.hud_draw_obj_help.objects):
+                    if j != self.current_type_index and j < len(
+                        grid_manager.hud_draw_obj_help.objects
+                    ):
                         obj.set_active(False)
 
         mouse_pos = pygame.mouse.get_pos()
@@ -141,7 +187,9 @@ class PlaceTool(BaseTool):
 
             # Check for conflicts and place entity
             can_place = True
-            if isinstance(self.object_to_place, (Player, Enemy, Collectible, Key, Gate)):
+            if isinstance(
+                self.object_to_place, (Player, Enemy, Collectible, Key, Gate)
+            ):
                 for entity in current_map.grid_entities:
                     if cell == (int(entity.px), int(entity.py)):
                         can_place = False
@@ -162,7 +210,10 @@ class PlaceTool(BaseTool):
                 # Connect enemies to nearby nodes
                 if isinstance(self.object_to_place, Enemy):
                     for node in current_map.node_entities:
-                        if abs(node.px - self.object_to_place.px) < 1.5 and abs(node.py - self.object_to_place.py) < 1.5:
+                        if (
+                            abs(node.px - self.object_to_place.px) < 1.5
+                            and abs(node.py - self.object_to_place.py) < 1.5
+                        ):
                             self.object_to_place.patrolPoint = node
                             break
 
@@ -208,43 +259,64 @@ class NodeTool(BaseTool):
     def __init__(self):
         super().__init__()
         self.name = "Node Editor"
-        self.node_edit_start = None
-        self.node_edit_end = None
+        self.selected_node = None
+        self.is_dragging = False
+
+    def _find_node_at(self, cell):
+        if cell is None:
+            return None
+        for node in _current_map().node_entities:
+            if cell == (int(node.px), int(node.py)):
+                return node
+        return None
 
     def update(self, events, keys, delta_time, grid_manager):
         mouse_pos = pygame.mouse.get_pos()
         current_cell = self.get_cursor_cell(mouse_pos, grid_manager)
 
-        if pygame.mouse.get_pressed()[0] and current_cell:
-            # Left click - connect nodes
-            if self.node_edit_start is None:
-                # Find node at cursor
-                for node in _current_map().node_entities:
-                    if current_cell == (int(node.px), int(node.py)):
-                        self.node_edit_start = node
-                        return
-            else:
-                # Connect to second node
-                for node in _current_map().node_entities:
-                    if current_cell == (int(node.px), int(node.py)) and node != self.node_edit_start:
-                        self.node_edit_start.join_node(node)
-                        self.node_edit_start = None
-                        return
-                self.node_edit_start = None
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    node = self._find_node_at(current_cell)
+                    if node is None:
+                        self.selected_node = None
+                        self.is_dragging = False
+                    else:
+                        if self.selected_node is None:
+                            self.selected_node = node
+                        elif node != self.selected_node:
+                            self.selected_node.join_node(node)
+                            self.selected_node = node
+                        self.is_dragging = True
+                elif event.button == 3:
+                    node = self._find_node_at(current_cell)
+                    if node is not None:
+                        for other_node in node.nodes[:]:
+                            node.remove_node(other_node)
+                        if node == self.selected_node:
+                            self.selected_node = None
+                            self.is_dragging = False
 
-        elif pygame.mouse.get_pressed()[2] and current_cell:
-            # Right click - disconnect nodes
-            for node in _current_map().node_entities:
-                if current_cell == (int(node.px), int(node.py)):
-                    for other_node in node.nodes:
-                        node.remove_node(other_node)
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if self.is_dragging:
+                    node = self._find_node_at(current_cell)
+                    if node and self.selected_node and node != self.selected_node:
+                        self.selected_node.join_node(node)
+                        self.selected_node = node
+                self.is_dragging = False
 
     def draw(self, screen, grid_manager):
-        if self.node_edit_start:
+        if self.selected_node:
             mouse_pos = pygame.mouse.get_pos()
-            scaled_start_x = int(self.node_edit_start.px * grid_manager.scale + grid_manager.adjust[0])
-            scaled_start_y = int(self.node_edit_start.py * grid_manager.scale + grid_manager.adjust[1])
-            pygame.draw.line(screen, colors.NAVY_BLUE, (scaled_start_x, scaled_start_y), mouse_pos, 5)
+            scaled_start_x = int(
+                self.selected_node.px * grid_manager.scale + grid_manager.adjust[0]
+            )
+            scaled_start_y = int(
+                self.selected_node.py * grid_manager.scale + grid_manager.adjust[1]
+            )
+            pygame.draw.line(
+                screen, colors.NAVY_BLUE, (scaled_start_x, scaled_start_y), mouse_pos, 5
+            )
 
 
 class NavigationTool(BaseTool):
@@ -268,13 +340,25 @@ class NavigationTool(BaseTool):
 
         # Handle pan
         if keys[pygame.K_a]:
-            grid_manager.adjust = (grid_manager.adjust[0] + delta_time * 50 * 20, grid_manager.adjust[1])
+            grid_manager.adjust = (
+                grid_manager.adjust[0] + delta_time * 50 * 20,
+                grid_manager.adjust[1],
+            )
         if keys[pygame.K_d]:
-            grid_manager.adjust = (grid_manager.adjust[0] - delta_time * 50 * 20, grid_manager.adjust[1])
+            grid_manager.adjust = (
+                grid_manager.adjust[0] - delta_time * 50 * 20,
+                grid_manager.adjust[1],
+            )
         if keys[pygame.K_w]:
-            grid_manager.adjust = (grid_manager.adjust[0], grid_manager.adjust[1] + delta_time * 50 * 20)
+            grid_manager.adjust = (
+                grid_manager.adjust[0],
+                grid_manager.adjust[1] + delta_time * 50 * 20,
+            )
         if keys[pygame.K_s]:
-            grid_manager.adjust = (grid_manager.adjust[0], grid_manager.adjust[1] - delta_time * 50 * 20)
+            grid_manager.adjust = (
+                grid_manager.adjust[0],
+                grid_manager.adjust[1] - delta_time * 50 * 20,
+            )
 
         # Alt + drag - fine grained navigation
         if grid_manager.mouseRel is not None:
@@ -291,11 +375,17 @@ class NavigationTool(BaseTool):
         grid_height = len(grid_manager.grid) * grid_manager.scale
 
         if grid_manager.adjust[0] < -grid_width:
-            grid_manager.adjust = (renderer.SCREEN_WIDTH + grid_width, grid_manager.adjust[1])
+            grid_manager.adjust = (
+                renderer.SCREEN_WIDTH + grid_width,
+                grid_manager.adjust[1],
+            )
         elif grid_manager.adjust[0] > renderer.SCREEN_WIDTH + grid_width:
             grid_manager.adjust = (-grid_width, grid_manager.adjust[1])
 
         if grid_manager.adjust[1] < -grid_height:
-            grid_manager.adjust = (grid_manager.adjust[0], renderer.SCREEN_HEIGHT + grid_height)
+            grid_manager.adjust = (
+                grid_manager.adjust[0],
+                renderer.SCREEN_HEIGHT + grid_height,
+            )
         elif grid_manager.adjust[1] > renderer.SCREEN_HEIGHT + grid_height:
             grid_manager.adjust = (grid_manager.adjust[0], -grid_height)

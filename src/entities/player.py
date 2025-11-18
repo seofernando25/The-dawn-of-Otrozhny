@@ -38,16 +38,19 @@ def get_input(entity, dt, events):
     for event in events:
         if event.type == pyConst.KEYDOWN:
             if event.key == pyConst.K_ESCAPE:
-                pygame.mouse.set_pos([
-                    renderer_settings.SCREEN_WIDTH // 2,
-                    renderer_settings.SCREEN_HEIGHT // 2,
-                ])
+                pygame.mouse.set_pos(
+                    [
+                        renderer_settings.SCREEN_WIDTH // 2,
+                        renderer_settings.SCREEN_HEIGHT // 2,
+                    ]
+                )
                 entity.mouseEnable = not entity.mouseEnable
 
     pygame.mouse.set_visible(not entity.mouseEnable)
     pygame.event.set_grab(entity.mouseEnable)
     newPx, newPy = movement.get_input_movement(
-        entity, deltaTime, kb, mouse_enabled=entity.mouseEnable)
+        entity, deltaTime, kb, mouse_enabled=entity.mouseEnable
+    )
 
     if kb[pyConst.K_n]:
         testGlobalVar -= 1 * deltaTime
@@ -58,4 +61,3 @@ def get_input(entity, dt, events):
         print(testGlobalVar)
 
     entity.move(newPx, newPy, deltaTime)
-

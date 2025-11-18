@@ -1,6 +1,7 @@
 """
 About loop module - displays the about screen with animated text.
 """
+
 import pygame
 import textDraw
 import rendering as renderer
@@ -39,34 +40,50 @@ class AboutScene(SceneHandler):
     def draw(self, screen):
         """Draw the about screen content."""
         if self.sub_title_size < 20:
-            textDraw.message_display(screen,
-                                     "Made By Fernando Nogueira",
-                                     renderer.SCREEN_WIDTH // 2,
-                                     renderer.VIEWPORT_Y_OFFSET, 20)
-            textDraw.message_display(screen,
-                                     "with some help from the internet",
-                                     renderer.SCREEN_WIDTH // 2,
-                                     renderer.VIEWPORT_Y_OFFSET * 2,
-                                     int(self.sub_title_size))
+            textDraw.message_display(
+                screen,
+                "Made By Fernando Nogueira",
+                renderer.SCREEN_WIDTH // 2,
+                renderer.VIEWPORT_Y_OFFSET,
+                20,
+            )
+            textDraw.message_display(
+                screen,
+                "with some help from the internet",
+                renderer.SCREEN_WIDTH // 2,
+                renderer.VIEWPORT_Y_OFFSET * 2,
+                int(self.sub_title_size),
+            )
         else:
-            textDraw.message_display(screen, "Made By Stack Overflow",
-                                     renderer.SCREEN_WIDTH // 2,
-                                     renderer.VIEWPORT_Y_OFFSET, 20)
-            textDraw.message_display(screen, "not really",
-                                     renderer.SCREEN_WIDTH - 50,
-                                     renderer.VIEWPORT_Y_OFFSET, 8)
+            textDraw.message_display(
+                screen,
+                "Made By Stack Overflow",
+                renderer.SCREEN_WIDTH // 2,
+                renderer.VIEWPORT_Y_OFFSET,
+                20,
+            )
+            textDraw.message_display(
+                screen,
+                "not really",
+                renderer.SCREEN_WIDTH - 50,
+                renderer.VIEWPORT_Y_OFFSET,
+                8,
+            )
             textDraw.message_display(
                 screen,
                 "with some help from fernando",
                 renderer.SCREEN_WIDTH // 2,
                 renderer.VIEWPORT_Y_OFFSET * 2,
-                int(self.second_sub_title_size))
+                int(self.second_sub_title_size),
+            )
 
         textDraw.message_display_L(
-            screen, "Press \"q\" to go back",
+            screen,
+            'Press "q" to go back',
             renderer.VIEWPORT_X_OFFSET,
             renderer.SCREEN_HEIGHT - renderer.VIEWPORT_Y_OFFSET,
-            renderer.HUD_CELL_TITLE_FONT_SIZE)
+            renderer.HUD_CELL_TITLE_FONT_SIZE,
+        )
 
 
 def run_about_loop():

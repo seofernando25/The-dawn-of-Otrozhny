@@ -7,6 +7,8 @@ import assets
 import colors
 import mathHelpers
 from physics import movement
+
+
 class Entity:
     def __init__(self, start_pos):
         self.px = start_pos[0]
@@ -51,6 +53,7 @@ class Agent(SpriteEntity):
 
     def move(self, dirX, dirY, deltaTime):
         import levelData
+
         next_pos_x = self.px + dirX
         next_pos_y = self.py + dirY
         current_map = levelData.require_current_map()
@@ -82,8 +85,7 @@ class Agent(SpriteEntity):
         self.dirY = oldDirX * math.sin(amount) + self.dirY * math.cos(amount)
 
         oldPlaneX = self.planeX
-        self.planeX = (self.planeX * math.cos(amount) -
-                       self.planeY * math.sin(amount))
+        self.planeX = self.planeX * math.cos(amount) - self.planeY * math.sin(amount)
         self.planeY = oldPlaneX * math.sin(amount) + self.planeY * math.cos(amount)
 
     def look_at(self, target, deltaTime):
@@ -91,8 +93,9 @@ class Agent(SpriteEntity):
         theta = math.atan2(dy, dx)
         angle = math.atan2(self.dirY, self.dirX)
         targetAngle = math.degrees(theta)
-        shortest_angle = ((((targetAngle - math.degrees(angle)) % 360) + 540) %
-                          360) - 180
+        shortest_angle = (
+            (((targetAngle - math.degrees(angle)) % 360) + 540) % 360
+        ) - 180
         self.rotate(math.radians(shortest_angle) * deltaTime)
 
 

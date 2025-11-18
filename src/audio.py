@@ -22,8 +22,9 @@ def ensure_initialized() -> bool:
     return _INITIALIZED
 
 
-def ensure_channel(channel: Optional[pygame.mixer.Channel] = None
-                   ) -> Optional[pygame.mixer.Channel]:
+def ensure_channel(
+    channel: Optional[pygame.mixer.Channel] = None,
+) -> Optional[pygame.mixer.Channel]:
     if not ensure_initialized():
         return None
     if channel is not None:
@@ -31,8 +32,9 @@ def ensure_channel(channel: Optional[pygame.mixer.Channel] = None
     return pygame.mixer.find_channel(True)
 
 
-def _normalize_volume(volume: Union[None, float, Sequence[float]]
-                      ) -> Optional[Tuple[float, float]]:
+def _normalize_volume(
+    volume: Union[None, float, Sequence[float]],
+) -> Optional[Tuple[float, float]]:
     if volume is None:
         return None
     if isinstance(volume, Sequence):
@@ -43,14 +45,16 @@ def _normalize_volume(volume: Union[None, float, Sequence[float]]
     return (float(volume), float(volume))
 
 
-def play_sound(sound: Optional[pygame.mixer.Sound],
-               *,
-               channel: Optional[pygame.mixer.Channel] = None,
-               loops: int = 0,
-               maxtime: int = 0,
-               fade_ms: int = 0,
-               volume: Union[None, float, Sequence[float]] = None,
-               force: bool = False) -> Optional[pygame.mixer.Channel]:
+def play_sound(
+    sound: Optional[pygame.mixer.Sound],
+    *,
+    channel: Optional[pygame.mixer.Channel] = None,
+    loops: int = 0,
+    maxtime: int = 0,
+    fade_ms: int = 0,
+    volume: Union[None, float, Sequence[float]] = None,
+    force: bool = False,
+) -> Optional[pygame.mixer.Channel]:
     if sound is None:
         return channel
     channel = ensure_channel(channel)
@@ -63,4 +67,3 @@ def play_sound(sound: Optional[pygame.mixer.Sound],
     if normalized_volume is not None:
         channel.set_volume(*normalized_volume)
     return channel
-

@@ -13,6 +13,7 @@ class Collectible(SpriteEntity):
     def update(self, dt, events):
         if not self.collected:
             import levelData
+
             player = Player.require_instance()
             current_map = levelData.require_current_map()
             dist = mathHelpers.distance_to(self.get_pos(), player.get_pos())
@@ -38,13 +39,16 @@ class Gate(SpriteEntity):
                     self.agent_pack_name = ""
             elif dist < 1 and player.keys == 0:
                 knockback_dx, knockback_dy = mathHelpers.slope(
-                    self.get_pos(), player.get_pos())
+                    self.get_pos(), player.get_pos()
+                )
                 knockback_length = math.hypot(knockback_dx, knockback_dy)
                 if knockback_length > 0:
                     strength = 0.5
                     player.move(
                         (knockback_dx / knockback_length) * strength,
-                        (knockback_dy / knockback_length) * strength, dt)
+                        (knockback_dy / knockback_length) * strength,
+                        dt,
+                    )
 
 
 class Key(SpriteEntity):

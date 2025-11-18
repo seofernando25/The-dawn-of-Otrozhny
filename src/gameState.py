@@ -1,5 +1,6 @@
 import enum
 
+
 class GameState(enum.Enum):
     Menu = -1
     Play = 0

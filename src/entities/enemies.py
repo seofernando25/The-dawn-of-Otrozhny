@@ -49,8 +49,8 @@ class Enemy(SpriteAgent):
             self.change_target(self.patrolPoint)
 
         player_entry = next(
-            (entry for entry in self.entitiesInSight if entry[0] is player),
-            None)
+            (entry for entry in self.entitiesInSight if entry[0] is player), None
+        )
         self.canSeePlayer = player_entry is not None
         if self.canSeePlayer:
             Enemy.change_enemy_status(EnemyStatus.Alert)
@@ -66,14 +66,17 @@ class Enemy(SpriteAgent):
 
         if Enemy.enemy_status == EnemyStatus.Caution:
             if self.pathFindingComplete and (
-                    not self.pathFindingNodes or
-                    self.target is None or
-                    mathHelpers.distance_to(
-                        self.get_pos(), self.target.get_pos()) < 1):
+                not self.pathFindingNodes
+                or self.target is None
+                or mathHelpers.distance_to(self.get_pos(), self.target.get_pos()) < 1
+            ):
                 self._retarget_random_point(current_map, min_distance=1.0)
 
-        if (Enemy.enemy_status in (EnemyStatus.Evasion, EnemyStatus.Alert,
-                                   EnemyStatus.Caution)):
+        if Enemy.enemy_status in (
+            EnemyStatus.Evasion,
+            EnemyStatus.Alert,
+            EnemyStatus.Caution,
+        ):
             self.FOV = self.originalFov * 1.5
             self.FOVDepth = self.originalFovDepth * 1.5
         else:
@@ -83,12 +86,10 @@ class Enemy(SpriteAgent):
         if self.target is not None:
             dx, dy = mathHelpers.slope(self.get_pos(), self.target.get_pos())
             targetDistance = math.hypot(dx, dy)
-            if self.pathFindingNodes is not None and len(
-                    self.pathFindingNodes) > 0:
+            if self.pathFindingNodes is not None and len(self.pathFindingNodes) > 0:
                 nextStep = self.pathFindingNodes[0]
 
-                nextPathNodeDistance = mathHelpers.distance_to(
-                    self.get_pos(), nextStep)
+                nextPathNodeDistance = mathHelpers.distance_to(self.get_pos(), nextStep)
                 adjustedNextStep = (nextStep[0] + 0.5, nextStep[1] + 0.5)
                 self.move_to(Entity(adjustedNextStep), dt)
                 if nextPathNodeDistance < 0.1:
@@ -124,12 +125,10 @@ class Enemy(SpriteAgent):
         self.timeGuarded = 0
         self.change_target(self.patrolPoint)
 
-    def _retarget_random_point(self, current_map, min_distance=0.0,
-                               attempts=10):
+    def _retarget_random_point(self, current_map, min_distance=0.0, attempts=10):
         for _ in range(attempts):
             random_entity = Entity(current_map.pick_random_point())
-            distance = mathHelpers.distance_to(
-                self.get_pos(), random_entity.get_pos())
+            distance = mathHelpers.distance_to(self.get_pos(), random_entity.get_pos())
             if distance < min_distance:
                 continue
             self.change_target(random_entity)
@@ -189,11 +188,18 @@ class Monster(Enemy):
         dist_to_player = math.inf
         if self.target is not None:
             player = Player.require_instance()
-            dist_to_player = mathHelpers.distance_to(
-                self.get_pos(), player.get_pos())
-            if isinstance(self.target, Player) and dist_to_player < 3 and self.canSeePlayer:
+            dist_to_player = mathHelpers.distance_to(self.get_pos(), player.get_pos())
+            if (
+                isinstance(self.target, Player)
+                and dist_to_player < 3
+                and self.canSeePlayer
+            ):
                 self.attack(self.target, dt)
-            if isinstance(self.target, Player) and dist_to_player < 3 and not self.canSeePlayer:
+            if (
+                isinstance(self.target, Player)
+                and dist_to_player < 3
+                and not self.canSeePlayer
+            ):
                 self.look_at(self.target, dt)
         if dist_to_player < 5:
             self.play_sound(dist_to_player, Enemy.enemy_status.name)
@@ -219,4 +225,3 @@ class Monster(Enemy):
         player = Player.require_instance()
         dist_to_player = mathHelpers.distance_to(self.get_pos(), player.get_pos())
         self.play_sound(dist_to_player, "Attack", True)
-

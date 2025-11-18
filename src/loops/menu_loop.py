@@ -1,6 +1,7 @@
 """
 Menu loop module - handles the main menu with fractal background and other effects.
 """
+
 import pygame
 import ui
 import otherEffects
@@ -22,7 +23,8 @@ class MenuScene(SceneHandler):
         self.hud.set_button_text(4, "Exit")
 
         self.fractal = otherEffects.ChaosObject(
-            (renderer.SCREEN_WIDTH // 2, (renderer.SCREEN_HEIGHT // 2) + 15), 225, 3)
+            (renderer.SCREEN_WIDTH // 2, (renderer.SCREEN_HEIGHT // 2) + 15), 225, 3
+        )
         self.star_field = otherEffects.StarField(renderer.SCREEN_SIZE)
 
         # Connect fractal speed to HUD button changes
@@ -63,10 +65,12 @@ class MenuScene(SceneHandler):
         self.fractal.draw(screen)
 
         # Draw menu text
-        textDraw.message_display_MT(screen, "The dawn of Otrozhny",
-                                    renderer.SCREEN_WIDTH // 2, 100, 30)
-        textDraw.message_display_MT(screen, "Containment breach",
-                                    renderer.SCREEN_WIDTH // 2, 150, 30)
+        textDraw.message_display_MT(
+            screen, "The dawn of Otrozhny", renderer.SCREEN_WIDTH // 2, 100, 30
+        )
+        textDraw.message_display_MT(
+            screen, "Containment breach", renderer.SCREEN_WIDTH // 2, 150, 30
+        )
 
 
 def run_menu_loop():
