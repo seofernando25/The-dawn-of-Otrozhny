@@ -1,37 +1,37 @@
+"""
+Renderer screen management.
+
+This module provides screen initialization and management functions.
+All renderer configuration constants are in config.renderer_config.
+
+Note: Prefer using context.screen when available. This module provides
+fallback functions for code that doesn't have access to context (e.g., menu rendering).
+"""
+
 import pygame
-
-SCREEN_WIDTH = 640
-SCREEN_HEIGHT = 480
-SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-
-FLAGS = pygame.DOUBLEBUF | pygame.HWSURFACE
-
-VIEWPORT_HEIGHT = 320
-VIEWPORT_X_OFFSET = 10
-VIEWPORT_Y_OFFSET = 30
-
-DEPTH = 40
-RAY_ANGLE_STEP = 1
-
-HUD_NUM_OF_CELLS = 5
-HUD_CELL_SIZE = 100
-HUD_CELL_OFFSET = 10
-HUD_CELL_TITLE_OFFSET = 10
-HUD_CELL_TITLE_FONT_SIZE = 12
-HUD_CELL_OTHER_FONT_SIZE = 12
-
-_SCREEN = None
+from config import renderer_config
 
 
 def get_screen():
-    global _SCREEN
-    if _SCREEN is None:
-        _SCREEN = pygame.display.set_mode(SCREEN_SIZE, FLAGS)
-        _SCREEN.set_alpha(None)
-    return _SCREEN
+    """
+    Get or create the main pygame screen surface.
+    
+    Note: This is a fallback for code without context access.
+    Prefer using context.screen when available.
+    """
+    screen = pygame.display.get_surface()
+    if screen is None:
+        screen = pygame.display.set_mode(renderer_config.SCREEN_SIZE, renderer_config.FLAGS)
+        screen.set_alpha(None)
+    return screen
 
 
 def reset_screen():
-    """Dispose of the cached screen so tests/demos can recreate it."""
-    global _SCREEN
-    _SCREEN = None
+    """
+    Dispose of the screen so tests/demos can recreate it.
+    
+    Note: This is mainly for testing. In normal operation, the screen
+    is managed by pygame.display and doesn't need explicit disposal.
+    """
+    # Screen is managed by pygame.display, no explicit cleanup needed
+    pass

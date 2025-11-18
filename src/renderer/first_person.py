@@ -2,12 +2,12 @@
 from core import colors
 import pygame
 from renderer import raycast
-from renderer import utils
+from config import renderer_config
 from renderer.floor import render_floor
 
-SCREEN_WIDTH = utils.SCREEN_WIDTH
-VIEWPORT_X_OFFSET = utils.VIEWPORT_X_OFFSET
-VIEWPORT_HEIGHT = utils.VIEWPORT_HEIGHT
+SCREEN_WIDTH = renderer_config.SCREEN_WIDTH
+VIEWPORT_X_OFFSET = renderer_config.VIEWPORT_X_OFFSET
+VIEWPORT_HEIGHT = renderer_config.VIEWPORT_HEIGHT
 
 
 def render_first_person_canvas(entity, *, canvas=None):

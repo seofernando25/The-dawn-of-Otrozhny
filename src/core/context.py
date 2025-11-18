@@ -7,8 +7,8 @@ can construct them inside setup routines and pass them down the stack.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Dict, Optional, Protocol, runtime_checkable
+from dataclasses import dataclass, replace
+from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 import pygame
 
@@ -33,7 +33,6 @@ class BaseContext:
 
     screen: pygame.Surface
     audio: "AudioManager"
-    services: Dict[str, object] = field(default_factory=dict)
 
     def with_override(self, **kwargs: object) -> "BaseContext":
         """Return a shallow copy with the provided overrides."""
@@ -52,19 +51,16 @@ class GameContext(BaseContext):
     def update_level(self, level: "Level") -> None:
         """Swap the active level reference."""
         self.level = level
-        self.services["level"] = level
 
     def update_player(self, player: "Player") -> None:
         """Swap the active player reference."""
         self.player = player
-        self.services["player"] = player
 
     def ensure_enemy_state(self) -> "EnemyStateManager":
         """Get or create the enemy state manager."""
         if self.enemy_state is None:
             from core.enemy_state import EnemyStateManager
             self.enemy_state = EnemyStateManager()
-            self.services["enemy_state"] = self.enemy_state
         return self.enemy_state
 
 
@@ -77,7 +73,6 @@ class EditorContext(BaseContext):
     def ensure_grid_manager(self, manager: "GridManager") -> "GridManager":
         """Set and return the grid manager, enabling fluent initialization."""
         self.grid_manager = manager
-        self.services["grid_manager"] = manager
         return manager
 
 
@@ -86,25 +81,24 @@ def build_game_context(
     player: "Player",
     level: Optional["Level"] = None,
     screen: Optional[pygame.Surface] = None,
-    audio_manager_service: Optional["AudioManager"] = None,
+    audio_manager_service: "AudioManager",
     clock: Optional[pygame.time.Clock] = None,
     enemy_state: Optional["EnemyStateManager"] = None,
 ) -> GameContext:
-    """Factory helper that fills defaults from existing globals.
+    """Factory helper that creates a GameContext with required dependencies.
     
-    Note: player is required but made optional in the dataclass to satisfy
-    Python's dataclass field ordering requirements (required fields can't
-    follow default fields from parent classes).
+    Note: player and audio_manager_service are required. screen will be created
+    if not provided. enemy_state will be created if not provided.
     """
-    from audio_manager import AudioManager
-    from renderer import config as renderer_config
+    from renderer.config import get_screen
     from core.enemy_state import EnemyStateManager
 
     if player is None:
         raise ValueError("player is required for GameContext")
+    if audio_manager_service is None:
+        raise ValueError("audio_manager_service is required for GameContext")
     
-    screen = screen or renderer_config.get_screen()
-    audio_manager_service = audio_manager_service or AudioManager.get_instance()
+    screen = screen or get_screen()
     if enemy_state is None:
         enemy_state = EnemyStateManager()
     
@@ -116,27 +110,22 @@ def build_game_context(
         clock=clock,
         enemy_state=enemy_state,
     )
-    if level is not None:
-        ctx.services.update({"level": level, "player": player, "clock": clock, "enemy_state": enemy_state})
-    else:
-        ctx.services.update({"player": player, "clock": clock, "enemy_state": enemy_state})
     return ctx
 
 
 def build_editor_context(
     *,
     screen: Optional[pygame.Surface] = None,
-    audio_manager_service: Optional["AudioManager"] = None,
+    audio_manager_service: "AudioManager",
     grid_manager: Optional["GridManager"] = None,
 ) -> EditorContext:
     """Factory helper for editor-specific tooling."""
-    from audio_manager import AudioManager
-    from renderer import config as renderer_config
+    from renderer.config import get_screen
 
-    screen = screen or renderer_config.get_screen()
-    audio_manager_service = audio_manager_service or AudioManager.get_instance()
+    if audio_manager_service is None:
+        raise ValueError("audio_manager_service is required for EditorContext")
+    
+    screen = screen or get_screen()
     ctx = EditorContext(screen=screen, audio=audio_manager_service, grid_manager=grid_manager)
-    if grid_manager is not None:
-        ctx.services["grid_manager"] = grid_manager
     return ctx
 

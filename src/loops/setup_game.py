@@ -7,8 +7,7 @@ import pygame
 from core import assets
 from core.io import load_level_object, list_maps
 from core.level import Level
-from renderer import config as renderer_config
-from renderer import utils as renderer_utils
+from config import renderer_config
 from renderer.text import message_display_L
 from ui import MapSelectionScreen
 from core.context import build_game_context
@@ -55,9 +54,10 @@ def _build_map_grid(hud, map_list):
 class MapSelectionScene(SceneHandler):
     """Scene handler for the map selection screen."""
 
-    def __init__(self, hud, actual_map_list):
+    def __init__(self, hud, actual_map_list, audio_manager):
         self.hud = hud
         self.actual_map_list = actual_map_list
+        self.audio_manager = audio_manager
         self.result = None
 
     def handle_events(self, events, keys_pressed):
@@ -77,7 +77,7 @@ class MapSelectionScene(SceneHandler):
                             if player is None:
                                 self.result = GameState.Menu
                                 return True
-                            context = build_game_context(player=player, level=None)
+                            context = build_game_context(player=player, level=None, audio_manager_service=self.audio_manager)
                             Level.load(map_obj, context=context)
                             result = run_game_loop(context)
                             if result == GameState.Quit:
@@ -102,21 +102,24 @@ class MapSelectionScene(SceneHandler):
         message_display_L(
             screen,
             'Press "q" to go back',
-            renderer_utils.VIEWPORT_X_OFFSET,
-            renderer_utils.VIEWPORT_Y_OFFSET,
-            renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
+            renderer_config.VIEWPORT_X_OFFSET,
+            renderer_config.VIEWPORT_Y_OFFSET,
+            renderer_config.HUD_CELL_TITLE_FONT_SIZE,
         )
 
 
-def setup_game():
+def setup_game(audio_manager):
     """Set up the game by preloading assets and showing level selection."""
     pre_load_assets()
 
     map_list = list_maps()
-    hud = MapSelectionScreen()
+    # Get UI sound from audio manager for button activation sounds
+    from ui.audio_helpers import get_ui_activation_sound
+    activated_sound = get_ui_activation_sound(audio_manager)
+    hud = MapSelectionScreen(activated_sound=activated_sound)
     actual_map_list = _build_map_grid(hud, map_list)
 
-    scene = MapSelectionScene(hud, actual_map_list)
+    scene = MapSelectionScene(hud, actual_map_list, audio_manager)
     run_result = run_scene_with_hud(scene, hud)
 
     if isinstance(run_result, GameState):

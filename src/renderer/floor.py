@@ -1,6 +1,5 @@
 """Floor rendering for first-person view."""
 from core import colors
-import pygame
 
 
 def render_floor(screen, entity):

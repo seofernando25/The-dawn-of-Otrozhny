@@ -2,10 +2,9 @@
 from typing import Optional
 import pygame
 import pygame.constants as pyConst
-from renderer import utils as renderer_utils
+from config import renderer_config
 from utils import math_helpers
 from core import colors
-from ui.button import HudButton
 from ui.helpers import (
     _generate_hud_viewport,
     _generate_hud_surfaces,
@@ -17,10 +16,10 @@ from ui.helpers import (
 class HudScreen:
     """Main HUD screen that manages multiple HUD buttons."""
     
-    def __init__(self, interactable=True, dynamic=False):
+    def __init__(self, interactable=True, dynamic=False, *, activated_sound=None):
         self.viewPort = _generate_hud_viewport()
         self.viewPort.fill(colors.GRAY_VARIATION_2)
-        self.hud_buttons = _generate_hud_surfaces(self.viewPort)
+        self.hud_buttons = _generate_hud_surfaces(self.viewPort, activated_sound=activated_sound)
         self.interactable = interactable
         self.dynamic = dynamic
         self.selected_button = 0
@@ -57,7 +56,7 @@ class HudScreen:
                 [
                     int(
                         self.cursorX * (self.viewPort.get_width() / 5)
-                        + renderer_utils.HUD_CELL_OFFSET
+                        + renderer_config.HUD_CELL_OFFSET
                         + 5
                     ),
                     self.viewPort.get_height(),
@@ -69,10 +68,10 @@ class HudScreen:
         target_screen.blit(
             self.viewPort,
             (
-                renderer_utils.VIEWPORT_X_OFFSET,
-                renderer_utils.SCREEN_HEIGHT
+                renderer_config.VIEWPORT_X_OFFSET,
+                renderer_config.SCREEN_HEIGHT
                 - self.viewPort.get_height()
-                - renderer_utils.VIEWPORT_Y_OFFSET // 4,
+                - renderer_config.VIEWPORT_Y_OFFSET // 4,
             ),
         )
 
@@ -86,8 +85,8 @@ class HudScreen:
         if change_to:
             self.selected_button = amount
         if self.selected_button < 0:
-            self.selected_button = renderer_utils.HUD_NUM_OF_CELLS - 1
-        elif self.selected_button > renderer_utils.HUD_NUM_OF_CELLS - 1:
+            self.selected_button = renderer_config.HUD_NUM_OF_CELLS - 1
+        elif self.selected_button > renderer_config.HUD_NUM_OF_CELLS - 1:
             self.selected_button = 0
         self.hud_buttons[self.selected_button].set_active(True)
 

@@ -1,15 +1,15 @@
 """Helper functions for UI components."""
 from typing import Optional
 import pygame
-from renderer import config as renderer_config
-from renderer import utils as renderer_utils
+from renderer.config import get_screen
+from config import renderer_config
 from core import colors
 from ui.button import HudButton
 
 
 def _resolve_screen(screen: Optional[pygame.Surface] = None) -> pygame.Surface:
     """Resolve screen surface, using global screen if none provided."""
-    return screen if screen is not None else renderer_config.get_screen()
+    return screen if screen is not None else get_screen()
 
 
 def render_hud_surfaces(hud_viewport, hud_cell_surfaces):
@@ -20,28 +20,28 @@ def render_hud_surfaces(hud_viewport, hud_cell_surfaces):
         hud_viewport.blit(
             cell_surface,
             (
-                renderer_utils.HUD_CELL_OFFSET
-                + renderer_utils.HUD_CELL_OFFSET * row
+                renderer_config.HUD_CELL_OFFSET
+                + renderer_config.HUD_CELL_OFFSET * row
                 + row * cell_surface.get_width(),
-                renderer_utils.VIEWPORT_Y_OFFSET // 4,
+                renderer_config.VIEWPORT_Y_OFFSET // 4,
             ),
         )
         row += 1
 
 
-def _generate_hud_surfaces(hud_surface):
+def _generate_hud_surfaces(hud_surface, *, activated_sound=None):
     """Generate HUD button surfaces for a HUD viewport."""
     hud_cell_surfaces = []
-    cell_height = hud_surface.get_height() - renderer_utils.VIEWPORT_Y_OFFSET // 2
+    cell_height = hud_surface.get_height() - renderer_config.VIEWPORT_Y_OFFSET // 2
     cell_width = (
         hud_surface.get_width()
-        - (renderer_utils.HUD_CELL_OFFSET + 1) * renderer_utils.HUD_NUM_OF_CELLS
+        - (renderer_config.HUD_CELL_OFFSET + 1) * renderer_config.HUD_NUM_OF_CELLS
     )
-    cell_width /= renderer_utils.HUD_NUM_OF_CELLS
+    cell_width /= renderer_config.HUD_NUM_OF_CELLS
     surf_count = 0
-    while surf_count < renderer_utils.HUD_NUM_OF_CELLS:
+    while surf_count < renderer_config.HUD_NUM_OF_CELLS:
         surf_count += 1
-        window = HudButton(cell_width, cell_height)
+        window = HudButton(cell_width, cell_height, activated_sound=activated_sound)
         window.fill(colors.NAVY_BLUE)
         hud_cell_surfaces.append(window)
     return hud_cell_surfaces
@@ -49,12 +49,12 @@ def _generate_hud_surfaces(hud_surface):
 
 def _generate_hud_viewport():
     """Generate the main HUD viewport surface."""
-    renderer_config.get_screen()
-    hud_width = renderer_utils.SCREEN_WIDTH - renderer_utils.VIEWPORT_X_OFFSET * 2
+    get_screen()
+    hud_width = renderer_config.SCREEN_WIDTH - renderer_config.VIEWPORT_X_OFFSET * 2
     hud_height = (
-        renderer_utils.SCREEN_HEIGHT
-        - renderer_utils.VIEWPORT_HEIGHT
-        - renderer_utils.VIEWPORT_Y_OFFSET * 2
+        renderer_config.SCREEN_HEIGHT
+        - renderer_config.VIEWPORT_HEIGHT
+        - renderer_config.VIEWPORT_Y_OFFSET * 2
     )
 
     hud_viewport = pygame.Surface([hud_width, hud_height]).convert()

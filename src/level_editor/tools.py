@@ -6,7 +6,7 @@ Each tool handles its own input/update/draw logic.
 """
 
 import pygame
-from renderer import utils as renderer_utils
+from config import renderer_config
 from core import colors
 from entities.enemy import Enemy
 from entities.node import Node
@@ -159,7 +159,6 @@ class PlaceTool(BaseTool):
 
     def place_entity_at(self, cell, grid_manager):
         from entities.player import Player
-        from entities.enemy import Enemy
         from entities.items import Collectible, Key, Gate
 
         position_adjust = (cell[0] + 0.5, cell[1] + 0.5)
@@ -379,16 +378,16 @@ class NavigationTool(BaseTool):
 
         if grid_manager.adjust[0] < -grid_width:
             grid_manager.adjust = (
-                renderer_utils.SCREEN_WIDTH + grid_width,
+                renderer_config.SCREEN_WIDTH + grid_width,
                 grid_manager.adjust[1],
             )
-        elif grid_manager.adjust[0] > renderer_utils.SCREEN_WIDTH + grid_width:
+        elif grid_manager.adjust[0] > renderer_config.SCREEN_WIDTH + grid_width:
             grid_manager.adjust = (-grid_width, grid_manager.adjust[1])
 
         if grid_manager.adjust[1] < -grid_height:
             grid_manager.adjust = (
                 grid_manager.adjust[0],
-                renderer_utils.SCREEN_HEIGHT + grid_height,
+                renderer_config.SCREEN_HEIGHT + grid_height,
             )
-        elif grid_manager.adjust[1] > renderer_utils.SCREEN_HEIGHT + grid_height:
+        elif grid_manager.adjust[1] > renderer_config.SCREEN_HEIGHT + grid_height:
             grid_manager.adjust = (grid_manager.adjust[0], -grid_height)

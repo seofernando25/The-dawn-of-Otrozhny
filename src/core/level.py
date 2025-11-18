@@ -50,11 +50,24 @@ class Level:
         return level
 
     def attach_context(self, context: "GameContext"):
-        """Attach the shared context to level entities and cache references."""
+        """
+        Attach the shared context to all level entities and cache references.
+        
+        This method sets context on all entities (both grid entities and node entities)
+        and updates the context with the player reference if found.
+        """
         # Type: ignore needed because self is Level, and update_level expects Level
         context.update_level(self)  # type: ignore[arg-type]
+        
+        # Attach context to all grid entities
         for entity in self.grid_entities:
             entity.set_context(context)
+        
+        # Attach context to all node entities
+        for node in self.node_entities:
+            node.set_context(context)
+        
+        # Find and cache player reference in context
         player = next((x for x in self.grid_entities if isinstance(x, Player)), None)
         if player is not None and context.player is None:
             context.update_player(player)

@@ -12,6 +12,23 @@ from .gameplay_config import (
     SOUND_CONFIG,
 )
 from .editor_config import EDITOR_CONFIG
+from .renderer_config import (
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    SCREEN_SIZE,
+    FLAGS,
+    VIEWPORT_HEIGHT,
+    VIEWPORT_X_OFFSET,
+    VIEWPORT_Y_OFFSET,
+    DEPTH,
+    RAY_ANGLE_STEP,
+    HUD_NUM_OF_CELLS,
+    HUD_CELL_SIZE,
+    HUD_CELL_OFFSET,
+    HUD_CELL_TITLE_OFFSET,
+    HUD_CELL_TITLE_FONT_SIZE,
+    HUD_CELL_OTHER_FONT_SIZE,
+)
 
 __all__ = [
     "ENEMY_CONFIG",
@@ -22,5 +39,20 @@ __all__ = [
     "DAMAGE_CONFIG",
     "SOUND_CONFIG",
     "EDITOR_CONFIG",
+    "SCREEN_WIDTH",
+    "SCREEN_HEIGHT",
+    "SCREEN_SIZE",
+    "FLAGS",
+    "VIEWPORT_HEIGHT",
+    "VIEWPORT_X_OFFSET",
+    "VIEWPORT_Y_OFFSET",
+    "DEPTH",
+    "RAY_ANGLE_STEP",
+    "HUD_NUM_OF_CELLS",
+    "HUD_CELL_SIZE",
+    "HUD_CELL_OFFSET",
+    "HUD_CELL_TITLE_OFFSET",
+    "HUD_CELL_TITLE_FONT_SIZE",
+    "HUD_CELL_OTHER_FONT_SIZE",
 ]
 

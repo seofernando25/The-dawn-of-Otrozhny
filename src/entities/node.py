@@ -6,8 +6,8 @@ from .base import Entity
 class Node(Entity):
     """A node in the pathfinding network for enemy patrol routes."""
     
-    def __init__(self, start_pos):
-        super().__init__(start_pos)
+    def __init__(self, start_pos, *, context=None):
+        super().__init__(start_pos, context=context)
         self.behaviour = None
         self.destination_point = 0
         self.nodes = []

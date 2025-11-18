@@ -1,7 +1,7 @@
 """Vertical list UI component."""
 from typing import Optional
 import pygame
-from renderer import utils as renderer_utils
+from config import renderer_config
 from renderer.text import FONT_PATH
 from ui.button import HudButton
 from ui.helpers import _resolve_screen
@@ -15,10 +15,10 @@ class VerticalList:
         self.objects = []
         self.px = px
         self.py = py
-        font = pygame.font.Font(FONT_PATH, renderer_utils.HUD_CELL_TITLE_FONT_SIZE)
+        font = pygame.font.Font(FONT_PATH, renderer_config.HUD_CELL_TITLE_FONT_SIZE)
         for line in str_list:
             self.objects.append(
-                HudButton(font.size(line)[0], renderer_utils.HUD_CELL_TITLE_FONT_SIZE, line)
+                HudButton(font.size(line)[0], renderer_config.HUD_CELL_TITLE_FONT_SIZE, line)
             )
 
     def draw(self, screen: Optional[pygame.Surface] = None):
@@ -29,6 +29,6 @@ class VerticalList:
         for x in range(len(self.objects)):
             target_screen.blit(
                 self.objects[x],
-                (self.px, self.py + x * renderer_utils.HUD_CELL_TITLE_FONT_SIZE + x * 10),
+                (self.px, self.py + x * renderer_config.HUD_CELL_TITLE_FONT_SIZE + x * 10),
             )
 

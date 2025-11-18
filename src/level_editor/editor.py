@@ -11,7 +11,7 @@ from core.level import Level
 from entities.enemy import Enemy
 from entities.items import Collectible, Gate, Key
 from entities.player import Player
-from renderer import utils as renderer_utils
+from config import renderer_config
 from core import colors
 from renderer.text import message_display
 from ui import HudScreen
@@ -69,7 +69,7 @@ class GridManager:
                 "F: Key",
                 "G: Gate",
             ],
-            renderer_utils.SCREEN_WIDTH - 150,
+            renderer_config.SCREEN_WIDTH - 150,
             10,
         )
         self.hud_draw_pos_help = VerticalList(
@@ -252,10 +252,13 @@ class GridManager:
 class EditorScene(SceneHandler):
     """Scene handler for the level editor loop."""
 
-    def __init__(self):
-        self.context = build_editor_context()
+    def __init__(self, audio_manager):
+        self.context = build_editor_context(audio_manager_service=audio_manager)
         self.grid_manager = self.context.ensure_grid_manager(GridManager(20, 20))
-        self.hud = HudScreen()
+        # Get UI sound from audio manager for button activation sounds
+        from ui.audio_helpers import get_ui_activation_sound
+        activated_sound = get_ui_activation_sound(self.context.audio)
+        self.hud = HudScreen(activated_sound=activated_sound)
         self.hud.set_button_text(0, "Node Editor")
         self.hud.set_button_text(1, "Draw  Mode")
         self.hud.set_button_text(2, "Wall Editor")
@@ -301,14 +304,19 @@ class EditorScene(SceneHandler):
         self.hud.draw(screen)
 
 
-def editorLoop(clock):
-    scene = EditorScene()
+def editorLoop(clock, audio_manager):
+    scene = EditorScene(audio_manager)
     run_scene(scene, clock)
     return scene.result or GameState.Menu
 
 
 if __name__ == "__main__":
+    from audio_manager import AudioManager
+    
     pygame.init()
+    audio = AudioManager()
     clock = pygame.time.Clock()
-    editorLoop(clock)
+    editorLoop(clock, audio)
+    # Note: AudioManager creation is OK here as this is the entry point.
+    # The audio is passed to editorLoop which creates EditorContext with it.
 

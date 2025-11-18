@@ -14,12 +14,22 @@ if TYPE_CHECKING:
 
 
 class Entity:
+    """
+    Base entity class for all game entities.
+    
+    Context is optional during entity creation (e.g., in level editor) but is
+    required for gameplay operations. Context is automatically attached when
+    a level is loaded via Level.attach_context().
+    
+    For gameplay, always ensure context is set before calling methods that
+    require it (e.g., _player(), _current_map()).
+    """
     def __init__(self, start_pos, *, context: Optional["GameContext"] = None):
         self.px = start_pos[0]
         self.py = start_pos[1]
         self.context: Optional["GameContext"] = context
 
-    def update(self, dt, events):
+    def update(self, dt):
         pass
 
     def get_pos(self):
@@ -30,12 +40,17 @@ class Entity:
         self.context = context
 
     def requires_context(self) -> "GameContext":
-        """Check if context is available and return it."""
+        """
+        Check if context is available and return it.
+        
+        Raises RuntimeError if context is not set. Context is typically
+        set automatically when a level is loaded via Level.attach_context().
+        """
         if self.context is None:
             raise RuntimeError(
                 f"{self.__class__.__name__} requires a GameContext for this operation. "
                 f"Set context via set_context() or pass context= to __init__(). "
-                f"Context is typically set automatically when a level is loaded."
+                f"Context is typically set automatically when a level is loaded via Level.attach_context()."
             )
         return self.context
 
@@ -44,9 +59,9 @@ class Entity:
         context = self.requires_context()
         if not hasattr(context, "level") or context.level is None:
             raise RuntimeError(
-                f"GameContext.level is not set. "
-                f"This usually means the level hasn't been loaded yet. "
-                f"Ensure Level.load() has been called with a valid context."
+                "GameContext.level is not set. "
+                "This usually means the level hasn't been loaded yet. "
+                "Ensure Level.load() has been called with a valid context."
             )
         return context.level
 
@@ -55,9 +70,9 @@ class Entity:
         context = self.requires_context()
         if not hasattr(context, "player") or context.player is None:
             raise RuntimeError(
-                f"GameContext.player is not set. "
-                f"This usually means the player hasn't been initialized yet. "
-                f"Ensure a Player entity exists in the level and context has been updated."
+                "GameContext.player is not set. "
+                "This usually means the player hasn't been initialized yet. "
+                "Ensure a Player entity exists in the level and context has been updated."
             )
         return context.player
 
@@ -99,8 +114,8 @@ class Agent(SpriteEntity):
         self.cameraYawSens = 0
         self.cameraPitchSens = 0
 
-    def update(self, dt, events):
-        return super().update(dt, events)
+    def update(self, dt):
+        return super().update(dt)
 
     def move(self, dirX, dirY, deltaTime):
         next_pos_x = self.px + dirX

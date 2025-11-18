@@ -22,7 +22,13 @@ ENTITY_REGISTRY: Dict[str, Type[Entity]] = {
 
 
 class EntityFactory:
-    """Factory for creating entities with optional context."""
+    """
+    Factory for creating entities with optional context.
+    
+    Context is optional during entity creation (e.g., in level editor) but
+    should be provided when creating entities for gameplay. Context will be
+    automatically attached when a level is loaded via Level.attach_context().
+    """
     
     @staticmethod
     def create(
@@ -32,21 +38,34 @@ class EntityFactory:
         context: Optional["GameContext"] = None,
         **kwargs
     ) -> Entity:
-        """Create an entity of the specified type."""
+        """
+        Create an entity of the specified type.
+        
+        Args:
+            entity_type: Type of entity to create (player, enemy, monster, node, etc.)
+            position: Starting position as (x, y) tuple
+            context: Optional game context. If provided, will be set on the entity.
+            **kwargs: Additional arguments for entity-specific initialization
+            
+        Returns:
+            Created entity instance
+        """
         entity_class = ENTITY_REGISTRY.get(entity_type.lower())
         if entity_class is None:
             raise ValueError(f"Unknown entity type: {entity_type}")
         
         if entity_type.lower() in ("enemy", "monster"):
             patrol_point = kwargs.get("patrolPoint", kwargs.get("patrol_point"))
-            entity = Monster(position, patrolPoint=patrol_point)
+            entity = Monster(position, patrolPoint=patrol_point, context=context)
         elif entity_type.lower() == "node":
-            entity = Node(position)
+            entity = Node(position, context=context)
         elif entity_type.lower() == "player":
             entity = Player(position, context=context)
         else:
-            entity = entity_class(position)
+            # Other entities (Collectible, Key, Gate) also accept context
+            entity = entity_class(position, context=context)
         
+        # Ensure context is set if provided (some entities may not accept it in __init__)
         if context is not None and hasattr(entity, "set_context"):
             entity.set_context(context)
         

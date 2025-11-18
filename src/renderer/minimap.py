@@ -6,9 +6,9 @@ from core import colors
 from entities.enemy import Enemy
 from entities.items import Collectible, Gate
 from .raycast import calculate_fov_polygon
-from .utils import translate_to_map, get_static_surfaces_cache
 
-_STATIC_SURFACES = get_static_surfaces_cache()
+# Cache for static minimap surfaces
+_STATIC_SURFACES = {}
 
 
 def _calculate_fov_points(scale_x, scale_y, current_map):
@@ -16,7 +16,8 @@ def _calculate_fov_points(scale_x, scale_y, current_map):
     for enemy in current_map.grid_entities:
         if issubclass(type(enemy), Enemy):
             enemy_fov = calculate_fov_polygon(enemy)
-            enemy_fov = translate_to_map(enemy_fov, scale_x, scale_y)
+            # Translate (x, y) coordinates into scaled map space
+            enemy_fov = [(y * scale_x, x * scale_y) for x, y in enemy_fov]
 
             color = colors.ALMOST_BLACK
             if enemy.canSeePlayer:
@@ -72,7 +73,8 @@ def render_map(screen, entity):
     screen.blit(static_surface, (0, 0))
 
     fov_points = calculate_fov_polygon(entity)
-    fov_points = translate_to_map(fov_points, scale_x, scale_y)
+    # Translate (x, y) coordinates into scaled map space
+    fov_points = [(y * scale_x, x * scale_y) for x, y in fov_points]
 
     all_fovs = _calculate_fov_points(scale_x, scale_y, current_map)
 

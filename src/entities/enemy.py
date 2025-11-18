@@ -8,19 +8,20 @@ from .base import Entity, EnemyStatus, SpriteAgent
 from renderer.raycast import generate_distance_table
 
 if TYPE_CHECKING:
-    from .node import Node
+    pass
 
 
 class Enemy(SpriteAgent):
     """Base enemy class with AI behavior and pathfinding."""
 
-    def __init__(self, start_pos, patrolPoint=None):
+    def __init__(self, start_pos, patrolPoint=None, *, context=None):
         super().__init__(
             start_pos,
             ENEMY_CONFIG["fov_degrees"],
             ENEMY_CONFIG["move_speed"],
             ENEMY_CONFIG["fov_depth"],
             ENEMY_CONFIG["sprite_pack"],
+            context=context,
         )
         self.patrolPoint = patrolPoint
         self.target = self.patrolPoint
@@ -44,10 +45,10 @@ class Enemy(SpriteAgent):
             )
         return context.enemy_state
 
-    def update(self, dt, events):
+    def update(self, dt):
         """Update enemy AI behavior."""
         generate_distance_table(self)
-        super().update(dt, events)
+        super().update(dt)
         current_map = self._current_map()
         player = self._player()
         # Timer logic is now handled by EnemyStateManager.update() in game loop

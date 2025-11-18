@@ -5,7 +5,7 @@ Tutorial loop module - displays tutorial tabs with briefing/map editor/items/ene
 import pygame
 from ui import menu_tabs
 from renderer.text import message_display_L
-from renderer import utils as renderer_utils
+from config import renderer_config
 from loops.loop_runner import SceneHandler
 from ui import HudScreen
 
@@ -54,9 +54,9 @@ class TutorialScene(SceneHandler):
         message_display_L(
             screen,
             'Press "q" to go back',
-            renderer_utils.VIEWPORT_X_OFFSET,
-            renderer_utils.VIEWPORT_Y_OFFSET,
-            renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
+            renderer_config.VIEWPORT_X_OFFSET,
+            renderer_config.VIEWPORT_Y_OFFSET,
+            renderer_config.HUD_CELL_TITLE_FONT_SIZE,
         )
 
 

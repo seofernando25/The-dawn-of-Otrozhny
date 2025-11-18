@@ -5,7 +5,9 @@ import pygame
 from entities.items import Gate
 from entities.player import Player
 from renderer import minimap
-from renderer import utils
+
+# Cache for map previews
+_MAP_PREVIEW_CACHE = {}
 
 
 def draw_map_preview(screen, map_obj, cache_key=None):
@@ -14,8 +16,7 @@ def draw_map_preview(screen, map_obj, cache_key=None):
         cache_key or id(map_obj),
         screen.get_size(),
     )
-    cache = utils.get_map_preview_cache()
-    cached_surface = cache.get(signature)
+    cached_surface = _MAP_PREVIEW_CACHE.get(signature)
     if cached_surface is None:
         preview = pygame.Surface(screen.get_size()).convert()
         preview.fill(colors.GRAY)
@@ -54,7 +55,7 @@ def draw_map_preview(screen, map_obj, cache_key=None):
                     ],
                 )
         cached_surface = preview
-        cache[signature] = cached_surface
+        _MAP_PREVIEW_CACHE[signature] = cached_surface
 
     screen.blit(cached_surface, (0, 0))
 

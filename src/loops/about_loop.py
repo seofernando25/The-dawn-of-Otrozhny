@@ -4,7 +4,7 @@ About loop module - displays the about screen with animated text.
 
 import pygame
 from renderer.text import message_display, message_display_L
-from renderer import utils as renderer_utils
+from config import renderer_config
 from loops.loop_runner import SceneHandler
 
 
@@ -43,46 +43,46 @@ class AboutScene(SceneHandler):
             message_display(
                 screen,
                 "Made By Fernando Nogueira",
-                renderer_utils.SCREEN_WIDTH // 2,
-                renderer_utils.VIEWPORT_Y_OFFSET,
+                renderer_config.SCREEN_WIDTH // 2,
+                renderer_config.VIEWPORT_Y_OFFSET,
                 20,
             )
             message_display(
                 screen,
                 "with some help from the internet",
-                renderer_utils.SCREEN_WIDTH // 2,
-                renderer_utils.VIEWPORT_Y_OFFSET * 2,
+                renderer_config.SCREEN_WIDTH // 2,
+                renderer_config.VIEWPORT_Y_OFFSET * 2,
                 int(self.sub_title_size),
             )
         else:
             message_display(
                 screen,
                 "Made By Stack Overflow",
-                renderer_utils.SCREEN_WIDTH // 2,
-                renderer_utils.VIEWPORT_Y_OFFSET,
+                renderer_config.SCREEN_WIDTH // 2,
+                renderer_config.VIEWPORT_Y_OFFSET,
                 20,
             )
             message_display(
                 screen,
                 "not really",
-                renderer_utils.SCREEN_WIDTH - 50,
-                renderer_utils.VIEWPORT_Y_OFFSET,
+                renderer_config.SCREEN_WIDTH - 50,
+                renderer_config.VIEWPORT_Y_OFFSET,
                 8,
             )
             message_display(
                 screen,
                 "with some help from fernando",
-                renderer_utils.SCREEN_WIDTH // 2,
-                renderer_utils.VIEWPORT_Y_OFFSET * 2,
+                renderer_config.SCREEN_WIDTH // 2,
+                renderer_config.VIEWPORT_Y_OFFSET * 2,
                 int(self.second_sub_title_size),
             )
 
         message_display_L(
             screen,
             'Press "q" to go back',
-            renderer_utils.VIEWPORT_X_OFFSET,
-            renderer_utils.SCREEN_HEIGHT - renderer_utils.VIEWPORT_Y_OFFSET,
-            renderer_utils.HUD_CELL_TITLE_FONT_SIZE,
+            renderer_config.VIEWPORT_X_OFFSET,
+            renderer_config.SCREEN_HEIGHT - renderer_config.VIEWPORT_Y_OFFSET,
+            renderer_config.HUD_CELL_TITLE_FONT_SIZE,
         )
 
 

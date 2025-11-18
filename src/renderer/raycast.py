@@ -6,12 +6,11 @@ import pygame
 
 from core import colors
 from utils import math_helpers
-from renderer import config as renderer_settings
+from config import renderer_config
 from entities.base import SpriteEntity
-from . import utils
 
-RAY_ANGLE_STEP = renderer_settings.RAY_ANGLE_STEP
-VIEWPORT_HEIGHT = renderer_settings.VIEWPORT_HEIGHT
+RAY_ANGLE_STEP = renderer_config.RAY_ANGLE_STEP
+VIEWPORT_HEIGHT = renderer_config.VIEWPORT_HEIGHT
 
 
 class WallDirection(enum.Enum):
@@ -19,10 +18,6 @@ class WallDirection(enum.Enum):
     SOUTH = 1
     EAST = 2
     WEST = 3
-
-
-def _get_numpy_grid(current_map):
-    return utils.get_numpy_grid(current_map)
 
 
 def generate_distance_table(entity):
@@ -34,7 +29,7 @@ def generate_distance_table(entity):
     current_map = entity.context.level
     if current_map is None:
         raise RuntimeError("GameContext.level is not set.")
-    grid = _get_numpy_grid(current_map)
+    grid = current_map.grid_np
     fov_depth = int(math.ceil(entity.FOVDepth))
     degrees = max(1, math.ceil(math.degrees(entity.FOV)))
     inv_degrees = 1.0 / degrees

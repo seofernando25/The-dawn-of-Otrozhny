@@ -6,7 +6,7 @@ import pygame
 from ui import HudScreen
 from renderer import effects as otherEffects
 from renderer.text import message_display_MT
-from renderer import utils as renderer_utils
+from config import renderer_config
 from loops.loop_runner import SceneHandler
 from core.game_state import GameState
 
@@ -23,9 +23,9 @@ class MenuScene(SceneHandler):
         self.hud.set_button_text(4, "Exit")
 
         self.fractal = otherEffects.ChaosObject(
-            (renderer_utils.SCREEN_WIDTH // 2, (renderer_utils.SCREEN_HEIGHT // 2) + 15), 225, 3
+            (renderer_config.SCREEN_WIDTH // 2, (renderer_config.SCREEN_HEIGHT // 2) + 15), 225, 3
         )
-        self.star_field = otherEffects.StarField((renderer_utils.SCREEN_WIDTH, renderer_utils.SCREEN_HEIGHT))
+        self.star_field = otherEffects.StarField((renderer_config.SCREEN_WIDTH, renderer_config.SCREEN_HEIGHT))
 
         # Connect fractal speed to HUD button changes
         self.hud.onChangedButton.append(self.star_field.change_speed)
@@ -62,10 +62,10 @@ class MenuScene(SceneHandler):
         self.fractal.draw(screen)
 
         message_display_MT(
-            screen, "The dawn of Otrozhny", renderer_utils.SCREEN_WIDTH // 2, 100, 30
+            screen, "The dawn of Otrozhny", renderer_config.SCREEN_WIDTH // 2, 100, 30
         )
         message_display_MT(
-            screen, "Containment breach", renderer_utils.SCREEN_WIDTH // 2, 150, 30
+            screen, "Containment breach", renderer_config.SCREEN_WIDTH // 2, 150, 30
         )
 
 

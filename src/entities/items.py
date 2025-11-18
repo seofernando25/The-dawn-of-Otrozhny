@@ -6,11 +6,11 @@ from .base import SpriteEntity
 
 
 class Collectible(SpriteEntity):
-    def __init__(self, start_pos):
-        super().__init__(start_pos, "Collectible")
+    def __init__(self, start_pos, *, context=None):
+        super().__init__(start_pos, "Collectible", context=context)
         self.collected = False
 
-    def update(self, dt, events):
+    def update(self, dt):
         if not self.collected:
             player = self._player()
             current_map = self._current_map()
@@ -22,11 +22,11 @@ class Collectible(SpriteEntity):
 
 
 class Gate(SpriteEntity):
-    def __init__(self, start_pos):
-        super().__init__(start_pos, "Gate")
+    def __init__(self, start_pos, *, context=None):
+        super().__init__(start_pos, "Gate", context=context)
         self.open = False
 
-    def update(self, dt, events):
+    def update(self, dt):
         if not self.open:
             player = self._player()
             dist = math_helpers.distance_to(self.get_pos(), player.get_pos())
@@ -50,11 +50,11 @@ class Gate(SpriteEntity):
 
 
 class Key(SpriteEntity):
-    def __init__(self, start_pos):
-        super().__init__(start_pos, "Key")
+    def __init__(self, start_pos, *, context=None):
+        super().__init__(start_pos, "Key", context=context)
         self.collected = False
 
-    def update(self, dt, events):
+    def update(self, dt):
         if not self.collected:
             player = self._player()
             dist = math_helpers.distance_to(self.get_pos(), player.get_pos())

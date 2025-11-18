@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, List, Optional, Union
+from typing import Annotated, Literal, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -61,9 +61,9 @@ class LevelData(BaseModel):
     version: int = Field(default=1, description="Format version")
     grid: List[List[int]] = Field(description="2D grid where 0=empty, 1=wall")
     entities: List[
-        Union[PlayerData, CollectibleData, KeyData, GateData, EnemyData, NodeData]
-    ] = Field(
-        description="All entities in the level",
-        discriminator="type"
-    )
+        Annotated[
+            Union[PlayerData, CollectibleData, KeyData, GateData, EnemyData, NodeData],
+            Field(discriminator="type")
+        ]
+    ] = Field(description="All entities in the level")
 

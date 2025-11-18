@@ -4,9 +4,8 @@ import sys
 import pygame
 
 from core import assets
-import audio_manager
+from audio_manager import AudioManager
 from level_editor import editor as levelEditor
-from ui import HudScreen, HudButton
 from core.game_state import GameState
 from loops import about_loop, menu_loop, setup_game, tutorial_loop
 
@@ -18,17 +17,20 @@ def pre_close():
     pygame.quit()
 
 
-def pre_init():
+def pre_init(audio: AudioManager):
     """Pre-load audio assets and UI sounds."""
-    audio_manager.set_ui_sound("Active_UI", "Music")
+    # Set up UI sound for buttons (used throughout the application)
+    audio.set_ui_sound("Active_UI", "Music")
+    # Pre-load music tracks to avoid loading delays during gameplay
     assets.get_cached_audio("Music", "Menu")
     assets.get_cached_audio("Music", "Game")
-    HudButton.activated_sound = assets.get_cached_audio("Music", "Active_UI")
 
 
 def main_loop():
     """Main orchestration loop that wires all menu/game/editor scenes."""
-    audio_manager.AudioManager()
+    # Create AudioManager instance (no singleton pattern)
+    audio = AudioManager()
+    
     pygame.init()
     pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
     pygame.display.set_caption("The dawn of Otrozhny")
@@ -36,7 +38,7 @@ def main_loop():
     logo = pygame.image.load(str(logo_path))
     pygame.display.set_icon(logo)
 
-    pre_init()
+    pre_init(audio)
 
     clock = pygame.time.Clock()
     done = False
@@ -46,7 +48,7 @@ def main_loop():
         nonlocal current_music
         if current_music == track_name:
             return
-        audio_manager.play_music(track_name, "Music")
+        audio.play_music(track_name, "Music")
         current_music = track_name
 
     ensure_music("Menu")
@@ -60,7 +62,7 @@ def main_loop():
 
         if state == GameState.Play:
             ensure_music("Game")
-            state = setup_game.setup_game()
+            state = setup_game.setup_game(audio)
             if state == GameState.Quit:
                 done = True
             else:
@@ -74,7 +76,7 @@ def main_loop():
 
         if state == GameState.Edit:
             while state == GameState.Edit:
-                state = levelEditor.editorLoop(clock)
+                state = levelEditor.editorLoop(clock, audio)
             ensure_music("Menu")
             if state == GameState.Quit:
                 done = True

@@ -1,7 +1,6 @@
 """Monster entity - enemy with attack capabilities."""
 import math
 import random
-import audio_manager
 from utils import math_helpers
 from config import ENEMY_CONFIG, DAMAGE_CONFIG, SOUND_CONFIG
 from .enemy import Enemy
@@ -10,12 +9,12 @@ from .enemy import Enemy
 class Monster(Enemy):
     """Enemy that can attack the player and make sounds."""
 
-    def __init__(self, start_pos, patrolPoint=None):
-        super().__init__(start_pos, patrolPoint=patrolPoint)
+    def __init__(self, start_pos, patrolPoint=None, *, context=None):
+        super().__init__(start_pos, patrolPoint=patrolPoint, context=context)
 
-    def update(self, dt, events):
+    def update(self, dt):
         """Update monster behavior including attacks and sounds."""
-        super().update(dt, events)
+        super().update(dt)
 
         dist_to_player = math.inf
         if self.target is not None:
@@ -34,6 +33,10 @@ class Monster(Enemy):
 
     def play_sound(self, distance, flag, force=False):
         """Play a sound effect with distance-based volume."""
+        context = self.requires_context()
+        if context.audio is None:
+            return
+        
         volume = math_helpers.translate(
             distance,
             SOUND_CONFIG["volume_distance_min"],
@@ -42,7 +45,7 @@ class Monster(Enemy):
             SOUND_CONFIG["volume_min"],
         )
         levels = (volume, volume)
-        audio_manager.play_sound(
+        context.audio.play_sound(
             flag,
             pack=self.agent_pack_name,
             volume=levels,

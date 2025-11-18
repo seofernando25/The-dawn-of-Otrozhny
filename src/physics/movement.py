@@ -2,86 +2,96 @@
 Movement utilities - shared movement logic for entities.
 
 Consolidates collision detection, movement, and steering logic used by Player and Enemy classes.
+
+This module provides pure calculation functions - no input reading is done here.
+Input reading should be handled by the InputSystem.
 """
 
 import math
-import pygame
 from utils import math_helpers
-from renderer import config as renderer_settings
+from config import renderer_config
 
 
-def get_input_movement(
+def calculate_movement_vector(
     entity,
     dt,
-    kb,
-    mouse_enabled=False,
-    screen_size=None,
+    move_forward=False,
+    move_backward=False,
+    move_left=False,
+    move_right=False,
 ):
-    """Return the (dx, dy) displacement computed from keyboard and optional mouse look input."""
+    """Calculate movement vector from boolean input flags."""
     newPx = 0
     newPy = 0
     angle = math.atan2(-entity.dirY, entity.dirX)
-    if screen_size is None:
-        screen_size = renderer_settings.SCREEN_SIZE
-    screen_width, screen_height = screen_size
-
-    # Mouse look (if enabled)
-    if mouse_enabled:
-        mouse_pos = pygame.mouse.get_pos()
-        pygame.mouse.set_pos(
-            [
-                screen_width // 2,
-                screen_height // 2,
-            ]
-        )
-        mouseDeltaX = mouse_pos[0] - screen_width // 2
-        entity.rotate(-entity.cameraYawSens * 0.05 * dt * mouseDeltaX)
-
-        entity.angleY -= (
-            0.05
-            * dt
-            * entity.cameraPitchSens
-            * (mouse_pos[1] - screen_height // 2)
-        )
-
-    # Clamp vertical angle
-    entity.angleY = math_helpers.clamp(
-        entity.angleY,
-        -renderer_settings.VIEWPORT_HEIGHT,
-        renderer_settings.VIEWPORT_HEIGHT,
-    )
-
-    # Keyboard rotation
-    if kb[pygame.K_LEFT]:
-        entity.rotate(entity.cameraYawSens * dt)
-
-    if kb[pygame.K_RIGHT]:
-        entity.rotate(-entity.cameraYawSens * dt)
-
-    if kb[pygame.K_UP]:
-        entity.angleY += entity.cameraPitchSens * dt
-
-    if kb[pygame.K_DOWN]:
-        entity.angleY -= entity.cameraPitchSens * dt
 
     # Movement input
-    if kb[pygame.K_d]:
+    if move_right:
         newPx -= math.sin(angle) * 2 * dt
         newPy -= math.cos(angle) * 2 * dt
 
-    if kb[pygame.K_a]:
+    if move_left:
         newPx += math.sin(angle) * entity.moveSpeed * dt
         newPy += math.cos(angle) * entity.moveSpeed * dt
 
-    if kb[pygame.K_w]:
+    if move_forward:
         newPx += math.cos(angle) * entity.moveSpeed * dt
         newPy -= math.sin(angle) * entity.moveSpeed * dt
 
-    if kb[pygame.K_s]:
+    if move_backward:
         newPx -= math.cos(angle) * entity.moveSpeed * dt
         newPy += math.sin(angle) * entity.moveSpeed * dt
 
     return newPx, newPy
+
+
+def apply_mouse_look(
+    entity,
+    dt,
+    mouse_delta_x,
+    mouse_delta_y,
+    screen_center_x,
+    screen_center_y,
+):
+    """Apply mouse look rotation to entity."""
+    entity.rotate(-entity.cameraYawSens * 0.05 * dt * mouse_delta_x)
+    entity.angleY -= 0.05 * dt * entity.cameraPitchSens * mouse_delta_y
+    
+    # Clamp vertical angle
+    entity.angleY = math_helpers.clamp(
+        entity.angleY,
+        -renderer_config.VIEWPORT_HEIGHT,
+        renderer_config.VIEWPORT_HEIGHT,
+    )
+
+
+def apply_keyboard_rotation(
+    entity,
+    dt,
+    rotate_left=False,
+    rotate_right=False,
+    pitch_up=False,
+    pitch_down=False,
+):
+    """Apply keyboard-based rotation to entity."""
+    if rotate_left:
+        entity.rotate(entity.cameraYawSens * dt)
+
+    if rotate_right:
+        entity.rotate(-entity.cameraYawSens * dt)
+
+    if pitch_up:
+        entity.angleY += entity.cameraPitchSens * dt
+
+    if pitch_down:
+        entity.angleY -= entity.cameraPitchSens * dt
+    
+    # Clamp vertical angle
+    entity.angleY = math_helpers.clamp(
+        entity.angleY,
+        -renderer_config.VIEWPORT_HEIGHT,
+        renderer_config.VIEWPORT_HEIGHT,
+    )
 
 
 def move_to_target(entity, target, dt):
