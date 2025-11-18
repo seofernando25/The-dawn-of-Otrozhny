@@ -56,9 +56,9 @@ def multiply(color, n):
 
 
 def lerp_color(color1, color2, t):
-    import mathHelpers
+    from utils import math_helpers
 
     new_color = []
     for index, luminosity in enumerate(color1):
-        new_color.append(mathHelpers.lerp(int(color1[index]), color2[index], t))
+        new_color.append(math_helpers.lerp(int(color1[index]), color2[index], t))
     return truncate_color(new_color)

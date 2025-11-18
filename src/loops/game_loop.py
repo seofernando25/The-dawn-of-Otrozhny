@@ -6,15 +6,14 @@ import datetime
 import pygame
 
 import colors
-import levelData
 import rendering as renderer
-import textDraw
+from renderer.text import message_display_L, message_display_MT
 import ui
 from entities.enemies import Enemy, EnemyStatus
-from entities.player import Player
 from renderer import minimap as renderer_minimap
-from gameState import GameState
+from core.game_state import GameState
 from loops.loop_runner import SceneHandler, run_scene
+from core.context import GameContext
 
 
 class HudController:
@@ -70,7 +69,7 @@ class HudController:
             self.hud.set_button_text(1, self._cache["collectibles"])
 
 
-def run_game_loop():
+def run_game_loop(context: GameContext):
     """
     Main game loop handling player movement, entity updates, rendering, and game state.
 
@@ -89,10 +88,9 @@ def run_game_loop():
     hud.hud_buttons[-1].protected = False
 
     # Setup player
-    try:
-        player = Player.require_instance()
-    except RuntimeError:
-        return GameState.Quit
+    player = context.player
+    if player is None:
+        raise RuntimeError("GameContext.player is not set.")
 
     player.keys = 0
     Enemy.enemy_status = EnemyStatus.Normal
@@ -113,7 +111,7 @@ def run_game_loop():
         kb = pygame.key.get_pressed()
 
         if kb[pygame.K_q]:
-            return GameState.Quit
+            return GameState.Menu
 
         time += delta_time
 
@@ -123,7 +121,9 @@ def run_game_loop():
             Enemy.enemy_status_time_left = 0
             return post_game_loop(won=False)
 
-        current_map = levelData.require_current_map()
+        current_map = context.level
+        if current_map is None:
+            raise RuntimeError("GameContext.level is not set.")
         if current_map.num_of_collected == current_map.num_of_collectibles:
             return post_game_loop(won=True, time=time)
 
@@ -142,22 +142,25 @@ def run_game_loop():
         hud_controller.update_health(player.health)
 
         # Rendering
-        screen = renderer.get_screen()
+        screen = context.screen or renderer.get_screen()
         screen.fill(colors.BLACK)
 
         # 3D View Rendering
-        view_port = renderer.render_first_person_canvas(player)
+        view_port = renderer.render_first_person_canvas(
+            player, canvas=context.services.get("first_person_surface")
+        )
+        context.services["first_person_surface"] = view_port
         screen.blit(view_port, (renderer.VIEWPORT_X_OFFSET, renderer.VIEWPORT_Y_OFFSET))
 
         # Minimap
         renderer_minimap.render_map(hud.hud_buttons[-1], player)
 
         # Draw HUD
-        hud.draw()
+        hud.draw(screen)
 
         # Debug info
-        textDraw.message_display_L(screen, f"FPS: {int(clock.get_fps())}", 15, 10, 15)
-        textDraw.message_display_MT(
+        message_display_L(screen, f"FPS: {int(clock.get_fps())}", 15, 10, 15)
+        message_display_MT(
             screen,
             f"X:{round(player.px, 2)} Y:{round(player.py, 2)}",
             renderer.SCREEN_WIDTH // 2,
@@ -194,14 +197,15 @@ class PostGameScene(SceneHandler):
             self.msg_accumulated = len(self.msg)
 
     def draw(self, screen):
-        textDraw.message_display_MT(
+        from renderer.text import message_display_MT, message_display_L
+        message_display_MT(
             screen,
             self.msg[: int(self.msg_accumulated)],
             renderer.SCREEN_WIDTH // 2,
             100,
             30,
         )
-        textDraw.message_display_L(
+        message_display_L(
             screen,
             'Press "q" to go back',
             renderer.VIEWPORT_X_OFFSET,
@@ -215,7 +219,7 @@ class PostGameScene(SceneHandler):
                 f"{self.elapsed_time.seconds % 60}."
                 f"{round(self.elapsed_time.microseconds / 1000)}"
             )
-            textDraw.message_display_MT(
+            message_display_MT(
                 screen,
                 time_str,
                 renderer.SCREEN_WIDTH // 2,
@@ -225,7 +229,7 @@ class PostGameScene(SceneHandler):
 
 
 def post_game_loop(won, time=0):
-    """Show the win/lose summary screen and always return GameState.Quit."""
+    """Show the win/lose summary screen and return GameState.Menu to go back to menu."""
     scene = PostGameScene(won, time)
     run_scene(scene)
-    return GameState.Quit
+    return GameState.Menu

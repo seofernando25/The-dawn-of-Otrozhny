@@ -82,7 +82,7 @@ def get_cached_audio(folder_name: str, sub_folder: str):
 
 def list_maps():
     maps_dir = _ensure_dir(MAPS_DIR)
-    return [(str(path), path.stem) for path in maps_dir.glob("*.map")]
+    return [(str(path), path.stem) for path in maps_dir.glob("*.json")]
 
 
 def list_asset_packs():

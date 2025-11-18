@@ -2,11 +2,10 @@ import math
 import random
 
 import audio_manager
-import levelData
-import mathHelpers
-import pathFinding
+from utils import math_helpers
+from physics import pathfinding
+from config import ENEMY_CONFIG, DAMAGE_CONFIG, SOUND_CONFIG
 from .base import Entity, EnemyStatus, SpriteAgent
-from .player import Player
 from renderer.raycast import generate_distance_table
 
 
@@ -15,7 +14,13 @@ class Enemy(SpriteAgent):
     enemy_status_time_left = 0
 
     def __init__(self, start_pos, patrolPoint=None):
-        super().__init__(start_pos, 90, 2, 6, "Droog")
+        super().__init__(
+            start_pos,
+            ENEMY_CONFIG["fov_degrees"],
+            ENEMY_CONFIG["move_speed"],
+            ENEMY_CONFIG["fov_depth"],
+            ENEMY_CONFIG["sprite_pack"],
+        )
         self.patrolPoint = patrolPoint
         self.target = self.patrolPoint
         self.pathFindingNodesTarget = self.target
@@ -25,13 +30,13 @@ class Enemy(SpriteAgent):
         self.originalFov = self.FOV
         self.originalFovDepth = self.FOVDepth
         self.lastPathFindingPoint = None
-        self.cameraYawSens = 4
+        self.cameraYawSens = ENEMY_CONFIG["camera_yaw_sensitivity"]
 
     def update(self, dt, events):
         generate_distance_table(self)
         super().update(dt, events)
-        current_map = levelData.require_current_map()
-        player = Player.require_instance()
+        current_map = self._current_map()
+        player = self._player()
         Enemy.enemy_status_time_left -= dt
         if Enemy.enemy_status_time_left < 0:
             Enemy.enemy_status_time_left = 0
@@ -68,7 +73,7 @@ class Enemy(SpriteAgent):
             if self.pathFindingComplete and (
                 not self.pathFindingNodes
                 or self.target is None
-                or mathHelpers.distance_to(self.get_pos(), self.target.get_pos()) < 1
+                or math_helpers.distance_to(self.get_pos(), self.target.get_pos()) < 1
             ):
                 self._retarget_random_point(current_map, min_distance=1.0)
 
@@ -77,33 +82,42 @@ class Enemy(SpriteAgent):
             EnemyStatus.Alert,
             EnemyStatus.Caution,
         ):
-            self.FOV = self.originalFov * 1.5
-            self.FOVDepth = self.originalFovDepth * 1.5
+            self.FOV = self.originalFov * ENEMY_CONFIG["alert_fov_multiplier"]
+            self.FOVDepth = self.originalFovDepth * ENEMY_CONFIG["alert_fov_depth_multiplier"]
         else:
             self.FOV = self.originalFov
             self.FOVDepth = self.originalFovDepth
 
         if self.target is not None:
-            dx, dy = mathHelpers.slope(self.get_pos(), self.target.get_pos())
+            dx, dy = math_helpers.slope(self.get_pos(), self.target.get_pos())
             targetDistance = math.hypot(dx, dy)
             if self.pathFindingNodes is not None and len(self.pathFindingNodes) > 0:
                 nextStep = self.pathFindingNodes[0]
 
-                nextPathNodeDistance = mathHelpers.distance_to(self.get_pos(), nextStep)
-                adjustedNextStep = (nextStep[0] + 0.5, nextStep[1] + 0.5)
+                nextPathNodeDistance = math_helpers.distance_to(self.get_pos(), nextStep)
+                adjustment = ENEMY_CONFIG["pathfinding_node_adjustment"]
+                adjustedNextStep = (nextStep[0] + adjustment, nextStep[1] + adjustment)
                 self.move_to(Entity(adjustedNextStep), dt)
                 if nextPathNodeDistance < 0.1:
                     self.pathFindingNodes.pop(0)
             else:
                 self.pathFindingComplete = True
-                if targetDistance > 0.5:
+                pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
+                if isinstance(pathfinding_dist, (int, float)) and targetDistance > pathfinding_dist:
                     self.move_to(self.target, dt)
 
-            if isinstance(self.target, Node) and targetDistance < 0.5:
+            pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
+            if isinstance(self.target, Node) and isinstance(pathfinding_dist, (int, float)) and targetDistance < pathfinding_dist:
                 self.timeGuarded += dt
-                self.rotate(math.radians(36) * dt)
+                patrol_rot = ENEMY_CONFIG["patrol_rotation_speed"]
+                if isinstance(patrol_rot, (int, float)):
+                    rotation_speed = math.radians(patrol_rot) * dt
+                else:
+                    rotation_speed = 0
+                self.rotate(rotation_speed)
 
-                if self.timeGuarded > 1:
+                guard_time = ENEMY_CONFIG["patrol_guard_time"]
+                if isinstance(guard_time, (int, float)) and self.timeGuarded > guard_time:
                     self.change_patrol_point()
 
     def change_target(self, target):
@@ -114,7 +128,8 @@ class Enemy(SpriteAgent):
             self.lastPathFindingPoint = target.get_pos()
             self.pathFindingComplete = False
             self.pathFindingNodesTarget = target
-            self.pathFindingNodes = pathFinding.go_to(my_pos, (int(x), int(y)))
+            current_map = self._current_map()
+            self.pathFindingNodes = pathfinding.go_to(my_pos, (int(x), int(y)), current_map.grid)
             if self.pathFindingNodes and len(self.pathFindingNodes) > 0:
                 self.pathFindingNodes.pop(0)
 
@@ -125,10 +140,13 @@ class Enemy(SpriteAgent):
         self.timeGuarded = 0
         self.change_target(self.patrolPoint)
 
-    def _retarget_random_point(self, current_map, min_distance=0.0, attempts=10):
+    def _retarget_random_point(self, current_map, min_distance=0.0, attempts=None):
+        if attempts is None:
+            retarget_attempts = ENEMY_CONFIG["retarget_attempts"]
+            attempts = int(retarget_attempts) if isinstance(retarget_attempts, (int, float)) else 10
         for _ in range(attempts):
             random_entity = Entity(current_map.pick_random_point())
-            distance = mathHelpers.distance_to(self.get_pos(), random_entity.get_pos())
+            distance = math_helpers.distance_to(self.get_pos(), random_entity.get_pos())
             if distance < min_distance:
                 continue
             self.change_target(random_entity)
@@ -168,7 +186,9 @@ class Node(Entity):
         node_list = self.nodes.copy()
 
         if biased:
-            for _ in range(int(len(self.nodes) * 0.5)):
+            from config import ENEMY_CONFIG
+            bias_factor = ENEMY_CONFIG["node_bias_factor"]
+            for _ in range(int(len(self.nodes) * bias_factor)):
                 node_list.append(node_list[-1])
 
         if len(node_list) > 0:
@@ -187,25 +207,26 @@ class Monster(Enemy):
 
         dist_to_player = math.inf
         if self.target is not None:
-            player = Player.require_instance()
-            dist_to_player = mathHelpers.distance_to(self.get_pos(), player.get_pos())
-            if (
-                isinstance(self.target, Player)
-                and dist_to_player < 3
-                and self.canSeePlayer
-            ):
-                self.attack(self.target, dt)
-            if (
-                isinstance(self.target, Player)
-                and dist_to_player < 3
-                and not self.canSeePlayer
-            ):
-                self.look_at(self.target, dt)
-        if dist_to_player < 5:
+            player = self._player()
+            dist_to_player = math_helpers.distance_to(self.get_pos(), player.get_pos())
+            attack_dist = ENEMY_CONFIG["attack_distance"]
+            if isinstance(attack_dist, (int, float)):
+                if self.target is player and dist_to_player < attack_dist and self.canSeePlayer:
+                    self.attack(player, dt)
+                if self.target is player and dist_to_player < attack_dist and not self.canSeePlayer:
+                    self.look_at(player, dt)
+        sound_dist = ENEMY_CONFIG["sound_trigger_distance"]
+        if isinstance(sound_dist, (int, float)) and dist_to_player < sound_dist:
             self.play_sound(dist_to_player, Enemy.enemy_status.name)
 
     def play_sound(self, distance, flag, force=False):
-        volume = mathHelpers.translate(distance, 0, 5, 2, 0.5)
+        volume = math_helpers.translate(
+            distance,
+            SOUND_CONFIG["volume_distance_min"],
+            SOUND_CONFIG["volume_distance_max"],
+            SOUND_CONFIG["volume_max"],
+            SOUND_CONFIG["volume_min"],
+        )
         levels = (volume, volume)
         audio_manager.play_sound(
             flag,
@@ -217,11 +238,18 @@ class Monster(Enemy):
     def attack(self, target, dt):
         if target is None:
             return
-        self.look_at(target, dt * 2)
-        target.health -= dt * 30
+        look_mult = ENEMY_CONFIG["attack_look_speed_multiplier"]
+        self.look_at(target, dt * look_mult)
+        target.health -= dt * DAMAGE_CONFIG["enemy_attack_dps"]
         target.look_at(self, dt)
-        target.angleY += dt * random.randint(-400, 400)
-        target.rotate(dt * random.randint(-3, 3))
-        player = Player.require_instance()
-        dist_to_player = mathHelpers.distance_to(self.get_pos(), player.get_pos())
+        angle_range = ENEMY_CONFIG["attack_angle_range"]
+        if isinstance(angle_range, tuple) and len(angle_range) == 2:
+            angle_min, angle_max = angle_range
+            target.angleY += dt * random.randint(int(angle_min), int(angle_max))
+        rot_range = ENEMY_CONFIG["attack_rotation_range"]
+        if isinstance(rot_range, tuple) and len(rot_range) == 2:
+            rot_min, rot_max = rot_range
+            target.rotate(dt * random.randint(int(rot_min), int(rot_max)))
+        player = self._player()
+        dist_to_player = math_helpers.distance_to(self.get_pos(), player.get_pos())
         self.play_sound(dist_to_player, "Attack", True)

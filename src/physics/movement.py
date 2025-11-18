@@ -6,37 +6,46 @@ Consolidates collision detection, movement, and steering logic used by Player an
 
 import math
 import pygame
-import mathHelpers
+from utils import math_helpers
 from renderer import config as renderer_settings
 
 
-def get_input_movement(entity, dt, kb, mouse_enabled=False):
+def get_input_movement(
+    entity,
+    dt,
+    kb,
+    mouse_enabled=False,
+    screen_size=None,
+):
     """Return the (dx, dy) displacement computed from keyboard and optional mouse look input."""
     newPx = 0
     newPy = 0
     angle = math.atan2(-entity.dirY, entity.dirX)
+    if screen_size is None:
+        screen_size = renderer_settings.SCREEN_SIZE
+    screen_width, screen_height = screen_size
 
     # Mouse look (if enabled)
     if mouse_enabled:
         mouse_pos = pygame.mouse.get_pos()
         pygame.mouse.set_pos(
             [
-                renderer_settings.SCREEN_WIDTH // 2,
-                renderer_settings.SCREEN_HEIGHT // 2,
+                screen_width // 2,
+                screen_height // 2,
             ]
         )
-        mouseDeltaX = mouse_pos[0] - renderer_settings.SCREEN_WIDTH // 2
+        mouseDeltaX = mouse_pos[0] - screen_width // 2
         entity.rotate(-entity.cameraYawSens * 0.05 * dt * mouseDeltaX)
 
         entity.angleY -= (
             0.05
             * dt
             * entity.cameraPitchSens
-            * (mouse_pos[1] - renderer_settings.SCREEN_HEIGHT // 2)
+            * (mouse_pos[1] - screen_height // 2)
         )
 
     # Clamp vertical angle
-    entity.angleY = mathHelpers.clamp(
+    entity.angleY = math_helpers.clamp(
         entity.angleY,
         -renderer_settings.VIEWPORT_HEIGHT,
         renderer_settings.VIEWPORT_HEIGHT,
@@ -82,7 +91,7 @@ def move_to_target(entity, target, dt):
     else:
         target_pos = target
 
-    dx, dy = mathHelpers.slope(entity.get_pos(), target_pos)
+    dx, dy = math_helpers.slope(entity.get_pos(), target_pos)
     targetDistance = math.hypot(dx, dy)
 
     if targetDistance > 0.5:
@@ -102,16 +111,20 @@ def look_at(entity, target, dt, turn_speed=None):
     else:
         target_pos = target
 
-    dx, dy = mathHelpers.slope(entity.get_pos(), target_pos)
+    dx, dy = math_helpers.slope(entity.get_pos(), target_pos)
     target_angle = math.atan2(dy, dx)
 
+    # Get current entity angle from direction vector
+    current_angle = math.atan2(entity.dirY, entity.dirX)
+
     # Calculate shortest rotation direction
-    angle_diff = target_angle - entity.angle
+    angle_diff = target_angle - current_angle
     angle_diff = (angle_diff + math.pi) % (2 * math.pi) - math.pi
 
     # Apply rotation
     speed = turn_speed if turn_speed is not None else entity.cameraYawSens * dt * 2
     if abs(angle_diff) < speed:
-        entity.angle = target_angle
+        # Rotate to exact target angle
+        entity.rotate(angle_diff)
     else:
         entity.rotate(math.copysign(speed, angle_diff))

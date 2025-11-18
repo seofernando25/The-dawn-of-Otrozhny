@@ -5,8 +5,7 @@ import numpy as np
 import pygame
 
 import colors
-import levelData
-import mathHelpers
+from utils import math_helpers
 from renderer import config as renderer_settings
 from entities.base import SpriteEntity
 from . import utils
@@ -30,7 +29,11 @@ def generate_distance_table(entity):
     entity.rayDistanceTable = []
     entity.entitiesInSight = []
 
-    current_map = levelData.require_current_map()
+    if not hasattr(entity, "context") or entity.context is None:
+        raise RuntimeError("Entity requires a GameContext for raycast operations.")
+    current_map = entity.context.level
+    if current_map is None:
+        raise RuntimeError("GameContext.level is not set.")
     grid = _get_numpy_grid(current_map)
     fov_depth = int(math.ceil(entity.FOVDepth))
     degrees = max(1, math.ceil(math.degrees(entity.FOV)))
@@ -178,7 +181,11 @@ def generate_distance_table(entity):
 
 
 def _calculate_entities_in_sight(entity):
-    current_map = levelData.require_current_map()
+    if not hasattr(entity, "context") or entity.context is None:
+        raise RuntimeError("Entity requires a GameContext for raycast operations.")
+    current_map = entity.context.level
+    if current_map is None:
+        raise RuntimeError("GameContext.level is not set.")
     fov_polygons = calculate_fov_polygon(entity)
     for e in current_map.grid_entities:
         if e != entity:
@@ -268,7 +275,7 @@ def render_walls(screen, entity):
             if not issubclass(type(enemy), SpriteEntity) or enemy == entity:
                 continue
 
-            dx, dy = mathHelpers.slope(entity.get_pos(), enemy.get_pos())
+            dx, dy = math_helpers.slope(entity.get_pos(), enemy.get_pos())
             new_x = inverse_projection_dist * (entity.dirY * dx - entity.dirX * dy)
             new_y = inverse_projection_dist * (-entity.planeY * dx + entity.planeX * dy)
 
@@ -299,7 +306,7 @@ def render_walls(screen, entity):
             )
         elif isinstance(data, SpriteEntity):
             scale_multiplier = abs(
-                mathHelpers.translate(floor - ceiling, 0, VIEWPORT_HEIGHT, 0, 4)
+                math_helpers.translate(floor - ceiling, 0, VIEWPORT_HEIGHT, 0, 4)
             )
             scale_multiplier = max(0, min(scale_multiplier, 5))
             sprite = data.get_sprite(entity)

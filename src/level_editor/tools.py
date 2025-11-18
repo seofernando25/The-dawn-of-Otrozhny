@@ -9,12 +9,8 @@ import pygame
 import rendering as renderer
 import colors
 from entities.enemies import Enemy, Node
-import levelData
-from levelData import Level
 
 
-def _current_map() -> Level:
-    return levelData.require_current_map()
 
 
 class BaseTool:
@@ -64,7 +60,7 @@ class MoveTool(BaseTool):
         if pygame.mouse.get_pressed()[0]:
             if self.selected_entity is None and current_cell:
                 # Try to select an entity at current cell
-                for entity in _current_map().grid_entities:
+                for entity in grid_manager.level.grid_entities:
                     if current_cell == (int(entity.px), int(entity.py)):
                         self.selected_entity = entity
                         return
@@ -183,7 +179,7 @@ class PlaceTool(BaseTool):
             self.object_to_place = Gate(position_adjust)
 
         if self.object_to_place:
-            current_map = _current_map()
+            current_map = grid_manager.level
 
             # Check for conflicts and place entity
             can_place = True
@@ -220,7 +216,7 @@ class PlaceTool(BaseTool):
             self.object_to_place = None
 
     def remove_entity_at(self, cell, grid_manager):
-        current_map = _current_map()
+        current_map = grid_manager.level
 
         # Remove wall
         grid_manager.grid[cell[1]][cell[0]] = 0
@@ -262,10 +258,10 @@ class NodeTool(BaseTool):
         self.selected_node = None
         self.is_dragging = False
 
-    def _find_node_at(self, cell):
+    def _find_node_at(self, cell, grid_manager):
         if cell is None:
             return None
-        for node in _current_map().node_entities:
+        for node in grid_manager.level.node_entities:
             if cell == (int(node.px), int(node.py)):
                 return node
         return None
@@ -277,7 +273,7 @@ class NodeTool(BaseTool):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    node = self._find_node_at(current_cell)
+                    node = self._find_node_at(current_cell, grid_manager)
                     if node is None:
                         self.selected_node = None
                         self.is_dragging = False
@@ -289,7 +285,7 @@ class NodeTool(BaseTool):
                             self.selected_node = node
                         self.is_dragging = True
                 elif event.button == 3:
-                    node = self._find_node_at(current_cell)
+                    node = self._find_node_at(current_cell, grid_manager)
                     if node is not None:
                         for other_node in node.nodes[:]:
                             node.remove_node(other_node)
@@ -299,7 +295,7 @@ class NodeTool(BaseTool):
 
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if self.is_dragging:
-                    node = self._find_node_at(current_cell)
+                    node = self._find_node_at(current_cell, grid_manager)
                     if node and self.selected_node and node != self.selected_node:
                         self.selected_node.join_node(node)
                         self.selected_node = node

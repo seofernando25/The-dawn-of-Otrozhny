@@ -1,8 +1,8 @@
 import math
 
-import mathHelpers
+from utils import math_helpers
+from config import COLLISION_DISTANCES
 from .base import SpriteEntity
-from .player import Player
 
 
 class Collectible(SpriteEntity):
@@ -12,12 +12,10 @@ class Collectible(SpriteEntity):
 
     def update(self, dt, events):
         if not self.collected:
-            import levelData
-
-            player = Player.require_instance()
-            current_map = levelData.require_current_map()
-            dist = mathHelpers.distance_to(self.get_pos(), player.get_pos())
-            if dist < 0.5:
+            player = self._player()
+            current_map = self._current_map()
+            dist = math_helpers.distance_to(self.get_pos(), player.get_pos())
+            if dist < COLLISION_DISTANCES["collectible_pickup"]:
                 current_map.num_of_collected += 1
                 self.collected = True
                 self.agent_pack_name = ""
@@ -30,20 +28,20 @@ class Gate(SpriteEntity):
 
     def update(self, dt, events):
         if not self.open:
-            player = Player.require_instance()
-            dist = mathHelpers.distance_to(self.get_pos(), player.get_pos())
-            if dist < 0.5:
+            player = self._player()
+            dist = math_helpers.distance_to(self.get_pos(), player.get_pos())
+            if dist < COLLISION_DISTANCES["gate_interaction"]:
                 if player.keys > 0:
                     player.keys -= 1
                     self.open = True
                     self.agent_pack_name = ""
-            elif dist < 1 and player.keys == 0:
-                knockback_dx, knockback_dy = mathHelpers.slope(
+            elif dist < COLLISION_DISTANCES["gate_knockback"] and player.keys == 0:
+                knockback_dx, knockback_dy = math_helpers.slope(
                     self.get_pos(), player.get_pos()
                 )
                 knockback_length = math.hypot(knockback_dx, knockback_dy)
                 if knockback_length > 0:
-                    strength = 0.5
+                    strength = COLLISION_DISTANCES["gate_knockback_strength"]
                     player.move(
                         (knockback_dx / knockback_length) * strength,
                         (knockback_dy / knockback_length) * strength,
@@ -58,9 +56,9 @@ class Key(SpriteEntity):
 
     def update(self, dt, events):
         if not self.collected:
-            player = Player.require_instance()
-            dist = mathHelpers.distance_to(self.get_pos(), player.get_pos())
-            if dist < 0.5:
+            player = self._player()
+            dist = math_helpers.distance_to(self.get_pos(), player.get_pos())
+            if dist < COLLISION_DISTANCES["key_pickup"]:
                 player.keys += 1
                 self.collected = True
                 self.agent_pack_name = ""

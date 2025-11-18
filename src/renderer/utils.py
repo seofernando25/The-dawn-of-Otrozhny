@@ -2,7 +2,6 @@
 Renderer utilities - shared cache system and math helpers for rendering modules.
 """
 
-import numpy as np
 from renderer import config as renderer_settings
 
 # Shared caches for renderer modules
@@ -41,12 +40,8 @@ def get_static_surfaces_cache():
 
 
 def get_numpy_grid(current_map):
-    """Return the cached numpy grid for a level, creating it on first access."""
-    grid_np = getattr(current_map, "grid_np", None)
-    if grid_np is None or not isinstance(grid_np, np.ndarray):
-        grid_np = np.array(current_map.grid, dtype=np.int16)
-        current_map.grid_np = grid_np
-    return grid_np
+    """Return the numpy grid for a level (Level always has grid_np)."""
+    return current_map.grid_np
 
 
 def translate_to_map(coord_list, scale_x, scale_y):

@@ -61,19 +61,13 @@ def render_floor(screen, entity):
     )
 
 
-cached_first_person_canvas = None
-
-
-def render_first_person_canvas(entity):
-    global cached_first_person_canvas
-    if cached_first_person_canvas is not None:
-        render_first_person(cached_first_person_canvas, entity)
-        return cached_first_person_canvas
-    else:
-        cached_first_person_canvas = pygame.Surface(
+def render_first_person_canvas(entity, *, canvas=None):
+    if canvas is None:
+        canvas = pygame.Surface(
             [SCREEN_WIDTH - VIEWPORT_X_OFFSET * 2, VIEWPORT_HEIGHT]
         ).convert()
-        return render_first_person_canvas(entity)
+    render_first_person(canvas, entity)
+    return canvas
 
 
 def render_first_person(screen, entity):
@@ -91,10 +85,7 @@ def render_first_person(screen, entity):
 
 def draw_map_preview(screen, map_obj, cache_key=None):
     signature = (
-        cache_key
-        or getattr(map_obj, "map_name", None)
-        or getattr(map_obj, "name", None)
-        or id(map_obj),
+        cache_key or id(map_obj),
         screen.get_size(),
     )
     cache = utils.get_map_preview_cache()

@@ -5,12 +5,14 @@ Setup game module - handles level selection and asset preloading.
 import pygame
 
 import assets
-import gameIO
-import levelData
+from core.io import load_level_object, list_maps
+from core.level import Level
 import rendering as renderer
-import textDraw
+from renderer.text import message_display_L
 import ui
-from gameState import GameState
+from core.context import build_game_context
+from entities.player import Player
+from core.game_state import GameState
 from loops.loop_runner import SceneHandler, run_scene_with_hud
 
 from .game_loop import run_game_loop
@@ -40,7 +42,7 @@ def _build_map_grid(hud, map_list):
             if not available_maps:
                 break
             map_path, _ = available_maps.pop()
-            map_obj = gameIO.load_level_object(map_path)
+            map_obj = load_level_object(map_path)
             actual_map_list[px][py] = map_obj
             renderer.draw_map_preview(button, map_obj, cache_key=map_path)
             button.redraw()
@@ -67,8 +69,20 @@ class MapSelectionScene(SceneHandler):
                         self.hud.selected_button_y
                     ]
                     if map_obj is not None:
-                        levelData.Level.load(map_obj)
-                        self.result = run_game_loop()
+                            # Build context first, then load level with it
+                            # We need to find the player from the map object to build context
+                            player = next((x for x in map_obj.grid_entities if isinstance(x, Player)), None)
+                            if player is None:
+                                self.result = GameState.Menu
+                                return True
+                            context = build_game_context(player=player, level=None)
+                            Level.load(map_obj, context=context)
+                            result = run_game_loop(context)
+                            if result == GameState.Quit:
+                                self.result = GameState.Quit
+                                return True
+                            # Any other result (e.g., GameState.Menu) means stay in selector
+                            continue
                     else:
                         self.result = GameState.Menu
                     return True
@@ -83,7 +97,7 @@ class MapSelectionScene(SceneHandler):
 
     def draw(self, screen):
         """Draw helper text over the HUD-controlled map grid."""
-        textDraw.message_display_L(
+        message_display_L(
             screen,
             'Press "q" to go back',
             renderer.VIEWPORT_X_OFFSET,
@@ -101,7 +115,7 @@ def setup_game():
     """
     pre_load_assets()
 
-    map_list = gameIO.list_maps()
+    map_list = list_maps()
     hud = ui.MapSelectionScreen()
     actual_map_list = _build_map_grid(hud, map_list)
 

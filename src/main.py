@@ -5,9 +5,9 @@ import pygame
 
 import assets
 import audio_manager
-import levelEditor
+from level_editor import editor as levelEditor
 import ui
-from gameState import GameState
+from core.game_state import GameState
 from loops import about_loop, menu_loop, setup_game, tutorial_loop
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -89,20 +89,6 @@ def main_loop():
 
 
 if __name__ == "__main__":
-    if sys.version_info.minor < 6:
-        print("WARNING: Please use a newer version of CPython or pygame")
-        print("Current python version is " + str(sys.version))
-        print(
-            "\nThis version may be unplayable due to a bug in the generate_distance_table "
-            "function."
-        )
-        print(
-            "On my experience this bug only occurred on 32bit machines with older versions "
-            "of python and pygame"
-        )
-        print("\nAfter updating your version please delete the __pycache__ folder")
-        input()
-
     if len(sys.argv) > 1 and sys.argv[-1] == "PLOG":
         import cProfile
         import io

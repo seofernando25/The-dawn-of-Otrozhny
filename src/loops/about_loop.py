@@ -3,7 +3,7 @@ About loop module - displays the about screen with animated text.
 """
 
 import pygame
-import textDraw
+from renderer.text import message_display, message_display_L
 import rendering as renderer
 from loops.loop_runner import SceneHandler
 
@@ -40,14 +40,14 @@ class AboutScene(SceneHandler):
     def draw(self, screen):
         """Draw the about screen content."""
         if self.sub_title_size < 20:
-            textDraw.message_display(
+            message_display(
                 screen,
                 "Made By Fernando Nogueira",
                 renderer.SCREEN_WIDTH // 2,
                 renderer.VIEWPORT_Y_OFFSET,
                 20,
             )
-            textDraw.message_display(
+            message_display(
                 screen,
                 "with some help from the internet",
                 renderer.SCREEN_WIDTH // 2,
@@ -55,21 +55,21 @@ class AboutScene(SceneHandler):
                 int(self.sub_title_size),
             )
         else:
-            textDraw.message_display(
+            message_display(
                 screen,
                 "Made By Stack Overflow",
                 renderer.SCREEN_WIDTH // 2,
                 renderer.VIEWPORT_Y_OFFSET,
                 20,
             )
-            textDraw.message_display(
+            message_display(
                 screen,
                 "not really",
                 renderer.SCREEN_WIDTH - 50,
                 renderer.VIEWPORT_Y_OFFSET,
                 8,
             )
-            textDraw.message_display(
+            message_display(
                 screen,
                 "with some help from fernando",
                 renderer.SCREEN_WIDTH // 2,
@@ -77,7 +77,7 @@ class AboutScene(SceneHandler):
                 int(self.second_sub_title_size),
             )
 
-        textDraw.message_display_L(
+        message_display_L(
             screen,
             'Press "q" to go back',
             renderer.VIEWPORT_X_OFFSET,

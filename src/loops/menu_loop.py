@@ -4,11 +4,11 @@ Menu loop module - handles the main menu with fractal background and other effec
 
 import pygame
 import ui
-import otherEffects
-import textDraw
+from renderer import effects as otherEffects
+from renderer.text import message_display_MT
 import rendering as renderer
 from loops.loop_runner import SceneHandler
-from gameState import GameState
+from core.game_state import GameState
 
 
 class MenuScene(SceneHandler):
@@ -65,10 +65,10 @@ class MenuScene(SceneHandler):
         self.fractal.draw(screen)
 
         # Draw menu text
-        textDraw.message_display_MT(
+        message_display_MT(
             screen, "The dawn of Otrozhny", renderer.SCREEN_WIDTH // 2, 100, 30
         )
-        textDraw.message_display_MT(
+        message_display_MT(
             screen, "Containment breach", renderer.SCREEN_WIDTH // 2, 150, 30
         )
 

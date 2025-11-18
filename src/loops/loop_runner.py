@@ -7,13 +7,14 @@ This module provides a reusable implementation.
 
 import pygame
 import colors
-from typing import Protocol, Any, Optional
+from typing import Protocol, Optional
+from core.game_state import GameState
 
 
 class SceneHandler(Protocol):
     """Protocol for scene handlers that can be run by the loop runner."""
 
-    def handle_events(self, events: list, keys_pressed: Any) -> bool:
+    def handle_events(self, events: list[pygame.event.Event], keys_pressed: tuple) -> bool:
         """Handle pygame events. Return True to quit."""
         ...
 
@@ -21,7 +22,7 @@ class SceneHandler(Protocol):
         """Update game logic."""
         ...
 
-    def draw(self, screen: Any) -> None:
+    def draw(self, screen: pygame.Surface) -> None:
         """Draw the scene."""
         ...
 
@@ -98,14 +99,9 @@ def run_scene_with_hud(
         # Update HUD first
         result = hud.update(delta_time, events)
         if result is not None:
-            # Convert button index to GameState if we have GameState available
-            try:
-                from gameState import GameState
-
-                if isinstance(result, int) and 0 <= result <= 4:
-                    return GameState(result)
-            except ImportError:
-                pass
+            # Convert button index to GameState
+            if isinstance(result, int) and 0 <= result <= 4:
+                return GameState(result)
             return result  # Return HUD change result (like selected button)
 
         # Handle events - quit if handler returns True
@@ -123,7 +119,7 @@ def run_scene_with_hud(
         scene_handler.draw(screen)
 
         # Draw HUD on top
-        hud.draw()
+        hud.draw(screen)
 
         pygame.display.flip()
         clock.tick()

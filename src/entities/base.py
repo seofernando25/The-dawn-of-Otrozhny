@@ -1,18 +1,24 @@
 import enum
 import math
+from typing import Optional, TYPE_CHECKING
 
 import pygame
 
 import assets
 import colors
-import mathHelpers
+from utils import math_helpers
+from config import ENTITY_DEFAULTS
 from physics import movement
+
+if TYPE_CHECKING:
+    from core.context import GameContext
 
 
 class Entity:
-    def __init__(self, start_pos):
+    def __init__(self, start_pos, *, context: Optional["GameContext"] = None):
         self.px = start_pos[0]
         self.py = start_pos[1]
+        self.context: Optional["GameContext"] = context
 
     def update(self, dt, events):
         pass
@@ -20,10 +26,29 @@ class Entity:
     def get_pos(self):
         return (self.px, self.py)
 
+    def set_context(self, context: "GameContext") -> None:
+        self.context = context
+
+    def _current_map(self):
+        if self.context is None:
+            raise RuntimeError("Entity requires a GameContext. Set context via set_context() or pass context= to __init__.")
+        if not hasattr(self.context, "level") or self.context.level is None:
+            raise RuntimeError("GameContext.level is not set.")
+        return self.context.level
+
+    def _player(self):
+        if self.context is None:
+            raise RuntimeError("Entity requires a GameContext. Set context via set_context() or pass context= to __init__.")
+        if not hasattr(self.context, "player") or self.context.player is None:
+            raise RuntimeError("GameContext.player is not set.")
+        return self.context.player
+
 
 class SpriteEntity(Entity):
-    def __init__(self, start_pos, agent_pack_name="Default"):
-        super().__init__(start_pos)
+    def __init__(
+        self, start_pos, agent_pack_name="Default", *, context: Optional["GameContext"] = None
+    ):
+        super().__init__(start_pos, context=context)
         self.agent_pack_name = agent_pack_name
 
     def get_sprite(self, _cam):
@@ -31,9 +56,17 @@ class SpriteEntity(Entity):
 
 
 class Agent(SpriteEntity):
-    def __init__(self, start_pos, fov, move_speed, fov_depth):
-        super().__init__(start_pos)
-        self.health = 100
+    def __init__(
+        self,
+        start_pos,
+        fov,
+        move_speed,
+        fov_depth,
+        *,
+        context: Optional["GameContext"] = None,
+    ):
+        super().__init__(start_pos, context=context)
+        self.health = ENTITY_DEFAULTS["health"]
         self.entitiesInSight = []
         self.canSeePlayer = False
         self.rayDistanceTable = {}
@@ -44,7 +77,7 @@ class Agent(SpriteEntity):
         self.dirX = -1
         self.dirY = 0
         self.planeX = 0
-        self.planeY = 0.66
+        self.planeY = ENTITY_DEFAULTS["plane_y"]
         self.cameraYawSens = 0
         self.cameraPitchSens = 0
 
@@ -52,11 +85,9 @@ class Agent(SpriteEntity):
         return super().update(dt, events)
 
     def move(self, dirX, dirY, deltaTime):
-        import levelData
-
         next_pos_x = self.px + dirX
         next_pos_y = self.py + dirY
-        current_map = levelData.require_current_map()
+        current_map = self._current_map()
 
         if next_pos_x < 0 or next_pos_x > current_map.level_width:
             self.px += dirX
@@ -74,7 +105,8 @@ class Agent(SpriteEntity):
 
     def move_to(self, target, deltaTime):
         """Move the agent towards a target using shared movement helpers."""
-        movement.look_at(self, target, deltaTime * 2)
+        look_mult = ENTITY_DEFAULTS["move_to_look_speed_multiplier"]
+        movement.look_at(self, target, deltaTime * look_mult)
         dirX, dirY = movement.move_to_target(self, target, deltaTime)
         if dirX or dirY:
             self.move(dirX, dirY, deltaTime)
@@ -89,7 +121,7 @@ class Agent(SpriteEntity):
         self.planeY = oldPlaneX * math.sin(amount) + self.planeY * math.cos(amount)
 
     def look_at(self, target, deltaTime):
-        dx, dy = mathHelpers.slope(self.get_pos(), target.get_pos())
+        dx, dy = math_helpers.slope(self.get_pos(), target.get_pos())
         theta = math.atan2(dy, dx)
         angle = math.atan2(self.dirY, self.dirX)
         targetAngle = math.degrees(theta)
@@ -107,16 +139,25 @@ class EnemyStatus(enum.Enum):
 
 
 class SpriteAgent(Agent):
-    def __init__(self, start_pos, fov, move_speed, fov_depth, agent_pack):
-        super().__init__(start_pos, fov, move_speed, fov_depth)
+    def __init__(
+        self,
+        start_pos,
+        fov,
+        move_speed,
+        fov_depth,
+        agent_pack,
+        *,
+        context: Optional["GameContext"] = None,
+    ):
+        super().__init__(start_pos, fov, move_speed, fov_depth, context=context)
         self.agent_pack_name = agent_pack
 
     def get_sprite(self, camObj):
         angle = math.atan2(self.dirY, self.dirX)
         camPos = camObj.get_pos()
-        dx, dy = mathHelpers.slope(camPos, self.get_pos())
+        dx, dy = math_helpers.slope(camPos, self.get_pos())
         camAngleToSprite = math.atan2(dy, dx)
-        angleCamDelta = mathHelpers.fixed_angle(camAngleToSprite + angle)
+        angleCamDelta = math_helpers.fixed_angle(camAngleToSprite + angle)
 
         curr = assets.get_sprite(self.agent_pack_name, 0)
         if math.degrees(angleCamDelta) < 180:

@@ -4,7 +4,7 @@ Tutorial loop module - displays tutorial tabs with briefing/map editor/items/ene
 
 import pygame
 import menuTabs
-import textDraw
+from renderer.text import message_display_L
 import rendering as renderer
 from loops.loop_runner import SceneHandler
 
@@ -21,7 +21,6 @@ class TutorialScene(SceneHandler):
         self.hud.set_button_text(2, "Items")
         self.hud.set_button_text(3, "Enemy Status")
         self.hud.set_button_text(4, "?")
-        self.hud.draw()
 
     def handle_events(self, events, keys_pressed):
         """Handle quit events."""
@@ -51,9 +50,9 @@ class TutorialScene(SceneHandler):
             menuTabs.render_tutorial_tab_5()
 
         self.hud.update(0, [])  # Update HUD visuals
-        self.hud.draw()
+        self.hud.draw(screen)
 
-        textDraw.message_display_L(
+        message_display_L(
             screen,
             'Press "q" to go back',
             renderer.VIEWPORT_X_OFFSET,

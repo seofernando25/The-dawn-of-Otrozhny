@@ -1,14 +1,17 @@
 # Classes that wrap around ui elements
 # as a layer of abstraction to increase productivity
-from typing import List
+from typing import List, Optional
 
 import rendering as renderer
-import mathHelpers
+from utils import math_helpers
 import colors
 import pygame.constants as pyConst
 import pygame
-import textDraw
-import textHelpers
+from renderer.text import message_display, message_display_MT, FONT_PATH, wrapline
+
+
+def _resolve_screen(screen: Optional[pygame.Surface] = None) -> pygame.Surface:
+    return screen if screen is not None else renderer.get_screen()
 
 
 class HudScreen:
@@ -35,7 +38,7 @@ class HudScreen:
     def set_button_text(self, buttonIndex, text):
         self.hud_buttons[buttonIndex].set_text(text)
 
-    def draw(self):
+    def draw(self, screen: Optional[pygame.Surface] = None):
         if self.interactable or self.dynamic:
             self.viewPort.fill(colors.GRAY_VARIATION_2)
         render_hud_surfaces(self.viewPort, self.hud_buttons)
@@ -55,8 +58,8 @@ class HudScreen:
                     -10,
                 ],
             )
-        screen = renderer.get_screen()
-        screen.blit(
+        target_screen = _resolve_screen(screen)
+        target_screen.blit(
             self.viewPort,
             (
                 renderer.VIEWPORT_X_OFFSET,
@@ -82,7 +85,7 @@ class HudScreen:
 
     def update(self, dt, events):
         if self.interactable:
-            self.cursorX = mathHelpers.lerp(self.cursorX, self.selected_button, dt * 15)
+            self.cursorX = math_helpers.lerp(self.cursorX, self.selected_button, dt * 15)
             for event in events:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pyConst.K_LEFT:
@@ -116,18 +119,18 @@ class VerticalList:
         self.objects = []
         self.px = px
         self.py = py
-        font = pygame.font.Font(textDraw.FONT_PATH, renderer.HUD_CELL_TITLE_FONT_SIZE)
+        font = pygame.font.Font(FONT_PATH, renderer.HUD_CELL_TITLE_FONT_SIZE)
         for line in str_list:
             self.objects.append(
                 HudButton(font.size(line)[0], renderer.HUD_CELL_TITLE_FONT_SIZE, line)
             )
 
-    def draw(self):
+    def draw(self, screen: Optional[pygame.Surface] = None):
         for buttons in self.objects:
             buttons.redraw()
-        screen = renderer.get_screen()
+        target_screen = _resolve_screen(screen)
         for x in range(len(self.objects)):
-            screen.blit(
+            target_screen.blit(
                 self.objects[x],
                 (self.px, self.py + x * renderer.HUD_CELL_TITLE_FONT_SIZE + x * 10),
             )
@@ -167,7 +170,7 @@ class MapSelectionScreen(pygame.Surface):
                 button.redraw()
                 button.protected = False
 
-    def draw(self):
+    def draw(self, screen: Optional[pygame.Surface] = None):
         self.fill(colors.BLACK)
         for x in range(5):
             for y in range(3):
@@ -182,9 +185,9 @@ class MapSelectionScreen(pygame.Surface):
         pygame.draw.circle(
             self, colors.WHITE, (int(self._pointer_x), int(self._pointer_y)), 10
         )
-        renderer.get_screen().blit(self, (0, 0))
+        _resolve_screen(screen).blit(self, (0, 0))
 
-    def update(self, dt, events):
+    def update(self, dt, events, screen: Optional[pygame.Surface] = None):
         pos = (
             100
             + self.selected_button_x * 100
@@ -193,8 +196,8 @@ class MapSelectionScreen(pygame.Surface):
             + self.selected_button_y * 100
             + self.selected_button_y * renderer.HUD_CELL_OFFSET,
         )
-        self._pointer_x = mathHelpers.lerp(self._pointer_x, pos[0], dt * 10)
-        self._pointer_y = mathHelpers.lerp(self._pointer_y, pos[1], dt * 10)
+        self._pointer_x = math_helpers.lerp(self._pointer_x, pos[0], dt * 10)
+        self._pointer_y = math_helpers.lerp(self._pointer_y, pos[1], dt * 10)
 
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -206,7 +209,7 @@ class MapSelectionScreen(pygame.Surface):
                     self.change_selected_button(-1, False)
                 elif event.key == pygame.K_DOWN:
                     self.change_selected_button(1, False)
-        self.draw()
+        self.draw(screen)
 
     def change_selected_button(self, amount, change_x=True):
         self.hud_buttons[self.selected_button_x][self.selected_button_y].set_active(
@@ -274,7 +277,7 @@ class HudButton(pygame.Surface):
 
     def _render_contents(self):
         if self.title:
-            textDraw.message_display_MT(
+            message_display_MT(
                 self,
                 self.title,
                 self.get_width() // 2,
@@ -283,7 +286,7 @@ class HudButton(pygame.Surface):
                 self.indexColor[0],
             )
         if self.subtitle:
-            textDraw.message_display_MT(
+            message_display_MT(
                 self,
                 self.subtitle,
                 self.get_width() // 2,
@@ -293,7 +296,7 @@ class HudButton(pygame.Surface):
             )
 
         if self.text:
-            wrapped_text = textHelpers.wrapline(
+            wrapped_text = wrapline(
                 self.text, self.get_width(), renderer.HUD_CELL_TITLE_FONT_SIZE
             )
             py = self.get_height() // 2
@@ -303,7 +306,7 @@ class HudButton(pygame.Surface):
                 py -= (len(wrapped_text) // 2) * renderer.HUD_CELL_TITLE_FONT_SIZE
 
             for line in wrapped_text:
-                textDraw.message_display(
+                message_display(
                     self,
                     line,
                     self.get_width() // 2,

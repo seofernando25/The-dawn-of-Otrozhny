@@ -2,26 +2,23 @@
 # press f5! It's standalone
 # PS: The options and save/load button are not finished
 import enum
-from typing import ClassVar, Optional, Tuple
+from typing import Optional, Tuple
 
 import pygame
-import levelData
-from levelData import Level
+from config import EDITOR_CONFIG
+from core.context import build_editor_context
+from core.game_state import GameState
+from core.io import save_level
+from core.level import Level
 from entities.enemies import Enemy
 from entities.items import Collectible, Gate, Key
 from entities.player import Player
 import rendering as renderer
 import colors
-import textDraw
+from renderer.text import message_display
 import ui
-import gameIO
-from level_editor import tools as editor_tools
-from gameState import GameState
 from loops.loop_runner import SceneHandler, run_scene
-
-
-def _current_level() -> Level:
-    return levelData.require_current_map()
+from . import tools as editor_tools
 
 
 class EditorTools(enum.Enum):
@@ -39,15 +36,13 @@ class PencilType:
 
 
 class GridManager:
-    instance: ClassVar[Optional["GridManager"]] = None
-
     def __init__(self, grid_width, grid_height):
         self.verticalButtonIndex = 1
         self.horizontalButtonIndex = 0
         self.grid: list[list[int]] = [
             [0 for x in range(grid_width)] for y in range(grid_height)
         ]
-        levelData.Level.currentMap = levelData.Level(self.grid, [], [])
+        self.level = Level(self.grid, [], [])
         for y in range(grid_height):
             self.grid[y][0] = 1
             self.grid[y][grid_width - 1] = 1
@@ -56,9 +51,8 @@ class GridManager:
             self.grid[grid_height - 1][y] = 1
 
         self.current_cell: Optional[Tuple[int, int]] = None
-        self.scale = 50
+        self.scale = EDITOR_CONFIG["default_scale"]
         self.adjust: Tuple[float, float] = (0.0, 0.0)
-        GridManager.instance = self
         self.current_tool = EditorTools.node_editor
         self.mouse_in_grid = False
         self.mouse_position: Tuple[int, int] = (0, 0)
@@ -128,20 +122,13 @@ class GridManager:
             self.hud_draw_obj_help.objects[6].set_active(True)
 
         self.update_mouse_position()
-        instance = GridManager.instance
-        current_cell = (
-            instance.current_cell if instance is not None else self.current_cell
-        )
-        current_tool_name = (
-            instance.current_tool.name
-            if instance is not None
-            else self.current_tool.name
-        )
+        current_cell = self.current_cell
+        current_tool_name = self.current_tool.name
         self.hud_draw_pos_help.objects[0].set_text(str(current_cell))
         self.hud_draw_pos_help.objects[1].set_text(str(current_tool_name))
         self.navigation_tool.update(events, keys, deltaTime, self)
-        if self.scale < 2:
-            self.scale = 2
+        if self.scale < EDITOR_CONFIG["min_scale"]:
+            self.scale = EDITOR_CONFIG["min_scale"]
 
         active_tool = self.tools.get(self.current_tool)
         if active_tool is not None:
@@ -195,7 +182,7 @@ class GridManager:
                 )
 
         count = 0
-        for node in _current_level().node_entities:
+        for node in self.level.node_entities:
             pygame.draw.rect(
                 screen,
                 colors.NAVY_BLUE,
@@ -218,19 +205,19 @@ class GridManager:
                     (scaledEndX, scaledEndY),
                     5,
                 )
-        for entity in _current_level().grid_entities:
+        for entity in self.level.grid_entities:
             count += 1
             col = colors.ACCENTUADED_BLUE
-            if issubclass(type(entity), Collectible):
+            if isinstance(entity, Collectible):
                 col = colors.YELLOW
-            if issubclass(type(entity), Key):
+            if isinstance(entity, Key):
                 col = colors.PINK
-            if issubclass(type(entity), Gate):
+            if isinstance(entity, Gate):
                 col = colors.BLACK
 
-            if issubclass(type(entity), Player):
+            if isinstance(entity, Player):
                 col = colors.GREEN
-            elif issubclass(type(entity), Enemy):
+            elif isinstance(entity, Enemy):
                 col = colors.DARK_GRAY
                 if entity.patrolPoint is not None:
                     col = colors.RED
@@ -244,7 +231,7 @@ class GridManager:
                 ),
                 int(self.scale / 2),
             )
-            textDraw.message_display(
+            message_display(
                 screen,
                 count,
                 int(entity.px * self.scale + self.adjust[0]),
@@ -267,7 +254,8 @@ class EditorScene(SceneHandler):
     """Scene handler for the level editor loop."""
 
     def __init__(self):
-        self.grid_manager = GridManager(20, 20)
+        self.context = build_editor_context()
+        self.grid_manager = self.context.ensure_grid_manager(GridManager(20, 20))
         self.hud = ui.HudScreen()
         self.hud.set_button_text(0, "Node Editor")
         self.hud.set_button_text(1, "Draw  Mode")
@@ -292,12 +280,12 @@ class EditorScene(SceneHandler):
                     return True
                 if event.key == pygame.K_RETURN:
                     if self.hud.selected_button == 4:
-                        lvl = levelData.Level(
+                        lvl = Level(
                             self.grid_manager.grid,
-                            _current_level().grid_entities,
-                            _current_level().node_entities,
+                            self.grid_manager.level.grid_entities,
+                            self.grid_manager.level.node_entities,
                         )
-                        gameIO.save_level(str(id(lvl)), lvl)
+                        save_level(str(id(lvl)), lvl)
                         self.result = GameState.Menu
                         return True
         return False
@@ -308,9 +296,10 @@ class EditorScene(SceneHandler):
         self.grid_manager.horizontalButtonIndex = self.hud.selected_button
 
     def draw(self, screen):
+        self.context.screen = screen
         screen.fill(colors.BLACK)
         self.grid_manager.draw(screen)
-        self.hud.draw()
+        self.hud.draw(screen)
 
 
 def editorLoop(clock):
@@ -323,3 +312,4 @@ if __name__ == "__main__":
     pygame.init()
     clock = pygame.time.Clock()
     editorLoop(clock)
+

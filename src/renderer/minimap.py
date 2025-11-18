@@ -3,7 +3,6 @@ import math
 import pygame
 
 import colors
-import levelData
 from entities.enemies import Enemy
 from entities.items import Collectible, Gate
 from .raycast import calculate_fov_polygon
@@ -12,8 +11,7 @@ from .utils import translate_to_map, get_static_surfaces_cache
 _STATIC_SURFACES = get_static_surfaces_cache()
 
 
-def _calculate_fov_points(scale_x, scale_y):
-    current_map = levelData.require_current_map()
+def _calculate_fov_points(scale_x, scale_y, current_map):
     all_fovs = []
     for enemy in current_map.grid_entities:
         if issubclass(type(enemy), Enemy):
@@ -62,7 +60,11 @@ def _get_static_surface(screen, level_map, scale_x, scale_y):
 
 
 def render_map(screen, entity):
-    current_map = levelData.require_current_map()
+    if not hasattr(entity, "context") or entity.context is None:
+        raise RuntimeError("Entity requires a GameContext for minimap rendering.")
+    current_map = entity.context.level
+    if current_map is None:
+        raise RuntimeError("GameContext.level is not set.")
     scale_x = screen.get_width() / current_map.level_width
     scale_y = screen.get_height() / current_map.level_height
 
@@ -72,7 +74,7 @@ def render_map(screen, entity):
     fov_points = calculate_fov_polygon(entity)
     fov_points = translate_to_map(fov_points, scale_x, scale_y)
 
-    all_fovs = _calculate_fov_points(scale_x, scale_y)
+    all_fovs = _calculate_fov_points(scale_x, scale_y, current_map)
 
     if len(fov_points) > 2:
         pygame.draw.polygon(screen, colors.WHITE, fov_points)
