@@ -1,10 +1,3 @@
-"""
-Unified audio management system.
-
-Provides both low-level pygame.mixer operations and high-level game audio management.
-This module consolidates the functionality previously split between audio.py and audio_manager.py.
-"""
-
 import logging
 from typing import Optional, Sequence, Tuple, Union
 
@@ -13,39 +6,56 @@ from core import assets
 
 LOGGER = logging.getLogger(__name__)
 
-# Low-level pygame mixer state
-_INITIALIZED = False
-
 
 # ============================================================================
 # Low-level pygame mixer operations
 # ============================================================================
 
+class _MixerState:
+    """Encapsulates pygame mixer initialization state."""
+    
+    def __init__(self):
+        self._initialized = False
+    
+    def ensure_initialized(self) -> bool:
+        """Ensure pygame.mixer is initialized."""
+        if self._initialized and pygame.mixer.get_init():
+            return True
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.pre_init(44100, -16, 2, 512)
+                pygame.mixer.init()
+            self._initialized = True
+        except pygame.error as exc:
+            LOGGER.warning("Unable to initialize audio: %s", exc)
+            self._initialized = False
+        return self._initialized
+    
+    def ensure_channel(
+        self, channel: Optional[pygame.mixer.Channel] = None
+    ) -> Optional[pygame.mixer.Channel]:
+        """Get or create a pygame mixer channel."""
+        if not self.ensure_initialized():
+            return None
+        if channel is not None:
+            return channel
+        return pygame.mixer.find_channel(True)
+
+
+# Global mixer state instance (encapsulated, not a bare global)
+_MIXER_STATE = _MixerState()
+
+
 def ensure_initialized() -> bool:
     """Ensure pygame.mixer is initialized."""
-    global _INITIALIZED
-    if _INITIALIZED and pygame.mixer.get_init():
-        return True
-    try:
-        if not pygame.mixer.get_init():
-            pygame.mixer.pre_init(44100, -16, 2, 512)
-            pygame.mixer.init()
-        _INITIALIZED = True
-    except pygame.error as exc:
-        LOGGER.warning("Unable to initialize audio: %s", exc)
-        _INITIALIZED = False
-    return _INITIALIZED
+    return _MIXER_STATE.ensure_initialized()
 
 
 def ensure_channel(
     channel: Optional[pygame.mixer.Channel] = None,
 ) -> Optional[pygame.mixer.Channel]:
     """Get or create a pygame mixer channel."""
-    if not ensure_initialized():
-        return None
-    if channel is not None:
-        return channel
-    return pygame.mixer.find_channel(True)
+    return _MIXER_STATE.ensure_channel(channel)
 
 
 def _normalize_volume(
@@ -101,7 +111,8 @@ class AudioManager:
     def __init__(self):
         self._channels = {}
         self._active_ui_sound = None
-        ensure_initialized()
+        self._mixer_state = _MixerState()
+        self._mixer_state.ensure_initialized()
 
     def play_sound(
         self,
@@ -117,7 +128,7 @@ class AudioManager:
                 LOGGER.warning(f"Sound not found: {pack}/{sound_id}")
                 return None
 
-            channel = ensure_channel()
+            channel = self._mixer_state.ensure_channel()
             if channel is None:
                 return None
 
@@ -139,7 +150,7 @@ class AudioManager:
                 LOGGER.warning(f"Music not found: {pack}/{music_id}")
                 return None
 
-            channel = ensure_channel(self._get_music_channel())
+            channel = self._mixer_state.ensure_channel(self._get_music_channel())
             if channel is None:
                 return None
 
@@ -174,5 +185,5 @@ class AudioManager:
     def _get_music_channel(self) -> Optional[pygame.mixer.Channel]:
         """Get or create the dedicated music channel."""
         if not hasattr(self, "_music_channel"):
-            self._music_channel = ensure_channel()
+            self._music_channel = self._mixer_state.ensure_channel()
         return self._music_channel

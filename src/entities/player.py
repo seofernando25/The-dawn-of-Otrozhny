@@ -18,7 +18,3 @@ class Player(SpriteAgent):
         self.cameraYawSens = PLAYER_CONFIG["camera_yaw_sensitivity"]
         self.cameraPitchSens = PLAYER_CONFIG["camera_pitch_sensitivity"]
         self.keys = 0
-
-    def update(self, dt):
-        """Update player state (input is handled by InputSystem)."""
-        return super().update(dt)

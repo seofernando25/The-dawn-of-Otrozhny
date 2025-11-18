@@ -1,4 +1,3 @@
-"""Helper functions for UI audio setup."""
 from typing import Optional
 import pygame
 

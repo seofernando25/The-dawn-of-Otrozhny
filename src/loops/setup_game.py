@@ -1,7 +1,3 @@
-"""
-Setup game module - handles level selection and asset preloading.
-"""
-
 import pygame
 
 from core import assets
@@ -51,6 +47,17 @@ def _build_map_grid(hud, map_list):
     return actual_map_list
 
 
+def _create_game_context_from_map(map_obj, audio_manager):
+    """Create a GameContext from a map object."""
+    player = next((x for x in map_obj.grid_entities if isinstance(x, Player)), None)
+    if player is None:
+        return None
+    
+    context = build_game_context(player=player, level=None, audio_manager_service=audio_manager)
+    Level.load(map_obj, context=context)
+    return context
+
+
 class MapSelectionScene(SceneHandler):
     """Scene handler for the map selection screen."""
 
@@ -71,20 +78,16 @@ class MapSelectionScene(SceneHandler):
                         self.hud.selected_button_y
                     ]
                     if map_obj is not None:
-                            # Build context first, then load level with it
-                            # We need to find the player from the map object to build context
-                            player = next((x for x in map_obj.grid_entities if isinstance(x, Player)), None)
-                            if player is None:
-                                self.result = GameState.Menu
-                                return True
-                            context = build_game_context(player=player, level=None, audio_manager_service=self.audio_manager)
-                            Level.load(map_obj, context=context)
-                            result = run_game_loop(context)
-                            if result == GameState.Quit:
-                                self.result = GameState.Quit
-                                return True
-                            # Any other result (e.g., GameState.Menu) means stay in selector
-                            continue
+                        context = _create_game_context_from_map(map_obj, self.audio_manager)
+                        if context is None:
+                            self.result = GameState.Menu
+                            return True
+                        result = run_game_loop(context)
+                        if result == GameState.Quit:
+                            self.result = GameState.Quit
+                            return True
+                        # Any other result (e.g., GameState.Menu) means stay in selector
+                        continue
                     else:
                         self.result = GameState.Menu
                     return True

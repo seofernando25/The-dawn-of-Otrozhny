@@ -1,7 +1,6 @@
-"""Helper functions for UI components."""
 from typing import Optional
 import pygame
-from renderer.config import get_screen
+from core.context import get_screen
 from config import renderer_config
 from core import colors
 from ui.button import HudButton

@@ -1,4 +1,3 @@
-"""Entity factory for creating entities with proper context handling."""
 from typing import Optional, Tuple, Dict, Type, TYPE_CHECKING
 from entities.base import Entity
 from entities.player import Player

@@ -1,6 +1,5 @@
-"""Menu tab rendering functions."""
 from renderer.text import message_display_MB, message_display_L
-from renderer.config import get_screen
+from core.context import get_screen
 from config import renderer_config
 from core import colors
 from entities.base import EnemyStatus

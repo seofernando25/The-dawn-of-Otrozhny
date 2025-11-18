@@ -1,5 +1,3 @@
-"""Game systems for separating concerns in the game loop."""
-
 from .input_system import InputSystem
 from .gameplay_system import GameplaySystem
 from .render_system import RenderSystem

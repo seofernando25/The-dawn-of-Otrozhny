@@ -1,42 +1,21 @@
-"""
-Render system - handles all rendering operations.
-"""
-
 import pygame
 from core import colors
-from core.context import GameContext
-from renderer.config import get_screen
+from core.context import GameContext, get_screen
 from config import renderer_config
 from renderer.first_person import render_first_person_canvas
 from renderer.text import message_display_L, message_display_MT
+from renderer import minimap as renderer_minimap
 
 
 class RenderSystem:
-    """
-    Handles all rendering operations for the game.
-    
-    This system is responsible for rendering:
-    - First-person view (walls, floor, ceiling)
-    - Debug information (FPS, player position)
-    
-    Note: Minimap rendering is handled by HudSystem to maintain proper
-    separation of concerns. HUD rendering is also handled by HudSystem.
-    """
+    """Handles all rendering operations for the game."""
 
     def __init__(self, context: GameContext):
         self.context = context
         self._first_person_surface = None
 
     def render_frame(self, clock: pygame.time.Clock):
-        """
-        Render a complete frame including first-person view and debug info.
-        
-        This method renders the main game view. Minimap and HUD are rendered
-        separately by HudSystem to maintain proper separation of concerns.
-        
-        Args:
-            clock: Pygame clock for FPS display
-        """
+        """Render a complete frame including first-person view and debug info."""
         # Screen should always be set in context, but fallback for safety
         screen = self.context.screen
         if screen is None:
@@ -64,4 +43,11 @@ class RenderSystem:
             10,
             15,
         )
+
+    def render_minimap(self, minimap_surface: pygame.Surface):
+        """Render the minimap to the provided surface."""
+        player = self.context.player
+        if player is None:
+            return
+        renderer_minimap.render_map(minimap_surface, player)
 

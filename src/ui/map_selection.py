@@ -1,4 +1,3 @@
-"""Map selection screen component."""
 from typing import List, Optional
 import pygame
 from config import renderer_config

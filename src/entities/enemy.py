@@ -1,4 +1,3 @@
-"""Enemy entity with AI behavior."""
 import math
 from typing import TYPE_CHECKING
 from utils import math_helpers

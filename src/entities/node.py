@@ -1,4 +1,3 @@
-"""Node entity for pathfinding and patrol points."""
 import random
 from .base import Entity
 

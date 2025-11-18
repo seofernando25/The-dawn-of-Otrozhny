@@ -1,4 +1,3 @@
-"""Level editor for creating and editing game levels."""
 import enum
 from typing import Optional, Tuple
 

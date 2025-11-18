@@ -1,4 +1,3 @@
-"""UI module - provides unified access to UI components."""
 from ui.hud_screen import HudScreen
 from ui.button import HudButton
 from ui.map_selection import MapSelectionScreen

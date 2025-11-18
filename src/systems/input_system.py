@@ -1,11 +1,3 @@
-"""
-Input system - handles all input processing for the game loop.
-
-This system centralizes all input handling including:
-- Game-level input (quit, menu)
-- Player input (movement, rotation, mouse look, mouse toggle)
-"""
-
 import pygame
 import pygame.constants as pyConst
 from core.game_state import GameState

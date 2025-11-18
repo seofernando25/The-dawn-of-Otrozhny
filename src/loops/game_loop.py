@@ -1,16 +1,11 @@
-"""
-Game loop module - handles the main game loop using separated systems.
-"""
-
 import datetime
 import pygame
 
 from core.game_state import GameState
 from loops.loop_runner import SceneHandler, run_scene
-from core.context import GameContext
+from core.context import GameContext, get_screen
 from systems import InputSystem, GameplaySystem, RenderSystem, HudSystem
 from config import renderer_config
-from renderer.config import get_screen
 
 
 def run_game_loop(context: GameContext):
@@ -70,8 +65,9 @@ def run_game_loop(context: GameContext):
         # Render main game view (first-person, debug info)
         render_system.render_frame(clock)
         
-        # Render minimap (handled by HUD system)
-        hud_system.render_minimap(context.player)
+        # Render minimap (handled by render system)
+        minimap_surface = hud_system.get_minimap_surface()
+        render_system.render_minimap(minimap_surface)
         
         # Render HUD overlay
         hud_system.draw(screen)

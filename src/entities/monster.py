@@ -1,4 +1,3 @@
-"""Monster entity - enemy with attack capabilities."""
 import math
 import random
 from utils import math_helpers

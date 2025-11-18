@@ -1,11 +1,6 @@
-"""
-HUD system - handles HUD updates and rendering.
-"""
-
 from ui import HudScreen
 from core.context import GameContext
 from entities.base import EnemyStatus
-from renderer import minimap as renderer_minimap
 
 
 class HudSystem:
@@ -43,12 +38,7 @@ class HudSystem:
         self.hud.hud_buttons[-1].protected = False
 
     def update(self, delta_time: float, events: list):
-        """
-        Update HUD with current game state.
-        
-        Returns:
-            GameState if HUD requests a state change, None otherwise.
-        """
+        """Update HUD with current game state."""
         result = self.hud.update(delta_time, events)
         if result is not None:
             return result
@@ -112,19 +102,9 @@ class HudSystem:
             self._cache["collectibles"] = collectibles_text
             self.hud.set_button_text(1, self._cache["collectibles"])
 
-    def render_minimap(self, player):
-        """
-        Render the minimap to the minimap HUD button.
-        
-        This method handles minimap rendering internally, decoupling it from
-        RenderSystem. The minimap is rendered to the last HUD button surface.
-        
-        Args:
-            player: The player entity to render the minimap for
-        """
-        if player is None:
-            return
-        renderer_minimap.render_map(self._minimap_surface, player)
+    def get_minimap_surface(self):
+        """Get the minimap surface for rendering."""
+        return self._minimap_surface
 
     def draw(self, screen):
         """Draw the HUD to the screen."""

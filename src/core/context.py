@@ -1,16 +1,10 @@
-"""Common context containers for gameplay and editor subsystems.
-
-These dataclasses help us thread shared services explicitly instead of
-relying on hidden globals. They are deliberately lightweight so callers
-can construct them inside setup routines and pass them down the stack.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 import pygame
+from config import renderer_config
 
 if TYPE_CHECKING:  # typing-only imports
     from audio_manager import AudioManager
@@ -18,6 +12,15 @@ if TYPE_CHECKING:  # typing-only imports
     from core.level import Level
     from level_editor.editor import GridManager
     from core.enemy_state import EnemyStateManager
+
+
+def get_screen() -> pygame.Surface:
+    """Get or create the main pygame screen surface."""
+    screen = pygame.display.get_surface()
+    if screen is None:
+        screen = pygame.display.set_mode(renderer_config.SCREEN_SIZE, renderer_config.FLAGS)
+        screen.set_alpha(None)
+    return screen
 
 
 @runtime_checkable
@@ -85,12 +88,7 @@ def build_game_context(
     clock: Optional[pygame.time.Clock] = None,
     enemy_state: Optional["EnemyStateManager"] = None,
 ) -> GameContext:
-    """Factory helper that creates a GameContext with required dependencies.
-    
-    Note: player and audio_manager_service are required. screen will be created
-    if not provided. enemy_state will be created if not provided.
-    """
-    from renderer.config import get_screen
+    """Create a GameContext with required dependencies."""
     from core.enemy_state import EnemyStateManager
 
     if player is None:
@@ -120,8 +118,6 @@ def build_editor_context(
     grid_manager: Optional["GridManager"] = None,
 ) -> EditorContext:
     """Factory helper for editor-specific tooling."""
-    from renderer.config import get_screen
-
     if audio_manager_service is None:
         raise ValueError("audio_manager_service is required for EditorContext")
     
