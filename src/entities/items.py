@@ -1,6 +1,5 @@
 import math
 
-import levelData
 import mathHelpers
 from .base import SpriteEntity
 from .player import Player
@@ -13,6 +12,7 @@ class Collectible(SpriteEntity):
 
     def update(self, dt, events):
         if not self.collected:
+            import levelData
             player = Player.require_instance()
             current_map = levelData.require_current_map()
             dist = mathHelpers.distance_to(self.get_pos(), player.get_pos())
@@ -60,4 +60,3 @@ class Key(SpriteEntity):
                 player.keys += 1
                 self.collected = True
                 self.agent_pack_name = ""
-

@@ -9,6 +9,7 @@ import levelData
 import mathHelpers
 from renderer import config as renderer_settings
 from entities.base import SpriteEntity
+from . import utils
 
 RAY_ANGLE_STEP = renderer_settings.RAY_ANGLE_STEP
 VIEWPORT_HEIGHT = renderer_settings.VIEWPORT_HEIGHT
@@ -22,11 +23,7 @@ class WallDirection(enum.Enum):
 
 
 def _get_numpy_grid(current_map):
-    grid_np = getattr(current_map, "grid_np", None)
-    if grid_np is None or not isinstance(grid_np, np.ndarray):
-        grid_np = np.array(current_map.grid, dtype=np.int16)
-        current_map.grid_np = grid_np
-    return grid_np
+    return utils.get_numpy_grid(current_map)
 
 
 def generate_distance_table(entity):
@@ -327,4 +324,3 @@ def _get_wall_color(table_side):
     if table_side == WallDirection.WEST:
         wall_color = list(colors.GRAY_VARIATION_4)
     return wall_color
-

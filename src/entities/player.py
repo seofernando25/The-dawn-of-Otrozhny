@@ -1,11 +1,9 @@
-import math
-
 import pygame
 import pygame.constants as pyConst
 
-import mathHelpers
 from renderer import config as renderer_settings
 from .base import SpriteAgent
+from physics import movement
 
 testGlobalVar = 0
 
@@ -48,56 +46,8 @@ def get_input(entity, dt, events):
 
     pygame.mouse.set_visible(not entity.mouseEnable)
     pygame.event.set_grab(entity.mouseEnable)
-    if entity.mouseEnable:
-        mouse_pos = pygame.mouse.get_pos()
-        pygame.mouse.set_pos([
-            renderer_settings.SCREEN_WIDTH // 2,
-            renderer_settings.SCREEN_HEIGHT // 2,
-        ])
-        mouseDeltaX = (mouse_pos[0] - renderer_settings.SCREEN_WIDTH // 2)
-        mouseDeltaY = (mouse_pos[1] - renderer_settings.SCREEN_HEIGHT // 2)
-        entity.rotate(-entity.cameraYawSens * 0.05 * deltaTime * mouseDeltaX)
-
-        entity.angleY -= (
-            0.05 * deltaTime * entity.cameraPitchSens * mouseDeltaY)
-
-    if kb[pyConst.K_LEFT]:
-        entity.rotate(entity.cameraYawSens * deltaTime)
-
-    if kb[pyConst.K_RIGHT]:
-        entity.rotate(-entity.cameraYawSens * deltaTime)
-
-    if kb[pyConst.K_UP]:
-        entity.angleY += entity.cameraPitchSens * deltaTime
-
-    if kb[pyConst.K_DOWN]:
-        entity.angleY -= entity.cameraPitchSens * deltaTime
-
-    newPx = 0
-    newPy = 0
-    angle = math.atan2(-entity.dirY, entity.dirX)
-
-    entity.angleY = mathHelpers.clamp(
-        entity.angleY,
-        -renderer_settings.VIEWPORT_HEIGHT,
-        renderer_settings.VIEWPORT_HEIGHT,
-    )
-
-    if kb[pyConst.K_d]:
-        newPx -= math.sin(angle) * 2 * deltaTime
-        newPy -= math.cos(angle) * 2 * deltaTime
-
-    if kb[pyConst.K_a]:
-        newPx += math.sin(angle) * entity.moveSpeed * deltaTime
-        newPy += math.cos(angle) * entity.moveSpeed * deltaTime
-
-    if kb[pyConst.K_w]:
-        newPx += math.cos(angle) * entity.moveSpeed * deltaTime
-        newPy -= math.sin(angle) * entity.moveSpeed * deltaTime
-
-    if kb[pyConst.K_s]:
-        newPx -= math.cos(angle) * entity.moveSpeed * deltaTime
-        newPy += math.sin(angle) * entity.moveSpeed * deltaTime
+    newPx, newPy = movement.get_input_movement(
+        entity, deltaTime, kb, mouse_enabled=entity.mouseEnable)
 
     if kb[pyConst.K_n]:
         testGlobalVar -= 1 * deltaTime

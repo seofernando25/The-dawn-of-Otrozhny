@@ -1,5 +1,7 @@
 # Classes that wrap around ui elements
 # as a layer of abstraction to increase productivity
+from typing import List
+
 import rendering as renderer
 import mathHelpers
 import colors
@@ -128,17 +130,18 @@ class MapSelectionScreen(pygame.Surface):
     def __init__(self):
         pygame.Surface.__init__(
             self, (renderer.SCREEN_WIDTH, renderer.SCREEN_HEIGHT))
-        # Why not new List[5][3]...
-        self.hud_buttons = [[None for _ in range(3)] for _ in range(5)]
+        self.hud_buttons: List[List[HudButton]] = [
+            [HudButton(100, 100, text=str((x, y))) for y in range(3)]
+            for x in range(5)
+        ]
         self.selected_button_x = 0
         self.selected_button_y = 0
         self._pointer_x = 100
         self._pointer_y = 150
-        for x in range(5):
-            for y in range(3):
-                self.hud_buttons[x][y] = HudButton(100, 100, text=str((x, y)))
-                self.hud_buttons[x][y].redraw()
-                self.hud_buttons[x][y].protected = False
+        for column in self.hud_buttons:
+            for button in column:
+                button.redraw()
+                button.protected = False
 
     def draw(self):
         self.fill(colors.BLACK)

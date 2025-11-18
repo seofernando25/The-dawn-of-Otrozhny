@@ -6,17 +6,10 @@ import colors
 import levelData
 from entities.enemies import Enemy
 from entities.items import Collectible, Gate
-from entities.player import Player
 from .raycast import calculate_fov_polygon
+from .utils import translate_to_map, get_static_surfaces_cache
 
-_STATIC_SURFACES = {}
-
-
-def translate_to_map(coord_list, scale_x, scale_y):
-    newCoordList = []
-    for x, y in coord_list:
-        newCoordList.append((y * scale_x, x * scale_y))
-    return newCoordList
+_STATIC_SURFACES = get_static_surfaces_cache()
 
 
 def _calculate_fov_points(scale_x, scale_y):
@@ -104,4 +97,3 @@ def render_map(screen, entity):
                 scale_x * math.floor(e.py), scale_y * math.floor(e.px),
                 scale_x + 1, scale_y + 1
             ])
-

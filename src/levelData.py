@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, List, Optional, Sequence
 
 import numpy as np
 
@@ -13,12 +13,18 @@ from entities.player import Player
 class Level():
     currentMap: Optional["Level"] = None
 
-    def __init__(self, grid, grid_entities, node_entities=None, grid_np=None):
+    def __init__(
+        self,
+        grid: Sequence[Sequence[int]],
+        grid_entities: Sequence[object],
+        node_entities: Optional[Sequence[object]] = None,
+        grid_np=None,
+    ):
         self.grid = grid
         self.grid_np = grid_np if grid_np is not None else np.array(
             grid, dtype=np.int16)
-        self.grid_entities = grid_entities
-        self.node_entities = node_entities
+        self.grid_entities: List[Any] = list(grid_entities)
+        self.node_entities: List[Any] = list(node_entities) if node_entities is not None else []
         self.level_width = len(grid[0]) 
         self.level_height = len(grid) 
 

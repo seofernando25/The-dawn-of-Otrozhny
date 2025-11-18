@@ -5,8 +5,8 @@ import pygame
 
 import assets
 import colors
-import levelData
 import mathHelpers
+from physics import movement
 class Entity:
     def __init__(self, start_pos):
         self.px = start_pos[0]
@@ -50,6 +50,7 @@ class Agent(SpriteEntity):
         return super().update(dt, events)
 
     def move(self, dirX, dirY, deltaTime):
+        import levelData
         next_pos_x = self.px + dirX
         next_pos_y = self.py + dirY
         current_map = levelData.require_current_map()
@@ -69,11 +70,11 @@ class Agent(SpriteEntity):
             self.py += dirY
 
     def move_to(self, target, deltaTime):
-        angle = math.atan2(self.dirY, self.dirX)
-        self.look_at(target, deltaTime * 2)
-        dirX = math.cos(angle) * self.moveSpeed * deltaTime
-        dirY = math.sin(angle) * self.moveSpeed * deltaTime
-        self.move(dirX, dirY, deltaTime)
+        """Move the agent towards a target using shared movement helpers."""
+        movement.look_at(self, target, deltaTime * 2)
+        dirX, dirY = movement.move_to_target(self, target, deltaTime)
+        if dirX or dirY:
+            self.move(dirX, dirY, deltaTime)
 
     def rotate(self, amount):
         oldDirX = self.dirX
@@ -118,4 +119,3 @@ class SpriteAgent(Agent):
         if math.degrees(angleCamDelta) < 180:
             curr = pygame.transform.flip(curr, True, False)
         return curr
-

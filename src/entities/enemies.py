@@ -1,8 +1,7 @@
 import math
 import random
 
-import assets
-import audio
+import audio_manager
 import levelData
 import mathHelpers
 import pathFinding
@@ -183,12 +182,9 @@ class Node(Entity):
 class Monster(Enemy):
     def __init__(self, start_pos, patrolPoint=None):
         super().__init__(start_pos, patrolPoint=patrolPoint)
-        self.sound = None
-        self.channel = None
 
     def update(self, dt, events):
         super().update(dt, events)
-        self.channel = audio.ensure_channel(self.channel)
 
         dist_to_player = math.inf
         if self.target is not None:
@@ -204,13 +200,13 @@ class Monster(Enemy):
 
     def play_sound(self, distance, flag, force=False):
         volume = mathHelpers.translate(distance, 0, 5, 2, 0.5)
-        self.sound = assets.get_audio(self.agent_pack_name, flag)
         levels = (volume, volume)
-        self.channel = audio.play_sound(
-            self.sound,
-            channel=self.channel,
+        audio_manager.play_sound(
+            flag,
+            pack=self.agent_pack_name,
             volume=levels,
-            force=force)
+            force=force,
+        )
 
     def attack(self, target, dt):
         if target is None:
