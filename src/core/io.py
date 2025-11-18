@@ -1,5 +1,6 @@
 """Level serialization using JSON format."""
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -13,6 +14,29 @@ from entities.enemies import Enemy, Monster, Node
 from entities.items import Collectible, Gate, Key
 
 MAPS_PATH = MAPS_DIR
+
+
+@dataclass
+class LevelObject:
+    """Data container for level data loaded from JSON files.
+    
+    This is used as an intermediate representation before creating
+    a full Level instance with context attached.
+    """
+    grid: List[List[int]]
+    grid_np: np.ndarray
+    grid_entities: List[Entity]
+    node_entities: List[Node]
+    
+    @property
+    def level_width(self) -> int:
+        """Width of the level grid."""
+        return len(self.grid[0]) if self.grid else 0
+    
+    @property
+    def level_height(self) -> int:
+        """Height of the level grid."""
+        return len(self.grid) if self.grid else 0
 
 
 def list_maps():
@@ -138,20 +162,16 @@ def load_level_object(level_path: Path | str):
             # Link nodes
             node = nodes_by_index[idx]
             for connected_idx in entity_data.get("connected_node_indices", []):
-                if connected_idx in nodes_by_index:
-                    node.join_node(nodes_by_index[connected_idx])
+                    if connected_idx in nodes_by_index:
+                        node.join_node(nodes_by_index[connected_idx])
     
     # Create level object (compatible with existing Level.load)
-    class LevelObject:
-        def __init__(self):
-            self.grid = grid
-            self.grid_np = grid_np
-            self.grid_entities = grid_entities
-            self.node_entities = node_entities
-            self.level_width = len(grid[0]) if grid else 0
-            self.level_height = len(grid) if grid else 0
-    
-    return LevelObject()
+    return LevelObject(
+        grid=grid,
+        grid_np=grid_np,
+        grid_entities=grid_entities,
+        node_entities=node_entities,
+    )
 
 
 def save_level(level_name: str, level: Level) -> None:

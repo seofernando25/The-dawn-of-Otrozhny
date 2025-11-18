@@ -17,6 +17,7 @@ if TYPE_CHECKING:  # typing-only imports
     from entities.player import Player
     from core.level import Level
     from level_editor.editor import GridManager
+    from core.enemy_state import EnemyStateManager
 
 
 @runtime_checkable
@@ -46,6 +47,7 @@ class GameContext(BaseContext):
     player: Optional["Player"] = None
     level: Optional["Level"] = None
     clock: Optional[pygame.time.Clock] = None
+    enemy_state: Optional["EnemyStateManager"] = None
 
     def update_level(self, level: "Level") -> None:
         """Swap the active level reference."""
@@ -56,6 +58,14 @@ class GameContext(BaseContext):
         """Swap the active player reference."""
         self.player = player
         self.services["player"] = player
+
+    def ensure_enemy_state(self) -> "EnemyStateManager":
+        """Get or create the enemy state manager."""
+        if self.enemy_state is None:
+            from core.enemy_state import EnemyStateManager
+            self.enemy_state = EnemyStateManager()
+            self.services["enemy_state"] = self.enemy_state
+        return self.enemy_state
 
 
 @dataclass
@@ -78,6 +88,7 @@ def build_game_context(
     screen: Optional[pygame.Surface] = None,
     audio_manager_service: Optional["AudioManager"] = None,
     clock: Optional[pygame.time.Clock] = None,
+    enemy_state: Optional["EnemyStateManager"] = None,
 ) -> GameContext:
     """Factory helper that fills defaults from existing globals.
     
@@ -87,23 +98,28 @@ def build_game_context(
     """
     from audio_manager import AudioManager
     from renderer import config as renderer_config
+    from core.enemy_state import EnemyStateManager
 
     if player is None:
         raise ValueError("player is required for GameContext")
     
     screen = screen or renderer_config.get_screen()
     audio_manager_service = audio_manager_service or AudioManager.get_instance()
+    if enemy_state is None:
+        enemy_state = EnemyStateManager()
+    
     ctx = GameContext(
         screen=screen,
         audio=audio_manager_service,
         player=player,
         level=level,
         clock=clock,
+        enemy_state=enemy_state,
     )
     if level is not None:
-        ctx.services.update({"level": level, "player": player, "clock": clock})
+        ctx.services.update({"level": level, "player": player, "clock": clock, "enemy_state": enemy_state})
     else:
-        ctx.services.update({"player": player, "clock": clock})
+        ctx.services.update({"player": player, "clock": clock, "enemy_state": enemy_state})
     return ctx
 
 

@@ -9,7 +9,7 @@ import colors
 import rendering as renderer
 from renderer.text import message_display_L, message_display_MT
 import ui
-from entities.enemies import Enemy, EnemyStatus
+from entities.base import EnemyStatus
 from renderer import minimap as renderer_minimap
 from core.game_state import GameState
 from loops.loop_runner import SceneHandler, run_scene
@@ -93,8 +93,10 @@ def run_game_loop(context: GameContext):
         raise RuntimeError("GameContext.player is not set.")
 
     player.keys = 0
-    Enemy.enemy_status = EnemyStatus.Normal
-    Enemy.enemy_status_time_left = 0
+    
+    # Get or ensure enemy state manager is initialized
+    enemy_state = context.ensure_enemy_state()
+    enemy_state.reset()
 
     # Timing
     time = 0
@@ -117,8 +119,7 @@ def run_game_loop(context: GameContext):
 
         # Check win/lose conditions
         if player.health <= 0:
-            Enemy.enemy_status = EnemyStatus.Normal
-            Enemy.enemy_status_time_left = 0
+            enemy_state.reset()
             return post_game_loop(won=False)
 
         current_map = context.level
@@ -127,6 +128,9 @@ def run_game_loop(context: GameContext):
         if current_map.num_of_collected == current_map.num_of_collectibles:
             return post_game_loop(won=True, time=time)
 
+        # Update shared enemy state (once per frame, before individual enemy updates)
+        enemy_state.update(delta_time)
+
         # Update entities
         for entity in current_map.grid_entities:
             entity.update(delta_time, events)
@@ -134,7 +138,7 @@ def run_game_loop(context: GameContext):
         # Update HUD values through controller
         hud_controller.update_keys(player.keys)
         hud_controller.update_enemy_status(
-            Enemy.enemy_status, Enemy.enemy_status_time_left
+            enemy_state.status, enemy_state.status_time_left
         )
         hud_controller.update_collectibles(
             current_map.num_of_collected, current_map.num_of_collectibles
