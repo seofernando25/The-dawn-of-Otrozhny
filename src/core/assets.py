@@ -11,8 +11,8 @@ import pygame
 LOGGER = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent.parent
-ASSETS_DIR = ROOT / "Assets"
-MAPS_DIR = ROOT / "Maps"
+ASSETS_DIR = ROOT / "assets"
+MAPS_DIR = ROOT / "maps"
 
 _AUDIO_CACHE = {}
 

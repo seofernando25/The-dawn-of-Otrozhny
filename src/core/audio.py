@@ -117,7 +117,7 @@ class AudioManager:
     def play_sound(
         self,
         sound_id: str,
-        pack: str = "Assets",
+        pack: str = "assets",
         volume: Optional[Tuple[float, float]] = None,
         force: bool = False,
     ) -> Optional[pygame.mixer.Channel]:
@@ -141,7 +141,7 @@ class AudioManager:
             return None
 
     def play_music(
-        self, music_id: str, pack: str = "Music"
+        self, music_id: str, pack: str = "music"
     ) -> Optional[pygame.mixer.Channel]:
         """Play looping background music and return the dedicated music channel if successful."""
         try:
@@ -159,7 +159,7 @@ class AudioManager:
             LOGGER.error(f"Failed to play music {pack}/{music_id}: {e}")
             return None
 
-    def set_ui_sound(self, ui_sound_id: str, pack: str = "Music"):
+    def set_ui_sound(self, ui_sound_id: str, pack: str = "music"):
         """Cache the UI sound effect that will be played by play_ui_sound."""
         self._active_ui_sound = assets.get_cached_audio(pack, ui_sound_id)
 

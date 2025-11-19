@@ -9,7 +9,7 @@ font_cache = {}
 # Get the src directory (parent of renderer)
 dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 FONT_NAME = "ff.ttf"
-FONT_PATH = os.path.join(dir_path, FONT_NAME)
+FONT_PATH = os.path.join(dir_path, "assets", "fonts", FONT_NAME)
 
 
 def text_object(text, font, color=colors.WHITE):

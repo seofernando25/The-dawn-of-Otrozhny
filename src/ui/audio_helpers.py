@@ -2,7 +2,7 @@ from typing import Optional
 import pygame
 
 from core import assets
-from audio_manager import AudioManager
+from core.audio import AudioManager
 
 
 def get_ui_activation_sound(audio_manager: Optional[AudioManager]) -> Optional[pygame.mixer.Sound]:
@@ -20,6 +20,6 @@ def get_ui_activation_sound(audio_manager: Optional[AudioManager]) -> Optional[p
     if audio_manager is None:
         return None
     
-    audio_manager.set_ui_sound("Active_UI", "Music")
-    return assets.get_cached_audio("Music", "Active_UI")
+    audio_manager.set_ui_sound("Active_UI", "music")
+    return assets.get_cached_audio("music", "Active_UI")
 

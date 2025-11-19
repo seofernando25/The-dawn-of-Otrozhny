@@ -4,7 +4,7 @@ import sys
 import pygame
 
 from core import assets
-from audio_manager import AudioManager
+from core.audio import AudioManager
 from level_editor import editor as levelEditor
 from core.game_state import GameState
 from loops import about_loop, menu_loop, setup_game, tutorial_loop
@@ -20,10 +20,10 @@ def pre_close():
 def pre_init(audio: AudioManager):
     """Pre-load audio assets and UI sounds."""
     # Set up UI sound for buttons (used throughout the application)
-    audio.set_ui_sound("Active_UI", "Music")
+    audio.set_ui_sound("Active_UI", "music")
     # Pre-load music tracks to avoid loading delays during gameplay
-    assets.get_cached_audio("Music", "Menu")
-    assets.get_cached_audio("Music", "Game")
+    assets.get_cached_audio("music", "Menu")
+    assets.get_cached_audio("music", "Game")
 
 
 def main_loop():
@@ -34,7 +34,7 @@ def main_loop():
     pygame.init()
     pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
     pygame.display.set_caption("The dawn of Otrozhny")
-    logo_path = BASE_DIR / "icon.png"
+    logo_path = BASE_DIR / "assets/icon.png"
     logo = pygame.image.load(str(logo_path))
     pygame.display.set_icon(logo)
 
@@ -48,7 +48,7 @@ def main_loop():
         nonlocal current_music
         if current_music == track_name:
             return
-        audio.play_music(track_name, "Music")
+        audio.play_music(track_name, "music")
         current_music = track_name
 
     ensure_music("Menu")
