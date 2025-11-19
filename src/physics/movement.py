@@ -8,7 +8,7 @@ Input reading should be handled by the InputSystem.
 """
 
 import math
-from typing import Protocol
+from typing import Protocol, cast
 
 from config import renderer_config
 from utils import math_helpers
@@ -70,6 +70,8 @@ def apply_mouse_look(
     screen_center_y: float,
 ) -> None:
     """Apply mouse look rotation to entity."""
+    _ = screen_center_x
+    _ = screen_center_y
     entity.rotate(-entity.cameraYawSens * 0.05 * dt * mouse_delta_x)
     entity.angleY -= 0.05 * dt * entity.cameraPitchSens * mouse_delta_y
 
@@ -117,7 +119,7 @@ def move_to_target(
 ) -> tuple[float, float]:
     """Return the movement vector that would move the entity toward the given target."""
     if isinstance(target, tuple):
-        target_pos = target
+        target_pos = cast(tuple[float, float], target)
     else:
         target_pos = target.get_pos()
 
@@ -142,7 +144,7 @@ def look_at(
 ) -> None:
     """Rotate the entity toward the target, optionally clamping turn speed."""
     if isinstance(target, tuple):
-        target_pos = target
+        target_pos = cast(tuple[float, float], target)
     else:
         target_pos = target.get_pos()
 

@@ -80,6 +80,7 @@ class Entity:
             )
         return context.player
 
+
 class SpriteEntity(Entity):
     def __init__(
         self,
@@ -109,9 +110,7 @@ class Agent(SpriteEntity):
         self.health = ENTITY_DEFAULTS["health"]
         self.entitiesInSight: list[tuple[HasPosition, float]] = []
         self.canSeePlayer = False
-        self.rayDistanceTable: list[
-            tuple[float, float, float, int, object] | None
-        ] = []
+        self.rayDistanceTable: list[tuple[float, float, float, int, object] | None] = []
         self.fov = math.radians(fov)
         self.fov_depth = float(fov_depth)
         self.angleY = 0.0
@@ -165,7 +164,6 @@ class Agent(SpriteEntity):
             (((targetAngle - math.degrees(angle)) % 360) + 540) % 360
         ) - 180
         self.rotate(math.radians(shortest_angle) * deltaTime)
-
 
 
 class SpriteAgent(Agent):

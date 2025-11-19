@@ -1,5 +1,6 @@
 import enum
 import math
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pygame
@@ -8,6 +9,9 @@ from core import colors
 from utils import math_helpers
 from config import renderer_config
 from entities.base import SpriteEntity
+
+if TYPE_CHECKING:
+    from entities.base import Agent
 
 RAY_ANGLE_STEP = renderer_config.RAY_ANGLE_STEP
 VIEWPORT_HEIGHT = renderer_config.VIEWPORT_HEIGHT
@@ -20,7 +24,7 @@ class WallDirection(enum.Enum):
     WEST = 3
 
 
-def generate_distance_table(entity):
+def generate_distance_table(entity: "Agent") -> None:
     entity.rayDistanceTable = []
     entity.entitiesInSight = []
 
@@ -175,7 +179,7 @@ def generate_distance_table(entity):
     _calculate_entities_in_sight(entity)
 
 
-def _calculate_entities_in_sight(entity):
+def _calculate_entities_in_sight(entity: "Agent") -> None:
     if not hasattr(entity, "context") or entity.context is None:
         raise RuntimeError("Entity requires a GameContext for raycast operations.")
     current_map = entity.context.level
@@ -192,7 +196,9 @@ def _calculate_entities_in_sight(entity):
                 entity.entitiesInSight.append((e, ent_list))
 
 
-def polygonPointCollision(vertices, p):
+def polygonPointCollision(
+    vertices: list[tuple[float, float]], p: tuple[float, float]
+) -> bool:
     collision = False
     nextP = 0
     point = [p[0], p[1]]
@@ -217,7 +223,7 @@ def polygonPointCollision(vertices, p):
     return collision
 
 
-def calculate_fov_polygon(entity):
+def calculate_fov_polygon(entity: "Agent") -> list[tuple[float, float]]:
     px = entity.px
     py = entity.py
     entityFovPoints = [(px, py)]
@@ -236,7 +242,7 @@ def calculate_fov_polygon(entity):
         return [(px, py)] * 3
 
 
-def render_walls(screen, entity):
+def render_walls(screen: pygame.Surface, entity: "Agent") -> None:
     ray_table = entity.rayDistanceTable
     if len(ray_table) <= 1:
         return
@@ -251,7 +257,8 @@ def render_walls(screen, entity):
     for idx, ray in enumerate(ray_table):
         if ray is None:
             continue
-        wall_distance, dir_x, dir_y, tile_id, table_side = ray
+        wall_distance, dir_x, dir_y, tile_id, table_side_raw = ray
+        table_side = cast(WallDirection, table_side_raw)
         if wall_distance <= 0:
             continue
         if wall_distance < 0.1:
@@ -261,8 +268,9 @@ def render_walls(screen, entity):
         floor = line_height + half_height + entity.angleY
         hit_x = entity.px + dir_x * wall_distance
         hit_y = entity.py + dir_y * wall_distance
+        base_color = _get_wall_color(table_side)
         wall_color = _shade_wall_color(
-            _get_wall_color(table_side),
+            list(base_color) if isinstance(base_color, tuple) else base_color,
             tile_id,
             hit_x,
             hit_y,
@@ -282,7 +290,9 @@ def render_walls(screen, entity):
 
                 dx, dy = math_helpers.slope(entity.get_pos(), sprite.get_pos())
                 new_x = inverse_projection_dist * (entity.dirY * dx - entity.dirX * dy)
-                new_y = inverse_projection_dist * (-entity.planeY * dx + entity.planeX * dy)
+                new_y = inverse_projection_dist * (
+                    -entity.planeY * dx + entity.planeX * dy
+                )
 
                 if new_y <= 0:
                     continue
@@ -306,7 +316,7 @@ def render_walls(screen, entity):
         ceiling = int(ceiling)
         floor = int(floor)
         if cmd_type == "wall":
-            pygame.draw.line(
+            _ = pygame.draw.line(
                 screen,
                 data,
                 [int(pos_x), int(ceiling)],
@@ -332,14 +342,14 @@ def render_walls(screen, entity):
                 continue
 
             img = pygame.transform.scale(scaled_sprite, (target_width, target_height))
-            screen.blit(
+            _ = screen.blit(
                 img,
                 [int(pos_x - img.get_width() / 2), int(floor - img.get_rect().height)],
             )
 
 
-def _get_wall_color(table_side):
-    wall_color = colors.RED
+def _get_wall_color(table_side: WallDirection) -> list[int] | tuple[int, int, int]:
+    wall_color: list[int] | tuple[int, int, int] = colors.RED
     if table_side == WallDirection.NORTH:
         wall_color = list(colors.GRAY_VARIATION_1)
     if table_side == WallDirection.SOUTH:
@@ -351,10 +361,10 @@ def _get_wall_color(table_side):
     return wall_color
 
 
-def _shade_wall_color(color, tile_id, hit_x, hit_y):
+def _shade_wall_color(
+    color: list[int], tile_id: int, hit_x: float, hit_y: float
+) -> list[int]:
     """Texture variation based on world hit position."""
-    if tile_id is None:
-        return color
     tile_id = int(tile_id)
     tile_x = math.floor(hit_x)
     tile_y = math.floor(hit_y)
@@ -363,7 +373,7 @@ def _shade_wall_color(color, tile_id, hit_x, hit_y):
 
     base = math.sin((tile_id + tile_x) * 0.52 + frac_x * 1.57)
     base += math.cos((tile_id + tile_y) * 0.37 + frac_y * 1.57)
-    variation = int(base * 2) 
+    variation = int(base * 2)
     shaded = []
     for channel in color:
         value = max(0, min(255, channel + variation))

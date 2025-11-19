@@ -39,7 +39,7 @@ def message_display_L(
     font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.topleft = (x, y)
-    screen.blit(text_surf, text_rect)
+    _ = screen.blit(text_surf, text_rect)
 
 
 def message_display_R(
@@ -53,7 +53,7 @@ def message_display_R(
     font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.topright = (x, y)
-    screen.blit(text_surf, text_rect)
+    _ = screen.blit(text_surf, text_rect)
 
 
 def message_display_MB(
@@ -67,7 +67,7 @@ def message_display_MB(
     font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.midbottom = (x, y)
-    screen.blit(text_surf, text_rect)
+    _ = screen.blit(text_surf, text_rect)
 
 
 def message_display_MT(
@@ -81,7 +81,7 @@ def message_display_MT(
     font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.midtop = (x, y)
-    screen.blit(text_surf, text_rect)
+    _ = screen.blit(text_surf, text_rect)
 
 
 def message_display(
@@ -95,7 +95,7 @@ def message_display(
     font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.center = (x, y)
-    screen.blit(text_surf, text_rect)
+    _ = screen.blit(text_surf, text_rect)
 
 
 def truncline(text: str, maxwidth: int, font: pygame.font.Font) -> tuple[int, int, str]:

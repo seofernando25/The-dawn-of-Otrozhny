@@ -2,6 +2,9 @@
 Menu loop module - handles the main menu with fractal background and other effects.
 """
 
+from collections.abc import Sequence
+from typing import override
+
 import pygame
 from ui import HudScreen
 from renderer import effects as otherEffects
@@ -15,14 +18,14 @@ class MenuScene(SceneHandler):
     """Scene handler for the main menu."""
 
     def __init__(self):
-        self.hud = HudScreen()
+        self.hud: HudScreen = HudScreen()
         self.hud.set_button_text(0, "Play")
         self.hud.set_button_text(1, "Editor")
         self.hud.set_button_text(2, "Tutorial")
         self.hud.set_button_text(3, "About")
         self.hud.set_button_text(4, "Exit")
 
-        self.fractal = otherEffects.ChaosObject(
+        self.fractal: otherEffects.ChaosObject = otherEffects.ChaosObject(
             (
                 renderer_config.SCREEN_WIDTH // 2,
                 (renderer_config.SCREEN_HEIGHT // 2) + 15,
@@ -30,17 +33,20 @@ class MenuScene(SceneHandler):
             225,
             3,
         )
-        self.star_field = otherEffects.StarField(
+        self.star_field: otherEffects.StarField = otherEffects.StarField(
             (renderer_config.SCREEN_WIDTH, renderer_config.SCREEN_HEIGHT)
         )
 
         # Connect fractal speed to HUD button changes
         self.hud.onChangedButton.append(self.star_field.change_speed)
 
-        pygame.mouse.set_visible(True)
+        _ = pygame.mouse.set_visible(True)
         pygame.event.set_grab(False)
 
-    def handle_events(self, events, keys_pressed):
+    @override
+    def handle_events(
+        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+    ) -> bool:
         """Handle quit and keyboard events."""
         for event in events:
             if event.type == pygame.QUIT:
@@ -50,7 +56,8 @@ class MenuScene(SceneHandler):
                     return True
         return False
 
-    def update(self, delta_time):
+    @override
+    def update(self, delta_time: float) -> None:
         """Update menu animations."""
         for _ in range(10):
             self.fractal.update()
@@ -62,10 +69,11 @@ class MenuScene(SceneHandler):
             if self.star_field.speed > 100:
                 self.star_field.speed = 100
 
-    def draw(self, screen):
+    @override
+    def draw(self, screen: pygame.Surface) -> None:
         """Draw the menu screen."""
         self.star_field.draw()
-        screen.blit(self.star_field, (0, 0))
+        _ = screen.blit(self.star_field, (0, 0))
         self.fractal.draw(screen)
 
         message_display_MT(

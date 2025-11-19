@@ -2,6 +2,9 @@
 About loop module - displays the about screen with animated text.
 """
 
+from collections.abc import Sequence
+from typing import override
+
 import pygame
 from renderer.text import message_display, message_display_L
 from config import renderer_config
@@ -12,10 +15,13 @@ class AboutScene(SceneHandler):
     """Scene handler for the about screen."""
 
     def __init__(self):
-        self.sub_title_size = 1
-        self.second_sub_title_size = 1
+        self.sub_title_size: float = 1.0
+        self.second_sub_title_size: float = 1.0
 
-    def handle_events(self, events, keys_pressed):
+    @override
+    def handle_events(
+        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+    ) -> bool:
         """Handle quit events."""
         for event in events:
             if event.type == pygame.QUIT:
@@ -25,7 +31,8 @@ class AboutScene(SceneHandler):
                     return True
         return False
 
-    def update(self, delta_time):
+    @override
+    def update(self, delta_time: float) -> None:
         """Update text animation states."""
         self.sub_title_size += delta_time * 10
         if self.sub_title_size > 20:
@@ -37,7 +44,8 @@ class AboutScene(SceneHandler):
                 self.second_sub_title_size = 1
                 self.sub_title_size = 1
 
-    def draw(self, screen):
+    @override
+    def draw(self, screen: pygame.Surface) -> None:
         """Draw the about screen content."""
         if self.sub_title_size < 20:
             message_display(

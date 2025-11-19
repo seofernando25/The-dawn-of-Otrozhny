@@ -1,5 +1,3 @@
-import math
-
 from utils import math_helpers
 from config import COLLISION_DISTANCES
 from .base import SpriteEntity

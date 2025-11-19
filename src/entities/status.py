@@ -10,4 +10,3 @@ class EnemyStatus(enum.Enum):
     Alert = ("Alert", colors.RED, 10)
     Evasion = ("Evasion", colors.YELLOW, 20)
     Caution = ("Caution", colors.MAROON, 30)
-

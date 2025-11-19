@@ -12,9 +12,7 @@ from level.loader import LevelObject
 from renderer import minimap
 
 # Cache for map previews
-_MAP_PREVIEW_CACHE: dict[
-    tuple[Hashable, tuple[int, int]], pygame.Surface
-] = {}
+_MAP_PREVIEW_CACHE: dict[tuple[Hashable, tuple[int, int]], pygame.Surface] = {}
 
 
 def draw_map_preview(
@@ -30,7 +28,7 @@ def draw_map_preview(
     cached_surface = _MAP_PREVIEW_CACHE.get(signature)
     if cached_surface is None:
         preview = pygame.Surface(screen.get_size()).convert()
-        preview.fill(colors.GRAY)
+        _ = preview.fill(colors.GRAY)
         scale_x = preview.get_width() / map_obj.level_width
         scale_y = preview.get_height() / map_obj.level_height
         minimap.draw_grid(
@@ -43,8 +41,8 @@ def draw_map_preview(
 
         color = colors.DARK_GRAY
         for e in map_obj.grid_entities:
-            if issubclass(type(e), Gate):
-                pygame.draw.rect(
+            if isinstance(e, Gate):
+                _ = pygame.draw.rect(
                     preview,
                     color,
                     [
@@ -54,8 +52,8 @@ def draw_map_preview(
                         scale_y + 1,
                     ],
                 )
-            if issubclass(type(e), Player):
-                pygame.draw.rect(
+            if isinstance(e, Player):
+                _ = pygame.draw.rect(
                     preview,
                     colors.WHITE,
                     [
@@ -68,4 +66,4 @@ def draw_map_preview(
         cached_surface = preview
         _MAP_PREVIEW_CACHE[signature] = cached_surface
 
-    screen.blit(cached_surface, (0, 0))
+    _ = screen.blit(cached_surface, (0, 0))

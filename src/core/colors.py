@@ -54,7 +54,9 @@ def multiply(color: list[int] | tuple[int, ...], n: int | float) -> list[int]:
     return truncate_color(new_color)
 
 
-def lerp_color(color1: list[int] | tuple[int, ...], color2: list[int] | tuple[int, ...], t: float) -> list[int]:
+def lerp_color(
+    color1: list[int] | tuple[int, ...], color2: list[int] | tuple[int, ...], t: float
+) -> list[int]:
     from utils import math_helpers
 
     new_color: list[int] = []

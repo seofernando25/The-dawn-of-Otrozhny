@@ -4,7 +4,11 @@ import math
 from utils import math_helpers
 
 
-def point_circle_collision(point_pos, circle_pos, circle_radius):
+def point_circle_collision(
+    point_pos: tuple[float, float],
+    circle_pos: tuple[float, float],
+    circle_radius: float,
+) -> bool:
     distX, distY = math_helpers.slope(point_pos, circle_pos)
     distance = math.hypot(distX, distY)
     return distance <= circle_radius

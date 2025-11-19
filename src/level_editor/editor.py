@@ -1,8 +1,10 @@
 import enum
-from typing import Optional, Tuple
+from collections.abc import Sequence
+from typing import Optional, Tuple, override
 
 import pygame
 from config import EDITOR_CONFIG
+from core.audio import AudioManager
 from core.context import build_editor_context
 from core.game_state import GameState
 from level.loader import save_level
@@ -268,7 +270,10 @@ class EditorScene(SceneHandler):
         self._last_events = []
         self._keys = pygame.key.get_pressed()
 
-    def handle_events(self, events, keys_pressed):
+    @override
+    def handle_events(
+        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+    ) -> bool:
         self._last_events = events
         self._keys = keys_pressed
 
@@ -292,30 +297,32 @@ class EditorScene(SceneHandler):
                         return True
         return False
 
-    def update(self, delta_time):
+    @override
+    def update(self, delta_time: float) -> None:
         self.hud.update(delta_time, self._last_events)
         self.grid_manager.update(self._last_events, self._keys, delta_time)
         self.grid_manager.horizontalButtonIndex = self.hud.selected_button
 
-    def draw(self, screen):
+    @override
+    def draw(self, screen: pygame.Surface) -> None:
         self.context.screen = screen
-        screen.fill(colors.BLACK)
+        _ = screen.fill(colors.BLACK)
         self.grid_manager.draw(screen)
         self.hud.draw(screen)
 
 
-def editorLoop(clock, audio_manager):
+def editorLoop(clock: pygame.time.Clock, audio_manager: AudioManager) -> GameState:
     scene = EditorScene(audio_manager)
-    run_scene(scene, clock)
+    _ = run_scene(scene, clock)
     return scene.result or GameState.Menu
 
 
 if __name__ == "__main__":
     from core.audio import AudioManager
 
-    pygame.init()
+    _ = pygame.init()
     audio = AudioManager()
     clock = pygame.time.Clock()
-    editorLoop(clock, audio)
+    _ = editorLoop(clock, audio)
     # Note: AudioManager creation is OK here as this is the entry point.
     # The audio is passed to editorLoop which creates EditorContext with it.

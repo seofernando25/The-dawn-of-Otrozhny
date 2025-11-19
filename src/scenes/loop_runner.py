@@ -6,7 +6,7 @@ This module provides a reusable implementation.
 """
 
 from collections.abc import Sequence
-from typing import Optional, Protocol
+from typing import Protocol
 
 import pygame
 
@@ -17,11 +17,9 @@ from core.game_state import GameState
 class HudLike(Protocol):
     def update(
         self, delta_time: float, events: Sequence[pygame.event.Event]
-    ) -> GameState | int | None:
-        ...
+    ) -> GameState | int | None: ...
 
-    def draw(self, screen: pygame.Surface) -> None:
-        ...
+    def draw(self, screen: pygame.Surface) -> None: ...
 
 
 class SceneHandler(Protocol):
@@ -47,8 +45,11 @@ class SceneHandler(Protocol):
 class SimpleSceneHandler:
     """Base class for simple scenes that just handle quit events."""
 
-    def handle_events(self, events, keys_pressed):
+    def handle_events(
+        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+    ) -> bool:
         """Handle basic quit events and return True if should quit."""
+        _ = keys_pressed
         for event in events:
             if event.type == pygame.QUIT:
                 return True
@@ -59,12 +60,13 @@ class SimpleSceneHandler:
 
     def update(self, delta_time: float) -> None:
         """Default empty update method."""
+        _ = delta_time
         pass
 
 
 def run_scene(
     scene_handler: SceneHandler,
-    clock: Optional[pygame.time.Clock] = None,
+    clock: pygame.time.Clock | None = None,
     bg_color: tuple[int, int, int] = colors.BLACK,
 ) -> bool:
     """Run a scene via the unified loop pattern and return False when it requests to quit."""
@@ -85,11 +87,11 @@ def run_scene(
         screen = pygame.display.get_surface()
         if screen is None:
             raise RuntimeError("pygame display surface is not initialized")
-        screen.fill(bg_color)
+        _ = screen.fill(bg_color)
         scene_handler.draw(screen)
         pygame.display.flip()
 
-        clock.tick()
+        _ = clock.tick()
 
     return True
 
@@ -97,7 +99,7 @@ def run_scene(
 def run_scene_with_hud(
     scene_handler: SceneHandler,
     hud: HudLike,
-    clock: Optional[pygame.time.Clock] = None,
+    clock: pygame.time.Clock | None = None,
     bg_color: tuple[int, int, int] = colors.BLACK,
 ) -> bool | GameState:
     """Run a HUD-enabled scene loop and return False when the handler or HUD requests exit."""
@@ -114,9 +116,8 @@ def run_scene_with_hud(
         if result is not None:
             if isinstance(result, GameState):
                 return result
-            if isinstance(result, int):
-                return GameState(result)
-            raise ValueError(f"Unexpected HUD update result: {type(result)}")
+            # After checking it's not None and not GameState, it must be int
+            return GameState(result)
 
         if scene_handler.handle_events(events, keys_pressed):
             return False
@@ -126,12 +127,12 @@ def run_scene_with_hud(
         screen = pygame.display.get_surface()
         if screen is None:
             raise RuntimeError("pygame display surface is not initialized")
-        screen.fill(bg_color)
+        _ = screen.fill(bg_color)
         scene_handler.draw(screen)
 
         hud.draw(screen)
 
         pygame.display.flip()
-        clock.tick()
+        _ = clock.tick()
 
     return True

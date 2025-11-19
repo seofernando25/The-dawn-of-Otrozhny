@@ -1,9 +1,16 @@
 """Floor rendering for first-person view."""
 
+from typing import TYPE_CHECKING
+
+import pygame
+
 from core import colors
 
+if TYPE_CHECKING:
+    from entities.base import Agent
 
-def render_floor(screen, entity):
+
+def render_floor(screen: pygame.Surface, entity: "Agent") -> None:
     """Render the floor/ceiling in the first-person view."""
     screen_height = screen.get_height()
     screen_width = screen.get_width()
@@ -12,7 +19,7 @@ def render_floor(screen, entity):
     floor_start = max(0, min(screen_height, floor_start))
     if floor_start >= screen_height:
         return
-    screen.fill(
+    _ = screen.fill(
         colors.DARK_GRAY,
         [(0, floor_start), (screen_width, screen_height - floor_start)],
     )

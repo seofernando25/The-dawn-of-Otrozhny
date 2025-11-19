@@ -1,15 +1,24 @@
 import heapq
 import math
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 # See: http://www.sfu.ca/~arashr/warren.pdf
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
-def go_to(start, target, grid):
-    open_heap = []
+
+def go_to(
+    start: tuple[int, int],
+    target: tuple[int, int],
+    grid: Sequence[Sequence[int]],
+) -> list[tuple[int, int]] | None:
+    open_heap: list[tuple[int, tuple[int, int]]] = []
     heapq.heappush(open_heap, (get_heuristic(start, target), start))
-    cameFrom = {}
-    gScore = {start: 0}
-    closed_set = set()
+    cameFrom: dict[tuple[int, int], tuple[int, int]] = {}
+    gScore: dict[tuple[int, int], int] = {start: 0}
+    closed_set: set[tuple[int, int]] = set()
 
     while open_heap:
         _, current = heapq.heappop(open_heap)
@@ -33,11 +42,15 @@ def go_to(start, target, grid):
             f_score = tentative_gScore + get_heuristic(neighbor, target)
             heapq.heappush(open_heap, (f_score, neighbor))
 
+    return None
+
 
 # Get NSEW neighboors if possible
 
 
-def get_neighbors(coord, grid):
+def get_neighbors(
+    coord: tuple[int, int], grid: Sequence[Sequence[int]]
+) -> Iterator[tuple[int, int]]:
     map_w = len(grid[0])
     map_h = len(grid)
     coord = (int(coord[0]), int(coord[1]))
@@ -56,13 +69,15 @@ def get_neighbors(coord, grid):
             yield (coord[0], coord[1] - 1)
 
 
-def get_heuristic(coord, end):
+def get_heuristic(coord: tuple[int, int], end: tuple[int, int]) -> int:
     dx = abs(coord[0] - end[0])
     dy = abs(coord[1] - end[1])
     return dx + dy
 
 
-def reconstruct_path(cameFrom, current):
+def reconstruct_path(
+    cameFrom: dict[tuple[int, int], tuple[int, int]], current: tuple[int, int]
+) -> list[tuple[int, int]]:
     result = [current]
     while current in cameFrom:
         current = cameFrom[current]

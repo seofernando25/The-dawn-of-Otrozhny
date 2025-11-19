@@ -17,6 +17,7 @@ _OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
 try:
     from typing import override
 except ImportError:  # pragma: no cover
+
     def override(func: _OverrideFunc, /) -> _OverrideFunc:
         return func
 

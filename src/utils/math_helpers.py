@@ -56,7 +56,9 @@ def translate(
 # x2 - x1
 
 
-def slope(aCoord: tuple[float, float], bCoord: tuple[float, float]) -> tuple[float, float]:
+def slope(
+    aCoord: tuple[float, float], bCoord: tuple[float, float]
+) -> tuple[float, float]:
     dy = bCoord[1] - aCoord[1]
     dx = bCoord[0] - aCoord[0]
     return dx, dy
@@ -77,7 +79,9 @@ def fixed_angle(angle: float) -> float:
     return angle
 
 
-def project(camera: SupportsPosition, p2: tuple[float, float], table_angle: float) -> float:
+def project(
+    camera: SupportsPosition, p2: tuple[float, float], table_angle: float
+) -> float:
     camera_pos = camera.get_pos()
     dx, dy = slope(camera_pos, p2)
 

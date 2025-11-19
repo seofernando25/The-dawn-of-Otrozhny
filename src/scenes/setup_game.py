@@ -1,6 +1,6 @@
 import copy
 from collections.abc import Sequence
-from typing import Callable, TypeVar, cast
+from typing import Callable, TypeVar, cast, override
 
 import pygame
 
@@ -19,9 +19,10 @@ from ui import MapSelectionScreen
 from .game_loop import run_game_loop
 
 
-def pre_load_assets():
+def pre_load_assets() -> None:
     """Pre-load all sprite assets for the game to avoid load times."""
-    for pack_name in assets.list_asset_packs():
+    pack_names: list[str] = list(assets.list_asset_packs())
+    for pack_name in pack_names:
         _ = assets.get_sprite(pack_name, 0)
 
     default_pack = assets.ASSETS_DIR / "Sprites"
@@ -79,6 +80,7 @@ _OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
 try:
     from typing import override
 except ImportError:  # pragma: no cover
+
     def override(func: _OverrideFunc, /) -> _OverrideFunc:
         return func
 

@@ -20,10 +20,10 @@ def pre_close():
 def pre_init(audio: AudioManager):
     """Pre-load audio assets and UI sounds."""
     # Set up UI sound for buttons (used throughout the application)
-    audio.set_ui_sound("Active_UI", "music")
+    _ = audio.set_ui_sound("Active_UI", "music")
     # Pre-load music tracks to avoid loading delays during gameplay
-    assets.get_cached_audio("music", "Menu")
-    assets.get_cached_audio("music", "Game")
+    _ = assets.get_cached_audio("music", "Menu")
+    _ = assets.get_cached_audio("music", "Game")
 
 
 def main_loop():
@@ -31,9 +31,9 @@ def main_loop():
     # Create AudioManager instance (no singleton pattern)
     audio = AudioManager()
 
-    pygame.init()
-    pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
-    pygame.display.set_caption("The dawn of Otrozhny")
+    _ = pygame.init()
+    _ = pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
+    _ = pygame.display.set_caption("The dawn of Otrozhny")
     logo_path = BASE_DIR / "assets/icon.png"
     logo = pygame.image.load(str(logo_path))
     pygame.display.set_icon(logo)
@@ -46,10 +46,10 @@ def main_loop():
 
     def ensure_music(track_name: str):
         nonlocal current_music
-        if current_music == track_name:
+        if current_music is not None and current_music == track_name:
             return
         audio.stop_music()
-        audio.play_music(track_name, "music")
+        _ = audio.play_music(track_name, "music")
         current_music = track_name
 
     ensure_music("Menu")
@@ -73,7 +73,7 @@ def main_loop():
             continue
 
         if state == GameState.About:
-            about_loop.run_about_loop()
+            _ = about_loop.run_about_loop()
             ensure_music("Menu")
             continue
 
@@ -86,7 +86,7 @@ def main_loop():
             continue
 
         if state == GameState.Tutorial:
-            tutorial_loop.run_tutorial_loop()
+            _ = tutorial_loop.run_tutorial_loop()
             ensure_music("Menu")
             continue
 
@@ -107,8 +107,8 @@ if __name__ == "__main__":
         profiler.disable()
         stream = io.StringIO()
         stats = pstats.Stats(profiler, stream=stream).sort_stats("cumtime")
-        stats.print_stats()
+        _ = stats.print_stats()
         with open("profile_stats.log", "w", encoding="utf-8") as out_file:
-            out_file.write(stream.getvalue())
+            _ = out_file.write(stream.getvalue())
     else:
         main_loop()

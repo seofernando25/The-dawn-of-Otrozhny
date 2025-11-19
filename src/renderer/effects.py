@@ -1,6 +1,7 @@
 # Script used mainly to draw "otherEffects.py" on the screen
 # eg: main menu's Sierpinski triangle
 import random
+from typing import override
 
 from core import colors
 import pygame
@@ -11,27 +12,27 @@ from utils import math_helpers
 # this numberphile video
 # https://www.youtube.com/watch?v=kbKtFN71Lfs
 class ChaosObject(pygame.Surface):
-    def __init__(self, center, size, n_sides):
+    def __init__(self, center: tuple[int, int], size: int, n_sides: int) -> None:
         super().__init__((size, size))
         self.set_colorkey(colors.BLACK)
-        self.points = math_helpers.points_from_polygon_sides(
+        self.points: list[tuple[float, float]] = math_helpers.points_from_polygon_sides(
             n_sides, size / 2, adjusted=True
         )
-        self.color = colors.WHITE
-        self.surface_size = size
-        self.center = center
-        self.n_of_itterations = 0
-        self.drawn_points = []
-        self.current_point = self.points[0]
+        self.color: tuple[int, int, int] = colors.WHITE
+        self.surface_size: int = size
+        self.center: tuple[int, int] = center
+        self.n_of_itterations: int = 0
+        self.drawn_points: list[tuple[float, float]] = []
+        self.current_point: tuple[float, float] = self.points[0]
         self.drawn_points.append(self.current_point)
-        self.updates_before_draw = 0
+        self.updates_before_draw: int = 0
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         for x in range(self.updates_before_draw):
             point = self.drawn_points[len(self.drawn_points) - 1 - x]
-            pygame.draw.circle(self, self.color, tuple([int(x) for x in point]), 1)
+            _ = pygame.draw.circle(self, self.color, tuple([int(x) for x in point]), 1)
         self.updates_before_draw = 0
-        screen.blit(
+        _ = screen.blit(
             self,
             (
                 self.center[0] - self.surface_size // 2,
@@ -39,7 +40,7 @@ class ChaosObject(pygame.Surface):
             ),
         )
 
-    def update(self):
+    def update(self) -> None:
         self.updates_before_draw += 1
         self.n_of_itterations += 1
         rand_pos = random.randint(0, len(self.points) - 1)
@@ -50,11 +51,13 @@ class ChaosObject(pygame.Surface):
 
 
 class ChaosSnowFlake(ChaosObject):
-    def __init__(self, center, size):
+    def __init__(self, center: tuple[int, int], size: int) -> None:
         super().__init__(center, size, 5)
-        self.previous = None
+        self.previous: int | None = None
+        self.current_point: tuple[float, float] = self.points[0]
 
-    def update(self):
+    @override
+    def update(self) -> None:
         rand_pos = random.randint(0, len(self.points) - 1)
         while rand_pos == self.previous:
             rand_pos = random.randint(0, len(self.points) - 1)
@@ -68,10 +71,14 @@ class ChaosSnowFlake(ChaosObject):
 
 class StarField(pygame.Surface):
     class Star:
-        def __init__(self, parent_width, parent_height):
+        def __init__(self, parent_width: int, parent_height: int) -> None:
             spread = 3
-            self.x: float = float(random.randint(-parent_width // spread, parent_width // spread))
-            self.y: float = float(random.randint(-parent_height // spread, parent_height // spread))
+            self.x: float = float(
+                random.randint(-parent_width // spread, parent_width // spread)
+            )
+            self.y: float = float(
+                random.randint(-parent_height // spread, parent_height // spread)
+            )
             self.z: float = float(random.randint(1, parent_width))
             self.lastZ: float = self.z
 
@@ -81,18 +88,18 @@ class StarField(pygame.Surface):
             self.screenLastX: float = 0.0
             self.screenLastY: float = 0.0
 
-    def __init__(self, size):
+    def __init__(self, size: tuple[int, int]) -> None:
         super().__init__(size)
 
         self.speed: float = float(random.randint(1, 5))
-        self.surface_width = self.get_width()
-        self.surface_height = self.get_height()
+        self.surface_width: int = self.get_width()
+        self.surface_height: int = self.get_height()
 
         self.stars: list[StarField.Star] = []
-        for x in range(250):
+        for _ in range(250):
             self.stars.append(StarField.Star(size[0], size[1]))
 
-    def update(self, dt):
+    def update(self, dt: float) -> None:
         for star in self.stars:
             if (
                 star.screenX < -5
@@ -126,15 +133,15 @@ class StarField(pygame.Surface):
             star.screenLastX += self.surface_width // 2
             star.screenLastY += self.surface_height // 2
 
-    def draw(self):
-        self.fill((0, 0, 0))
+    def draw(self) -> None:
+        _ = self.fill((0, 0, 0))
         for star in self.stars:
             starSize = math_helpers.translate(star.z, self.surface_width, 0, 1, 4)
             if starSize > 8:
                 star.z = self.surface_width
             starSize = int(starSize)
 
-            pygame.draw.line(
+            _ = pygame.draw.line(
                 self,
                 (255, 255, 255),
                 (star.screenX, star.screenY),
@@ -142,7 +149,7 @@ class StarField(pygame.Surface):
                 starSize,
             )
 
-    def change_speed(self):
+    def change_speed(self) -> None:
         num = random.randint(1, 10)
         while abs(self.speed - num) < 3:
             num = random.randint(1, 10)

@@ -1,5 +1,6 @@
 import datetime
-from typing import Sequence
+from collections.abc import Sequence
+from typing import override
 
 import pygame
 
@@ -45,21 +46,17 @@ def run_game_loop(context: GameContext) -> GameState:
         # Update HUD (needs events for button interactions)
         hud_result = hud_system.update(delta_time, events)
         if hud_result is not None:
-            if isinstance(hud_result, GameState):
-                return hud_result
-            if isinstance(hud_result, int):
-                return GameState(hud_result)
-            raise ValueError(f"Unexpected HUD result type: {type(hud_result)}")
+            return GameState(hud_result)
 
         # Update gameplay
         # Note: Player input is now handled by InputSystem above
         gameplay_result = gameplay_system.update(delta_time, events)
         if gameplay_result is not None:
             game_state, time = gameplay_result
-            if game_state == GameState.Play:
-                # Game ended - show post-game screen
-                won = time is not None
-                return post_game_loop(won=won, time=time if won else 0)
+            # Game ended - show post-game screen
+            won = time is not None
+            elapsed_time = time if time is not None else 0.0
+            return post_game_loop(won=won, time=elapsed_time)
 
         # Render frame
         # Screen should always be set in context, but fallback for safety
@@ -79,20 +76,21 @@ def run_game_loop(context: GameContext) -> GameState:
         hud_system.draw(screen)
 
         pygame.display.flip()
-        clock.tick()
-
-    return GameState.Quit
+        _ = clock.tick()
 
 
 class PostGameScene(SceneHandler):
     """Scene handler for the post-game summary screen."""
 
     def __init__(self, won: bool, time_seconds: float):
-        self.won = won
-        self.elapsed_time = datetime.timedelta(seconds=time_seconds) if won else None
-        self.msg = "You won" if won else "You lost"
-        self.msg_accumulated = 0.0
+        self.won: bool = won
+        self.elapsed_time: datetime.timedelta | None = (
+            datetime.timedelta(seconds=time_seconds) if won else None
+        )
+        self.msg: str = "You won" if won else "You lost"
+        self.msg_accumulated: float = 0.0
 
+    @override
     def handle_events(
         self,
         events: list[pygame.event.Event],
@@ -101,15 +99,18 @@ class PostGameScene(SceneHandler):
         for event in events:
             if event.type == pygame.QUIT:
                 return True
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                return True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    return True
         return False
 
+    @override
     def update(self, delta_time: float) -> None:
         self.msg_accumulated += delta_time * 5
         if self.msg_accumulated > len(self.msg):
             self.msg_accumulated = len(self.msg)
 
+    @override
     def draw(self, screen: pygame.Surface) -> None:
         from renderer.text import message_display_MT, message_display_L
 
@@ -146,5 +147,5 @@ class PostGameScene(SceneHandler):
 def post_game_loop(won: bool, time: float = 0.0) -> GameState:
     """Show the win/lose summary screen and return GameState.Menu to go back to menu."""
     scene = PostGameScene(won, time)
-    run_scene(scene)
+    _ = run_scene(scene)
     return GameState.Menu

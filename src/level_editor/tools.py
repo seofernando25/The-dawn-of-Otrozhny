@@ -76,7 +76,7 @@ class MoveTool(BaseTool):
 
     def draw(self, screen, grid_manager):
         if self.selected_entity:
-            pygame.draw.circle(
+            _ = pygame.draw.circle(
                 screen,
                 colors.ACCENTUADED_BLUE,
                 (
@@ -314,7 +314,7 @@ class NodeTool(BaseTool):
             scaled_start_y = int(
                 self.selected_node.py * grid_manager.scale + grid_manager.adjust[1]
             )
-            pygame.draw.line(
+            _ = pygame.draw.line(
                 screen, colors.NAVY_BLUE, (scaled_start_x, scaled_start_y), mouse_pos, 5
             )
 
