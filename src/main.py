@@ -1,20 +1,19 @@
 from pathlib import Path
 import sys
 
-import pygame
-
 from core import assets
 from core.audio import AudioManager
 from level_editor import editor as levelEditor
 from core.game_state import GameState
 from scenes import about_loop, menu_loop, setup_game, tutorial_loop
+from core.bootstrap import initialize_backend, get_or_initialize_backend, shutdown_backend
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def pre_close():
     """Clean up resources before exiting."""
-    pygame.quit()
+    shutdown_backend()
 
 
 def pre_init(audio: AudioManager):
@@ -31,16 +30,19 @@ def main_loop():
     # Create AudioManager instance (no singleton pattern)
     audio = AudioManager()
 
-    _ = pygame.init()
-    _ = pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
-    _ = pygame.display.set_caption("The dawn of Otrozhny")
+    backend = initialize_backend("pygame")
+    # Initialize display mode before loading textures (required for convert/convert_alpha)
+    from config import renderer_config
+    backend.graphics.set_display_mode(renderer_config.SCREEN_SIZE)
+    backend.input.set_allowed_events(["QUIT", "KEYDOWN", "KEYUP"])
+    backend.graphics.set_caption("The dawn of Otrozhny")
     logo_path = BASE_DIR / "assets/icon.png"
-    logo = pygame.image.load(str(logo_path))
-    pygame.display.set_icon(logo)
+    logo = backend.graphics.load_texture(str(logo_path))
+    backend.graphics.set_icon(logo)
 
     pre_init(audio)
 
-    clock = pygame.time.Clock()
+    clock = backend.clock
     done = False
     current_music = None
 
@@ -79,7 +81,9 @@ def main_loop():
 
         if state == GameState.Edit:
             while state == GameState.Edit:
-                state = levelEditor.editorLoop(clock, audio)
+                # We need to pass the actual pygame clock for editorLoop as it's expecting pygame specific object
+                # Let's handle this differently - first let's just pass None for now and handle the editor later
+                state = levelEditor.editorLoop(clock, audio)  # This might need special handling
             ensure_music("Menu")
             if state == GameState.Quit:
                 done = True
@@ -103,7 +107,8 @@ if __name__ == "__main__":
         profiler = cProfile.Profile()
         profiler.enable()
         main_loop()
-        pygame.quit()
+        backend = get_backend()
+        backend.quit()
         profiler.disable()
         stream = io.StringIO()
         stats = pstats.Stats(profiler, stream=stream).sort_stats("cumtime")

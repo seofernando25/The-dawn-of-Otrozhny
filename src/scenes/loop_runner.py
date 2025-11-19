@@ -6,20 +6,27 @@ This module provides a reusable implementation.
 """
 
 from collections.abc import Sequence
-from typing import Protocol
-
-import pygame
+from typing import TYPE_CHECKING, Protocol
 
 from core import colors
+from core.backend import get_backend
 from core.game_state import GameState
+
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface, Clock, Event
+else:
+    # For runtime, we'll use the backend's event type
+    Event = object
+
+# Removed _unwrap_surface - we now use GraphicsSurface directly
 
 
 class HudLike(Protocol):
     def update(
-        self, delta_time: float, events: Sequence[pygame.event.Event]
+        self, delta_time: float, events: Sequence[Event]
     ) -> GameState | int | None: ...
 
-    def draw(self, screen: pygame.Surface) -> None: ...
+    def draw(self, screen: "GraphicsSurface") -> None: ...
 
 
 class SceneHandler(Protocol):
@@ -27,17 +34,17 @@ class SceneHandler(Protocol):
 
     def handle_events(
         self,
-        events: list[pygame.event.Event],
+        events: list[Event],
         keys_pressed: Sequence[bool],
     ) -> bool:
-        """Handle pygame events. Return True to quit."""
+        """Handle events. Return True to quit."""
         ...
 
     def update(self, delta_time: float) -> None:
         """Update game logic."""
         ...
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         """Draw the scene."""
         ...
 
@@ -46,15 +53,17 @@ class SimpleSceneHandler:
     """Base class for simple scenes that just handle quit events."""
 
     def handle_events(
-        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+        self, events: list[Event], keys_pressed: Sequence[bool]
     ) -> bool:
         """Handle basic quit events and return True if should quit."""
         _ = keys_pressed
+        from core.backend.api import QUIT, KEYDOWN
+        from core.backend.api import K_q
         for event in events:
-            if event.type == pygame.QUIT:
+            if event.type == QUIT:
                 return True
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:
+            elif event.type == KEYDOWN and event.key is not None:
+                if event.key == K_q:
                     return True
         return False
 
@@ -66,30 +75,31 @@ class SimpleSceneHandler:
 
 def run_scene(
     scene_handler: SceneHandler,
-    clock: pygame.time.Clock | None = None,
+    clock: "Clock | None" = None,
     bg_color: tuple[int, int, int] = colors.BLACK,
 ) -> bool:
     """Run a scene via the unified loop pattern and return False when it requests to quit."""
+    backend = get_backend()
     if clock is None:
-        clock = pygame.time.Clock()
+        clock = backend.clock
 
     done = False
     while not done:
         delta_time = clock.get_time() / 1000
-        events = pygame.event.get()
-        keys_pressed = pygame.key.get_pressed()
+        events = backend.input.get_events()
+        keys_pressed = backend.input.get_pressed_keys()
 
         if scene_handler.handle_events(events, keys_pressed):
             return False
 
         scene_handler.update(delta_time)
 
-        screen = pygame.display.get_surface()
+        screen = backend.graphics.get_display_surface()
         if screen is None:
-            raise RuntimeError("pygame display surface is not initialized")
-        _ = screen.fill(bg_color)
+            raise RuntimeError("Display surface is not initialized")
+        screen.fill(bg_color)
         scene_handler.draw(screen)
-        pygame.display.flip()
+        backend.graphics.flip()
 
         _ = clock.tick()
 
@@ -99,18 +109,19 @@ def run_scene(
 def run_scene_with_hud(
     scene_handler: SceneHandler,
     hud: HudLike,
-    clock: pygame.time.Clock | None = None,
+    clock: "Clock | None" = None,
     bg_color: tuple[int, int, int] = colors.BLACK,
 ) -> bool | GameState:
     """Run a HUD-enabled scene loop and return False when the handler or HUD requests exit."""
+    backend = get_backend()
     if clock is None:
-        clock = pygame.time.Clock()
+        clock = backend.clock
 
     done = False
     while not done:
         delta_time = clock.get_time() / 1000
-        events = pygame.event.get()
-        keys_pressed = pygame.key.get_pressed()
+        events = backend.input.get_events()
+        keys_pressed = backend.input.get_pressed_keys()
 
         result = hud.update(delta_time, events)
         if result is not None:
@@ -124,15 +135,15 @@ def run_scene_with_hud(
 
         scene_handler.update(delta_time)
 
-        screen = pygame.display.get_surface()
+        screen = backend.graphics.get_display_surface()
         if screen is None:
-            raise RuntimeError("pygame display surface is not initialized")
-        _ = screen.fill(bg_color)
+            raise RuntimeError("Display surface is not initialized")
+        screen.fill(bg_color)
         scene_handler.draw(screen)
 
         hud.draw(screen)
 
-        pygame.display.flip()
+        backend.graphics.flip()
         _ = clock.tick()
 
     return True

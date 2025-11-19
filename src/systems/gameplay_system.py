@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import cast
-
-import pygame
+from typing import TYPE_CHECKING, cast
 
 from core.context import GameContext
 from core.game_state import GameState
 from entities.enemy_state import EnemyStateManager
 from entities.player import Player
 from level.level import Level
+
+if TYPE_CHECKING:
+    from core.backend.api import Event
 
 
 class GameplaySystem:
@@ -34,7 +35,7 @@ class GameplaySystem:
     def update(
         self,
         delta_time: float,
-        _events: list[pygame.event.Event],
+        _events: list["Event"],
     ) -> tuple[GameState, float | None] | None:
         """Update all gameplay systems."""
         self.time += delta_time

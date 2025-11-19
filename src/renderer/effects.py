@@ -1,20 +1,25 @@
 # Script used mainly to draw "otherEffects.py" on the screen
 # eg: main menu's Sierpinski triangle
 import random
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from core import colors
-import pygame
+from core.backend import get_backend
+from renderer.text import _blit_surface
 from utils import math_helpers
+
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface
 
 
 # The concept for this class was taken from
 # this numberphile video
 # https://www.youtube.com/watch?v=kbKtFN71Lfs
-class ChaosObject(pygame.Surface):
+class ChaosObject:
     def __init__(self, center: tuple[int, int], size: int, n_sides: int) -> None:
-        super().__init__((size, size))
-        self.set_colorkey(colors.BLACK)
+        backend = get_backend()
+        self._surface = backend.graphics.create_surface((size, size))
+        self._surface.set_colorkey(colors.BLACK)
         self.points: list[tuple[float, float]] = math_helpers.points_from_polygon_sides(
             n_sides, size / 2, adjusted=True
         )
@@ -27,13 +32,17 @@ class ChaosObject(pygame.Surface):
         self.drawn_points.append(self.current_point)
         self.updates_before_draw: int = 0
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
+        backend = get_backend()
         for x in range(self.updates_before_draw):
             point = self.drawn_points[len(self.drawn_points) - 1 - x]
-            _ = pygame.draw.circle(self, self.color, tuple([int(x) for x in point]), 1)
+            backend.graphics.draw_circle(
+                self._surface, self.color, tuple([int(x) for x in point]), 1
+            )
         self.updates_before_draw = 0
-        _ = screen.blit(
-            self,
+        _blit_surface(
+            screen,
+            self._surface,
             (
                 self.center[0] - self.surface_size // 2,
                 self.center[1] - self.surface_size // 2,
@@ -69,7 +78,7 @@ class ChaosSnowFlake(ChaosObject):
         self.previous = rand_pos
 
 
-class StarField(pygame.Surface):
+class StarField:
     class Star:
         def __init__(self, parent_width: int, parent_height: int) -> None:
             spread = 3
@@ -89,11 +98,13 @@ class StarField(pygame.Surface):
             self.screenLastY: float = 0.0
 
     def __init__(self, size: tuple[int, int]) -> None:
-        super().__init__(size)
+        backend = get_backend()
+        self._surface = backend.graphics.create_surface(size)
 
         self.speed: float = float(random.randint(1, 5))
-        self.surface_width: int = self.get_width()
-        self.surface_height: int = self.get_height()
+        width, height = self._surface.get_size()
+        self.surface_width: int = width
+        self.surface_height: int = height
 
         self.stars: list[StarField.Star] = []
         for _ in range(250):
@@ -134,15 +145,16 @@ class StarField(pygame.Surface):
             star.screenLastY += self.surface_height // 2
 
     def draw(self) -> None:
-        _ = self.fill((0, 0, 0))
+        backend = get_backend()
+        _ = self._surface.fill((0, 0, 0))
         for star in self.stars:
             starSize = math_helpers.translate(star.z, self.surface_width, 0, 1, 4)
             if starSize > 8:
                 star.z = self.surface_width
             starSize = int(starSize)
 
-            _ = pygame.draw.line(
-                self,
+            backend.graphics.draw_line(
+                self._surface,
                 (255, 255, 255),
                 (star.screenX, star.screenY),
                 (star.screenLastX, star.screenLastY),

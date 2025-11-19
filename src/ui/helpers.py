@@ -1,34 +1,42 @@
-import pygame
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from core import colors
 from core.context import get_screen
 from config import renderer_config
+from renderer.text import _blit_surface
 from ui.button import HudButton
 
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface, Sound
 
-def _resolve_screen(screen: pygame.Surface | None = None) -> pygame.Surface:
+
+def _resolve_screen(screen: "GraphicsSurface | None" = None) -> "GraphicsSurface":
     """Resolve screen surface, using global screen if none provided."""
     return screen if screen is not None else get_screen()
 
 
-def resolve_screen(screen: pygame.Surface | None = None) -> pygame.Surface:
+def resolve_screen(screen: "GraphicsSurface | None" = None) -> "GraphicsSurface":
     """Public wrapper around `_resolve_screen` for external modules."""
     return _resolve_screen(screen)
 
 
 def render_hud_surfaces(
-    hud_viewport: pygame.Surface, hud_cell_surfaces: list[HudButton]
+    hud_viewport: "GraphicsSurface", hud_cell_surfaces: list[HudButton]
 ) -> None:
     """Render HUD cell surfaces onto the HUD viewport."""
     row = 0
     for cell_surface in hud_cell_surfaces:
         cell_surface.redraw()
-        _ = hud_viewport.blit(
-            cell_surface,
+        cell_width = cell_surface.get_width()
+        _blit_surface(
+            hud_viewport,
+            cell_surface._surface,
             (
                 renderer_config.HUD_CELL_OFFSET
                 + renderer_config.HUD_CELL_OFFSET * row
-                + row * cell_surface.get_width(),
+                + row * cell_width,
                 renderer_config.VIEWPORT_Y_OFFSET // 4,
             ),
         )
@@ -36,13 +44,14 @@ def render_hud_surfaces(
 
 
 def generate_hud_surfaces(
-    hud_surface: pygame.Surface, *, activated_sound: pygame.mixer.Sound | None = None
+    hud_surface: "GraphicsSurface", *, activated_sound: "Sound | None" = None
 ) -> list[HudButton]:
     """Generate HUD button surfaces for a HUD viewport."""
     hud_cell_surfaces: list[HudButton] = []
-    cell_height = hud_surface.get_height() - renderer_config.VIEWPORT_Y_OFFSET // 2
+    hud_width, hud_height = hud_surface.get_size()
+    cell_height = hud_height - renderer_config.VIEWPORT_Y_OFFSET // 2
     cell_width = (
-        hud_surface.get_width()
+        hud_width
         - (renderer_config.HUD_CELL_OFFSET + 1) * renderer_config.HUD_NUM_OF_CELLS
     )
     cell_width /= renderer_config.HUD_NUM_OF_CELLS
@@ -55,8 +64,10 @@ def generate_hud_surfaces(
     return hud_cell_surfaces
 
 
-def generate_hud_viewport() -> pygame.Surface:
+def generate_hud_viewport() -> "GraphicsSurface":
     """Generate the main HUD viewport surface."""
+    from core.backend import get_backend
+    
     _ = get_screen()
     hud_width = renderer_config.SCREEN_WIDTH - renderer_config.VIEWPORT_X_OFFSET * 2
     hud_height = (
@@ -65,6 +76,8 @@ def generate_hud_viewport() -> pygame.Surface:
         - renderer_config.VIEWPORT_Y_OFFSET * 2
     )
 
-    hud_viewport = pygame.Surface([hud_width, hud_height]).convert()
+    backend = get_backend()
+    hud_viewport = backend.graphics.create_surface((hud_width, hud_height))
+    hud_viewport = hud_viewport.convert()
     _ = hud_viewport.fill(colors.BLUE)
     return hud_viewport

@@ -1,15 +1,19 @@
 """HUD button component."""
 
-import pygame
+from typing import TYPE_CHECKING
 
 from config import renderer_config
 from core import colors
+from core.backend import get_backend
 from renderer.text import message_display, message_display_MT, wrapline
+
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface, Sound
 
 ColorValue = tuple[int, int, int] | list[int] | str
 
 
-class HudButton(pygame.Surface):
+class HudButton:
     """A button component for the HUD system."""
 
     def __init__(
@@ -18,9 +22,10 @@ class HudButton(pygame.Surface):
         h: float,
         text: str = "None",
         *,
-        activated_sound: pygame.mixer.Sound | None = None,
+        activated_sound: "Sound | None" = None,
     ):
-        super().__init__((int(w), int(h)))
+        backend = get_backend()
+        self._surface: GraphicsSurface = backend.graphics.create_surface((int(w), int(h)))
         self.isActive: bool = False
         # If false the surface have to be redrawn step by step
         self.protected: bool = True
@@ -29,7 +34,27 @@ class HudButton(pygame.Surface):
         self.title: str = ""
         self.indexColor: list[ColorValue] = [colors.WHITE] * 3
         self._dirty: bool = True
-        self._activated_sound: pygame.mixer.Sound | None = activated_sound
+        self._activated_sound: "Sound | None" = activated_sound
+
+    def get_width(self) -> int:
+        """Get the width of the button surface."""
+        return self._surface.get_width()
+
+    def get_height(self) -> int:
+        """Get the height of the button surface."""
+        return self._surface.get_height()
+
+    def get_size(self) -> tuple[int, int]:
+        """Get the size of the button surface."""
+        return self._surface.get_size()
+
+    def fill(self, color: ColorValue) -> None:
+        """Fill the button surface with a color."""
+        self._surface.fill(color)
+
+    def blit(self, source: "GraphicsSurface", dest: tuple[float, float]) -> None:
+        """Blit a source surface onto this button surface."""
+        self._surface.blit(source, dest)
 
     def _mark_dirty(self):
         """Mark the button as needing a redraw."""
@@ -67,7 +92,7 @@ class HudButton(pygame.Surface):
         """Render the button's text contents."""
         if self.title:
             message_display_MT(
-                self,
+                self._surface,
                 self.title,
                 self.get_width() // 2,
                 renderer_config.HUD_CELL_TITLE_OFFSET,
@@ -76,7 +101,7 @@ class HudButton(pygame.Surface):
             )
         if self.subtitle:
             message_display_MT(
-                self,
+                self._surface,
                 self.subtitle,
                 self.get_width() // 2,
                 renderer_config.HUD_CELL_TITLE_OFFSET * 3,
@@ -98,7 +123,7 @@ class HudButton(pygame.Surface):
 
             for line in wrapped_text:
                 message_display(
-                    self,
+                    self._surface,
                     line,
                     self.get_width() // 2,
                     py,

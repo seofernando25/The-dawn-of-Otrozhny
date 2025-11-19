@@ -1,14 +1,16 @@
 import math
-from typing import Optional, cast
-
-import pygame
+from typing import TYPE_CHECKING, Optional, cast
 
 from config import ENTITY_DEFAULTS
 from core import assets
+from core.backend import get_backend
 from core.context import GameContext
 from physics import movement
 from utils import math_helpers
 from utils.math_helpers import HasPosition
+
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface
 
 
 class Entity:
@@ -92,7 +94,7 @@ class SpriteEntity(Entity):
         super().__init__(start_pos, context=context)
         self.agent_pack_name = agent_pack_name
 
-    def get_sprite(self, _cam: object):
+    def get_sprite(self, _cam: object) -> "GraphicsSurface | None":
         return assets.get_sprite(self.agent_pack_name, 0)
 
 
@@ -180,10 +182,13 @@ class SpriteAgent(Agent):
         super().__init__(start_pos, fov, move_speed, fov_depth, context=context)
         self.agent_pack_name = agent_pack
 
-    def get_sprite(self, camObj: object) -> pygame.Surface:
+    def get_sprite(self, camObj: object) -> "GraphicsSurface":
+        backend = get_backend()
         angle = math.atan2(self.dirY, self.dirX)
         if not hasattr(camObj, "get_pos"):
-            return pygame.Surface((0, 0), pygame.SRCALPHA)
+            # Return empty transparent surface
+            empty_surface = backend.graphics.create_surface((0, 0))
+            return empty_surface
         camera_provider = cast(HasPosition, camObj)
         cam_pos = camera_provider.get_pos()
         camPos = (float(cam_pos[0]), float(cam_pos[1]))
@@ -193,7 +198,9 @@ class SpriteAgent(Agent):
 
         curr = assets.get_sprite(self.agent_pack_name, 0)
         if curr is None:
-            return pygame.Surface((0, 0), pygame.SRCALPHA)
+            # Return empty transparent surface
+            empty_surface = backend.graphics.create_surface((0, 0))
+            return empty_surface
         if math.degrees(angleCamDelta) < 180:
-            curr = pygame.transform.flip(curr, True, False)
+            curr = backend.graphics.flip_surface(curr, True, False)
         return curr

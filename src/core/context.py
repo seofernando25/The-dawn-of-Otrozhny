@@ -1,12 +1,13 @@
 from dataclasses import dataclass, replace
 from importlib import import_module
-from typing import Any
-from typing import Protocol, runtime_checkable
-
-import pygame
+from typing import Any, Protocol, runtime_checkable, TYPE_CHECKING
 
 from config import renderer_config
 from core.audio import AudioManager
+from core.backend import get_backend
+
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface, Clock
 
 EnemyStateManager = Any
 Player = Any
@@ -20,20 +21,19 @@ def _build_enemy_state() -> "EnemyStateManager":
     return enemy_state_cls()
 
 
-def get_screen() -> pygame.Surface:
-    """Get or create the main pygame screen surface."""
-    screen = pygame.display.get_surface()
+def get_screen():
+    """Get or create the main screen surface using the backend."""
+    backend = get_backend()
+    screen = backend.graphics.get_display_surface()
     if screen is None:
-        screen = pygame.display.set_mode(
-            renderer_config.SCREEN_SIZE, renderer_config.FLAGS
-        )
+        screen = backend.graphics.set_display_mode(renderer_config.SCREEN_SIZE)
         screen.set_alpha(None)
     return screen
 
 
 @runtime_checkable
 class SupportsClose(Protocol):
-    """Subset of pygame objects that expose ``quit`` or ``close``."""
+    """Subset of objects that expose ``quit`` or ``close``."""
 
     def quit(self) -> None: ...
 
@@ -42,7 +42,7 @@ class SupportsClose(Protocol):
 class BaseContext:
     """Base container for shared services."""
 
-    screen: "pygame.Surface | None"
+    screen: "GraphicsSurface | None"
     audio: "AudioManager"
 
     def with_override(self, **kwargs: object) -> "BaseContext":
@@ -54,9 +54,9 @@ class BaseContext:
 class GameContext(BaseContext):
     """Aggregates runtime state for the main gameplay loops."""
 
-    player: "Any | None" = None
-    level: "Any | None" = None
-    clock: "pygame.time.Clock | None" = None
+    player: "Any | None" = None  # Keeping as Any for now since Player type is not defined elsewhere
+    level: "Any | None" = None   # Keeping as Any for now since Level type is not defined elsewhere
+    clock: "Clock | None" = None
     enemy_state: "EnemyStateManager | None" = None
 
     def update_level(self, level: Any) -> None:
@@ -78,7 +78,7 @@ class GameContext(BaseContext):
 class EditorContext(BaseContext):
     """Context wrapper dedicated to the level editor."""
 
-    grid_manager: "Any | None" = None
+    grid_manager: "Any | None" = None  # Keeping as Any since GridManager type is not defined elsewhere
 
     def ensure_grid_manager(self, manager: "GridManager") -> "GridManager":
         """Set and return the grid manager, enabling fluent initialization."""
@@ -90,9 +90,9 @@ def build_game_context(
     *,
     player: Any,
     level: Any | None = None,
-    screen: pygame.Surface | None = None,
+    screen: "GraphicsSurface | None" = None,
     audio_manager_service: "AudioManager",
-    clock: pygame.time.Clock | None = None,
+    clock: "Clock | None" = None,
     enemy_state: Any | None = None,
 ) -> GameContext:
     """Create a GameContext with required dependencies."""
@@ -118,7 +118,7 @@ def build_game_context(
 
 def build_editor_context(
     *,
-    screen: pygame.Surface | None = None,
+    screen: "GraphicsSurface | None" = None,
     audio_manager_service: "AudioManager",
     grid_manager: Any | None = None,
 ) -> EditorContext:

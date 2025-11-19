@@ -2,16 +2,17 @@
 
 from typing import TYPE_CHECKING
 
-import pygame
-
 from core import colors
+from core.backend import get_backend
 
 if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface
     from entities.base import Agent
 
 
-def render_floor(screen: pygame.Surface, entity: "Agent") -> None:
+def render_floor(screen: "GraphicsSurface", entity: "Agent") -> None:
     """Render the floor/ceiling in the first-person view."""
+    backend = get_backend()
     screen_height = screen.get_height()
     screen_width = screen.get_width()
     horizon = screen_height // 2
@@ -19,7 +20,9 @@ def render_floor(screen: pygame.Surface, entity: "Agent") -> None:
     floor_start = max(0, min(screen_height, floor_start))
     if floor_start >= screen_height:
         return
-    _ = screen.fill(
+    # Draw a filled rectangle for the floor
+    backend.graphics.draw_rect(
+        screen,
         colors.DARK_GRAY,
-        [(0, floor_start), (screen_width, screen_height - floor_start)],
+        (0, floor_start, screen_width, screen_height - floor_start),
     )

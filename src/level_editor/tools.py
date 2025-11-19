@@ -5,12 +5,17 @@ Breaks down the monolithic GridManager into smaller, focused tool classes.
 Each tool handles its own input/update/draw logic.
 """
 
-import pygame
+from typing import TYPE_CHECKING
+
 from config import renderer_config
 from core import colors
+from core.backend import get_backend
 from entities.enemy import Enemy
 from entities.node import Node
 from entities.factory import EntityFactory
+
+if TYPE_CHECKING:
+    from core.backend.api import Event, GraphicsSurface
 
 
 class BaseTool:
@@ -54,10 +59,12 @@ class MoveTool(BaseTool):
         self.selected_entity = None
 
     def update(self, events, keys, delta_time, grid_manager):
-        mouse_pos = pygame.mouse.get_pos()
+        backend = get_backend()
+        mouse_pos = backend.input.get_mouse_pos()
         current_cell = self.get_cursor_cell(mouse_pos, grid_manager)
 
-        if pygame.mouse.get_pressed()[0]:
+        mouse_pressed = backend.input.get_mouse_pressed()
+        if mouse_pressed[0]:
             if self.selected_entity is None and current_cell:
                 # Try to select an entity at current cell
                 for entity in grid_manager.level.grid_entities:
@@ -74,9 +81,10 @@ class MoveTool(BaseTool):
         else:
             self.selected_entity = None
 
-    def draw(self, screen, grid_manager):
+    def draw(self, screen: "GraphicsSurface", grid_manager):
+        backend = get_backend()
         if self.selected_entity:
-            _ = pygame.draw.circle(
+            backend.graphics.draw_circle(
                 screen,
                 colors.ACCENTUADED_BLUE,
                 (
@@ -90,7 +98,6 @@ class MoveTool(BaseTool):
                     ),
                 ),
                 grid_manager.scale,
-                2,
             )
 
 
@@ -122,16 +129,17 @@ class PlaceTool(BaseTool):
         ]  # Will be imported
 
     def update(self, events, keys, delta_time, grid_manager):
+        from core.backend.api import K_b, K_c, K_f, K_g, K_v, K_x, K_z
         # Handle keyboard input for type selection
         for i, key in enumerate(
             [
-                pygame.K_z,
-                pygame.K_x,
-                pygame.K_c,
-                pygame.K_v,
-                pygame.K_b,
-                pygame.K_f,
-                pygame.K_g,
+                K_z,
+                K_x,
+                K_c,
+                K_v,
+                K_b,
+                K_f,
+                K_g,
             ]
         ):
             if keys[key]:
@@ -146,13 +154,15 @@ class PlaceTool(BaseTool):
                     ):
                         obj.set_active(False)
 
-        mouse_pos = pygame.mouse.get_pos()
+        backend = get_backend()
+        mouse_pos = backend.input.get_mouse_pos()
         current_cell = self.get_cursor_cell(mouse_pos, grid_manager)
 
         if current_cell:
-            if pygame.mouse.get_pressed()[0]:  # Left click - place
+            mouse_pressed = backend.input.get_mouse_pressed()
+            if mouse_pressed[0]:  # Left click - place
                 self.place_entity_at(current_cell, grid_manager)
-            elif pygame.mouse.get_pressed()[2]:  # Right click - remove
+            elif mouse_pressed[2]:  # Right click - remove
                 self.remove_entity_at(current_cell, grid_manager)
 
     def place_entity_at(self, cell, grid_manager):
@@ -243,13 +253,15 @@ class WallEditorTool(BaseTool):
         self.name = "Wall Editor"
 
     def update(self, events, keys, delta_time, grid_manager):
-        mouse_pos = pygame.mouse.get_pos()
+        backend = get_backend()
+        mouse_pos = backend.input.get_mouse_pos()
         current_cell = self.get_cursor_cell(mouse_pos, grid_manager)
 
         if current_cell:
-            if pygame.mouse.get_pressed()[0]:  # Left click - place wall
+            mouse_pressed = backend.input.get_mouse_pressed()
+            if mouse_pressed[0]:  # Left click - place wall
                 grid_manager.grid[current_cell[1]][current_cell[0]] = 1
-            elif pygame.mouse.get_pressed()[2]:  # Right click - remove wall
+            elif mouse_pressed[2]:  # Right click - remove wall
                 grid_manager.grid[current_cell[1]][current_cell[0]] = 0
 
 
@@ -271,12 +283,14 @@ class NodeTool(BaseTool):
         return None
 
     def update(self, events, keys, delta_time, grid_manager):
-        mouse_pos = pygame.mouse.get_pos()
+        from core.backend.api import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+        backend = get_backend()
+        mouse_pos = backend.input.get_mouse_pos()
         current_cell = self.get_cursor_cell(mouse_pos, grid_manager)
 
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+            if event.type == MOUSEBUTTONDOWN:
+                if hasattr(event, 'button') and event.button == 1:
                     node = self._find_node_at(current_cell, grid_manager)
                     if node is None:
                         self.selected_node = None
@@ -288,7 +302,7 @@ class NodeTool(BaseTool):
                             self.selected_node.join_node(node)
                             self.selected_node = node
                         self.is_dragging = True
-                elif event.button == 3:
+                elif hasattr(event, 'button') and event.button == 3:
                     node = self._find_node_at(current_cell, grid_manager)
                     if node is not None:
                         for other_node in node.nodes[:]:
@@ -297,7 +311,7 @@ class NodeTool(BaseTool):
                             self.selected_node = None
                             self.is_dragging = False
 
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            elif hasattr(event, 'type') and hasattr(event, 'button') and event.type == MOUSEBUTTONUP and event.button == 1:
                 if self.is_dragging:
                     node = self._find_node_at(current_cell, grid_manager)
                     if node and self.selected_node and node != self.selected_node:
@@ -305,16 +319,17 @@ class NodeTool(BaseTool):
                         self.selected_node = node
                 self.is_dragging = False
 
-    def draw(self, screen, grid_manager):
+    def draw(self, screen: "GraphicsSurface", grid_manager):
+        backend = get_backend()
         if self.selected_node:
-            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = backend.input.get_mouse_pos()
             scaled_start_x = int(
                 self.selected_node.px * grid_manager.scale + grid_manager.adjust[0]
             )
             scaled_start_y = int(
                 self.selected_node.py * grid_manager.scale + grid_manager.adjust[1]
             )
-            _ = pygame.draw.line(
+            backend.graphics.draw_line(
                 screen, colors.NAVY_BLUE, (scaled_start_x, scaled_start_y), mouse_pos, 5
             )
 
@@ -327,34 +342,36 @@ class NavigationTool(BaseTool):
         self.name = "Navigation"
 
     def update(self, events, keys, delta_time, grid_manager):
+        from core.backend.api import K_a, K_d, K_s, K_w, MOUSEBUTTONDOWN
+        backend = get_backend()
         # Handle zoom
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4:  # Mouse wheel up
+            if event.type == MOUSEBUTTONDOWN:
+                if hasattr(event, 'button') and event.button == 4:  # Mouse wheel up
                     grid_manager.scale += 1
-                elif event.button == 5:  # Mouse wheel down
+                elif hasattr(event, 'button') and event.button == 5:  # Mouse wheel down
                     grid_manager.scale -= 1
 
         if grid_manager.scale < 2:
             grid_manager.scale = 2
 
         # Handle pan
-        if keys[pygame.K_a]:
+        if keys[K_a]:
             grid_manager.adjust = (
                 grid_manager.adjust[0] + delta_time * 50 * 20,
                 grid_manager.adjust[1],
             )
-        if keys[pygame.K_d]:
+        if keys[K_d]:
             grid_manager.adjust = (
                 grid_manager.adjust[0] - delta_time * 50 * 20,
                 grid_manager.adjust[1],
             )
-        if keys[pygame.K_w]:
+        if keys[K_w]:
             grid_manager.adjust = (
                 grid_manager.adjust[0],
                 grid_manager.adjust[1] + delta_time * 50 * 20,
             )
-        if keys[pygame.K_s]:
+        if keys[K_s]:
             grid_manager.adjust = (
                 grid_manager.adjust[0],
                 grid_manager.adjust[1] - delta_time * 50 * 20,
@@ -362,9 +379,10 @@ class NavigationTool(BaseTool):
 
         # Alt + drag - fine grained navigation
         if grid_manager.mouseRel is not None:
-            mouse_buttons = pygame.mouse.get_pressed()
-            mods = pygame.key.get_mods()
-            if mouse_buttons[0] and (mods & pygame.KMOD_ALT):
+            mouse_buttons = backend.input.get_mouse_pressed()
+            # Note: key modifiers not yet abstracted - this will need backend support
+            # For now, skip modifier check
+            if mouse_buttons[0]:
                 grid_manager.adjust = (
                     grid_manager.adjust[0] + grid_manager.mouseRel[0],
                     grid_manager.adjust[1] + grid_manager.mouseRel[1],

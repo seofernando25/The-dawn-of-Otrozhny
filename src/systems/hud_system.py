@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import cast
-
-import pygame
+from typing import TYPE_CHECKING, cast
 
 from core.context import GameContext
 from entities.enemy_state import EnemyStateManager
@@ -11,6 +9,9 @@ from entities.status import EnemyStatus
 from level.level import Level
 from ui import HudScreen
 from ui.button import HudButton
+
+if TYPE_CHECKING:
+    from core.backend.api import Event, GraphicsSurface
 
 
 class HudSystem:
@@ -53,7 +54,7 @@ class HudSystem:
     def update(
         self,
         delta_time: float,
-        events: list[pygame.event.Event],
+        events: list["Event"],
     ) -> int | None:
         """Update HUD with current game state."""
         result = self.hud.update(delta_time, events)
@@ -123,10 +124,10 @@ class HudSystem:
             self._cache["collectibles"] = collectibles_text
             self.hud.set_button_text(1, self._cache["collectibles"])
 
-    def get_minimap_surface(self) -> HudButton:
+    def get_minimap_surface(self) -> "GraphicsSurface":
         """Get the minimap surface for rendering."""
-        return self._minimap_surface
+        return self._minimap_surface._surface
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         """Draw the HUD to the screen."""
         self.hud.draw(screen)

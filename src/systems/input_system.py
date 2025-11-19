@@ -1,14 +1,15 @@
 from collections.abc import Sequence
-from typing import cast
-
-import pygame
-import pygame.constants as pyConst
+from typing import cast, TYPE_CHECKING
 
 from config import renderer_config
 from core.context import GameContext
 from core.game_state import GameState
 from entities.player import Player
 from physics import movement
+from core.backend import get_backend
+
+if TYPE_CHECKING:
+    from core.backend.api import Event
 
 
 class InputSystem:
@@ -19,7 +20,7 @@ class InputSystem:
 
     def process_input(
         self,
-        events: list[pygame.event.Event],
+        events: list["Event"],
         keys_pressed: Sequence[bool],
         delta_time: float,
     ) -> GameState | None:
@@ -35,45 +36,67 @@ class InputSystem:
 
         return None
 
+    @staticmethod
+    def _is_key_pressed(keys_pressed: Sequence[bool], key_code: int) -> bool:
+        """Safely check whether a specific key is pressed."""
+        try:
+            return bool(keys_pressed[key_code])
+        except (IndexError, TypeError):
+            return False
+
     def _process_game_input(
         self,
-        events: list[pygame.event.Event],
+        events: list["Event"],
         keys_pressed: Sequence[bool],
     ) -> GameState | None:
         """Process game-level input like quit and menu."""
-        # Check for quit to menu
-        if keys_pressed[pygame.K_q]:
+        from core.backend.api import K_q, QUIT
+        # Check for quit to menu (holding Q)
+        if self._is_key_pressed(keys_pressed, K_q):
             return GameState.Menu
 
         # Check for window close
         for event in events:
-            if event.type == pygame.QUIT:
+            if hasattr(event, "type") and event.type == QUIT:
                 return GameState.Quit
 
         return None
 
     def _process_player_input(
         self,
-        events: list[pygame.event.Event],
+        events: list["Event"],
         keys_pressed: Sequence[bool],
         delta_time: float,
     ) -> None:
         """Process all player input including movement, rotation, and mouse look."""
+        from core.backend.api import (
+            KEYDOWN,
+            K_ESCAPE,
+            K_LEFT,
+            K_RIGHT,
+            K_UP,
+            K_DOWN,
+            K_w,
+            K_s,
+            K_a,
+            K_d,
+        )
         player_obj = cast(Player | None, self.context.player)
         if player_obj is None:
             return
         player = player_obj
 
+        backend = get_backend()
+
         # Handle ESC key for mouse toggle
         for event in events:
-            if event.type == pyConst.KEYDOWN:
-                key = cast(int, event.key)
-                if key == pyConst.K_ESCAPE:
+            if hasattr(event, "type") and event.type == KEYDOWN:
+                if hasattr(event, "key") and event.key == K_ESCAPE:
                     self._toggle_mouse_look(player)
 
         # Update mouse visibility and grab state
-        _ = pygame.mouse.set_visible(not player.mouseEnable)
-        _ = pygame.event.set_grab(player.mouseEnable)
+        backend.input.set_mouse_visible(not player.mouseEnable)
+        backend.input.set_event_grab(player.mouseEnable)
 
         # Get screen size for mouse calculations
         screen_surface = self.context.screen
@@ -88,12 +111,12 @@ class InputSystem:
 
         # Handle mouse look if enabled
         if player.mouseEnable:
-            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = backend.input.get_mouse_pos()
             mouse_delta_x = mouse_pos[0] - screen_center_x
             mouse_delta_y = mouse_pos[1] - screen_center_y
 
             # Reset mouse to center
-            pygame.mouse.set_pos([screen_center_x, screen_center_y])
+            backend.input.set_mouse_pos((screen_center_x, screen_center_y))
 
             # Apply mouse look rotation
             movement.apply_mouse_look(
@@ -109,20 +132,20 @@ class InputSystem:
             movement.apply_keyboard_rotation(
                 player,
                 delta_time,
-                rotate_left=keys_pressed[pygame.K_LEFT],
-                rotate_right=keys_pressed[pygame.K_RIGHT],
-                pitch_up=keys_pressed[pygame.K_UP],
-                pitch_down=keys_pressed[pygame.K_DOWN],
+                rotate_left=self._is_key_pressed(keys_pressed, K_LEFT),
+                rotate_right=self._is_key_pressed(keys_pressed, K_RIGHT),
+                pitch_up=self._is_key_pressed(keys_pressed, K_UP),
+                pitch_down=self._is_key_pressed(keys_pressed, K_DOWN),
             )
 
         # Calculate movement vector from keyboard input
         newPx, newPy = movement.calculate_movement_vector(
             player,
             delta_time,
-            move_forward=keys_pressed[pygame.K_w],
-            move_backward=keys_pressed[pygame.K_s],
-            move_left=keys_pressed[pygame.K_a],
-            move_right=keys_pressed[pygame.K_d],
+            move_forward=self._is_key_pressed(keys_pressed, K_w),
+            move_backward=self._is_key_pressed(keys_pressed, K_s),
+            move_left=self._is_key_pressed(keys_pressed, K_a),
+            move_right=self._is_key_pressed(keys_pressed, K_d),
         )
 
         # Apply movement to player
@@ -132,6 +155,7 @@ class InputSystem:
         """Toggle mouse look mode and reset mouse to center."""
         player.mouseEnable = not player.mouseEnable
 
+        backend = get_backend()
         # Reset mouse to center when toggling
         screen_surface = self.context.screen
         if screen_surface is not None:
@@ -140,4 +164,4 @@ class InputSystem:
             screen_size = renderer_config.SCREEN_SIZE
 
         screen_width, screen_height = screen_size
-        pygame.mouse.set_pos([screen_width // 2, screen_height // 2])
+        backend.input.set_mouse_pos((screen_width // 2, screen_height // 2))

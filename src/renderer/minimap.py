@@ -1,13 +1,15 @@
 import math
 from typing import TYPE_CHECKING, Callable
-import pygame
 
 from core import colors
+from core.backend import get_backend
 from entities.enemy import Enemy
 from entities.items import Collectible, Gate
+from renderer.text import _blit_surface
 from .raycast import calculate_fov_polygon
 
 if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface
     from entities.base import Agent
     from level.level import Level
     from level.loader import LevelObject
@@ -15,7 +17,7 @@ else:
     from entities.base import Agent
 
 # Cache for static minimap surfaces
-_STATIC_SURFACES: dict[tuple[int, tuple[int, int]], pygame.Surface] = {}
+_STATIC_SURFACES: dict[tuple[int, tuple[int, int]], "GraphicsSurface"] = {}
 
 
 def _calculate_fov_points(
@@ -44,7 +46,7 @@ def _calculate_fov_points(
 
 
 def draw_grid(
-    surface: pygame.Surface,
+    surface: "GraphicsSurface",
     level_map: "Level | LevelObject",
     scale_x: float,
     scale_y: float,
@@ -52,23 +54,26 @@ def draw_grid(
         [int, int, int], tuple[int, int, int] | tuple[int, int, int, int] | None
     ],
 ) -> None:
+    backend = get_backend()
     for x in range(level_map.level_width):
         for y in range(level_map.level_height):
             color = color_fn(x, y, level_map.grid[x][y])
             if color is None:
                 continue
-            _ = pygame.draw.rect(
-                surface, color, [scale_x * y, scale_y * x, scale_x + 1, scale_y + 1]
+            backend.graphics.draw_rect(
+                surface, color, (scale_x * y, scale_y * x, scale_x + 1, scale_y + 1)
             )
 
 
 def _build_static_surface(
-    screen: pygame.Surface,
+    screen: "GraphicsSurface",
     level_map: "Level | LevelObject",
     scale_x: float,
     scale_y: float,
-) -> pygame.Surface:
-    surface = pygame.Surface(screen.get_size()).convert()
+) -> "GraphicsSurface":
+    backend = get_backend()
+    surface = backend.graphics.create_surface(screen.get_size())
+    surface = surface.convert()
     draw_grid(
         surface,
         level_map,
@@ -82,11 +87,11 @@ def _build_static_surface(
 
 
 def _get_static_surface(
-    screen: pygame.Surface,
+    screen: "GraphicsSurface",
     level_map: "Level | LevelObject",
     scale_x: float,
     scale_y: float,
-) -> pygame.Surface:
+) -> "GraphicsSurface":
     signature = (id(level_map), screen.get_size())
     surface = _STATIC_SURFACES.get(signature)
     if surface is None:
@@ -95,17 +100,19 @@ def _get_static_surface(
     return surface
 
 
-def render_map(screen: pygame.Surface, entity: "Agent") -> None:
+def render_map(screen: "GraphicsSurface", entity: "Agent") -> None:
+    backend = get_backend()
     if not hasattr(entity, "context") or entity.context is None:
         raise RuntimeError("Entity requires a GameContext for minimap rendering.")
     current_map: "Level | None" = entity.context.level
     if current_map is None:
         raise RuntimeError("GameContext.level is not set.")
-    scale_x = screen.get_width() / current_map.level_width
-    scale_y = screen.get_height() / current_map.level_height
+    width, height = screen.get_size()
+    scale_x = width / current_map.level_width
+    scale_y = height / current_map.level_height
 
     static_surface = _get_static_surface(screen, current_map, scale_x, scale_y)
-    _ = screen.blit(static_surface, (0, 0))
+    _blit_surface(screen, static_surface, (0, 0))
 
     fov_points = calculate_fov_polygon(entity)
     # Translate (x, y) coordinates into scaled map space
@@ -114,33 +121,33 @@ def render_map(screen: pygame.Surface, entity: "Agent") -> None:
     all_fovs = _calculate_fov_points(scale_x, scale_y, current_map)
 
     if len(fov_points) > 2:
-        _ = pygame.draw.polygon(screen, colors.WHITE, fov_points)
+        backend.graphics.draw_polygon(screen, colors.WHITE, fov_points)
 
     for mapped_entity in current_map.grid_entities:
         px = int(mapped_entity.px * scale_y)
         py = int(mapped_entity.py * scale_x)
         if isinstance(mapped_entity, Enemy):
-            _ = pygame.draw.circle(screen, colors.RED, [py, px], 2)
+            backend.graphics.draw_circle(screen, colors.RED, (py, px), 2)
         if isinstance(mapped_entity, Collectible) and mapped_entity.collected:
-            _ = pygame.draw.circle(screen, colors.YELLOW_WHITE, [py, px], 2)
+            backend.graphics.draw_circle(screen, colors.YELLOW_WHITE, (py, px), 2)
 
-    _ = pygame.draw.circle(
-        screen, colors.WHITE, [int(entity.py * scale_x), int(entity.px * scale_y)], 2
+    backend.graphics.draw_circle(
+        screen, colors.WHITE, (int(entity.py * scale_x), int(entity.px * scale_y)), 2
     )
 
     for c, points in all_fovs:
-        _ = pygame.draw.polygon(screen, c, points)
+        backend.graphics.draw_polygon(screen, c, points)
 
     color = colors.DARK_GRAY
     for grid_entity in current_map.grid_entities:
         if isinstance(grid_entity, Gate) and not grid_entity.open:
-            _ = pygame.draw.rect(
+            backend.graphics.draw_rect(
                 screen,
                 color,
-                [
+                (
                     scale_x * math.floor(grid_entity.py),
                     scale_y * math.floor(grid_entity.px),
                     scale_x + 1,
                     scale_y + 1,
-                ],
+                ),
             )

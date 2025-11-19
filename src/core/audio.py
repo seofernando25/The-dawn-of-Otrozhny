@@ -1,8 +1,12 @@
 import logging
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import pygame
 from core import assets
+
+if TYPE_CHECKING:
+    from core.backend.api import Sound
 
 LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +82,7 @@ def _normalize_volume(volume: VolumeInput) -> tuple[float, float] | None:
 
 
 def play_sound_low_level(
-    sound: pygame.mixer.Sound | None,
+    sound: "Sound | pygame.mixer.Sound | None",
     *,
     channel: pygame.mixer.Channel | None = None,
     loops: int = 0,
@@ -87,15 +91,27 @@ def play_sound_low_level(
     volume: None | float | Sequence[float] = None,
     force: bool = False,
 ) -> pygame.mixer.Channel | None:
-    """Low-level function to play a pygame Sound object."""
+    """Low-level function to play a Sound object (abstraction or pygame.mixer.Sound for backward compatibility)."""
     if sound is None:
         return channel
+    
+    # Unwrap Sound abstraction to get underlying pygame.mixer.Sound
+    pygame_sound: pygame.mixer.Sound
+    if hasattr(sound, '_sound'):
+        # It's a PygameSound (our abstraction)
+        pygame_sound = sound._sound  # type: ignore[attr-defined]
+    elif isinstance(sound, pygame.mixer.Sound):
+        # It's already a pygame.mixer.Sound (backward compatibility)
+        pygame_sound = sound
+    else:
+        raise TypeError(f"Expected Sound abstraction or pygame.mixer.Sound, got {type(sound)}")
+    
     channel = ensure_channel(channel)
     if channel is None:
         return None
     if channel.get_busy() and not force:
         return channel
-    channel.play(sound, loops=loops, maxtime=maxtime, fade_ms=fade_ms)
+    channel.play(pygame_sound, loops=loops, maxtime=maxtime, fade_ms=fade_ms)
     normalized_volume = _normalize_volume(volume)
     if normalized_volume is not None:
         channel.set_volume(*normalized_volume)

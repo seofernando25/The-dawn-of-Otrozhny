@@ -3,14 +3,16 @@ import math
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
-import pygame
 
 from core import colors
+from core.backend import get_backend
+from renderer.text import _blit_surface
 from utils import math_helpers
 from config import renderer_config
 from entities.base import SpriteEntity
 
 if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface
     from entities.base import Agent
 
 RAY_ANGLE_STEP = renderer_config.RAY_ANGLE_STEP
@@ -242,13 +244,13 @@ def calculate_fov_polygon(entity: "Agent") -> list[tuple[float, float]]:
         return [(px, py)] * 3
 
 
-def render_walls(screen: pygame.Surface, entity: "Agent") -> None:
+def render_walls(screen: "GraphicsSurface", entity: "Agent") -> None:
+    backend = get_backend()
     ray_table = entity.rayDistanceTable
     if len(ray_table) <= 1:
         return
 
-    screen_height = screen.get_height()
-    screen_width = screen.get_width()
+    screen_width, screen_height = screen.get_size()
     half_height = screen_height / 2
     thickness = screen_width / max(len(ray_table), 1)
 
@@ -316,11 +318,11 @@ def render_walls(screen: pygame.Surface, entity: "Agent") -> None:
         ceiling = int(ceiling)
         floor = int(floor)
         if cmd_type == "wall":
-            _ = pygame.draw.line(
+            backend.graphics.draw_line(
                 screen,
                 data,
-                [int(pos_x), int(ceiling)],
-                [int(pos_x), int(floor)],
+                (int(pos_x), int(ceiling)),
+                (int(pos_x), int(floor)),
                 max(1, math.ceil(thickness)),
             )
         elif isinstance(data, SpriteEntity):
@@ -332,8 +334,10 @@ def render_walls(screen: pygame.Surface, entity: "Agent") -> None:
             if sprite is None or scale_multiplier <= 0:
                 continue
 
-            scaled_sprite = pygame.transform.scale(
-                sprite, ((50 * sprite.get_height()) // sprite.get_width(), 50)
+            sprite_height = sprite.get_height()
+            sprite_width = sprite.get_width()
+            scaled_sprite = backend.graphics.scale_surface(
+                sprite, ((50 * sprite_height) // sprite_width, 50)
             )
             target_width = int(scaled_sprite.get_width() * scale_multiplier)
             target_height = int(scaled_sprite.get_height() * scale_multiplier)
@@ -341,10 +345,13 @@ def render_walls(screen: pygame.Surface, entity: "Agent") -> None:
             if target_width <= 0 or target_height <= 0:
                 continue
 
-            img = pygame.transform.scale(scaled_sprite, (target_width, target_height))
-            _ = screen.blit(
+            img = backend.graphics.scale_surface(scaled_sprite, (target_width, target_height))
+            img_width = img.get_width()
+            img_height = img.get_height()
+            _blit_surface(
+                screen,
                 img,
-                [int(pos_x - img.get_width() / 2), int(floor - img.get_rect().height)],
+                (int(pos_x - img_width / 2), int(floor - img_height)),
             )
 
 

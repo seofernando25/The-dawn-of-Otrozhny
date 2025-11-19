@@ -3,14 +3,17 @@ Tutorial loop module - displays tutorial tabs with briefing/map editor/items/ene
 """
 
 from collections.abc import Sequence
-from typing import Callable, TypeVar, cast
-
-import pygame
+from typing import Callable, TypeVar, cast, TYPE_CHECKING
 
 from config import renderer_config
 from renderer.text import message_display_L
 from scenes.loop_runner import SceneHandler
 from ui import HudScreen, menu_tabs
+
+if TYPE_CHECKING:
+    from core.backend.api import Event, GraphicsSurface
+
+from core.backend import get_backend
 
 _OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
 
@@ -35,16 +38,16 @@ class TutorialScene(SceneHandler):
 
     @override
     def handle_events(
-        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+        self, events: list["Event"], keys_pressed: Sequence[bool]
     ) -> bool:
         _ = keys_pressed
+        from core.backend.api import QUIT, KEYDOWN, K_q
         """Handle quit events."""
         for event in events:
-            if event.type == pygame.QUIT:
+            if event.type == QUIT:
                 return True
-            elif event.type == pygame.KEYDOWN:
-                key = cast(int, event.key)
-                if key == pygame.K_q:
+            elif event.type == KEYDOWN:
+                if hasattr(event, 'key') and event.key == K_q:
                     return True
         return False
 
@@ -54,7 +57,7 @@ class TutorialScene(SceneHandler):
         pass
 
     @override
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         """Draw tutorial content based on selected tab."""
         if self.hud.selected_button == 0:
             menu_tabs.render_tutorial_tab_4()

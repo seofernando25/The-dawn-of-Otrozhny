@@ -1,14 +1,16 @@
-from typing import cast
-
-import pygame
+from typing import TYPE_CHECKING, cast
 
 from config import renderer_config
 from core import colors
+from core.backend import get_backend
 from core.context import GameContext, get_screen
 from entities.player import Player
 from renderer import minimap as renderer_minimap
 from renderer.first_person import render_first_person_canvas
 from renderer.text import message_display_L, message_display_MT
+
+if TYPE_CHECKING:
+    from core.backend.api import Clock, GraphicsSurface
 
 
 class RenderSystem:
@@ -16,9 +18,9 @@ class RenderSystem:
 
     def __init__(self, context: GameContext):
         self.context: GameContext = context
-        self._first_person_surface: pygame.Surface | None = None
+        self._first_person_surface: "GraphicsSurface | None" = None
 
-    def render_frame(self, clock: pygame.time.Clock) -> None:
+    def render_frame(self, clock: "Clock") -> None:
         """Render a complete frame including first-person view and debug info."""
         # Screen should always be set in context, but fallback for safety
         screen = self.context.screen
@@ -52,7 +54,7 @@ class RenderSystem:
             15,
         )
 
-    def render_minimap(self, minimap_surface: pygame.Surface) -> None:
+    def render_minimap(self, minimap_surface: "GraphicsSurface") -> None:
         """Render the minimap to the provided surface."""
         player_obj = cast(Player | None, self.context.player)
         if player_obj is None:

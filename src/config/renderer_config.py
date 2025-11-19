@@ -4,15 +4,10 @@ Renderer configuration constants.
 All renderer-related configuration values are centralized here.
 """
 
-import pygame
-
 # Screen dimensions
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-
-# Pygame display flags
-FLAGS = pygame.DOUBLEBUF | pygame.HWSURFACE
 
 # Viewport settings
 VIEWPORT_HEIGHT = 320

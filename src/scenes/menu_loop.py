@@ -3,15 +3,20 @@ Menu loop module - handles the main menu with fractal background and other effec
 """
 
 from collections.abc import Sequence
-from typing import override
+from typing import TYPE_CHECKING, override
 
-import pygame
 from ui import HudScreen
 from renderer import effects as otherEffects
-from renderer.text import message_display_MT
+from renderer.text import _blit_surface, message_display_MT
 from config import renderer_config
 from scenes.loop_runner import SceneHandler
 from core.game_state import GameState
+from core.backend import get_backend
+
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface, Event
+else:
+    Event = object
 
 
 class MenuScene(SceneHandler):
@@ -40,19 +45,21 @@ class MenuScene(SceneHandler):
         # Connect fractal speed to HUD button changes
         self.hud.onChangedButton.append(self.star_field.change_speed)
 
-        _ = pygame.mouse.set_visible(True)
-        pygame.event.set_grab(False)
+        backend = get_backend()
+        backend.input.set_mouse_visible(True)
+        backend.input.set_event_grab(False)
 
     @override
     def handle_events(
-        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+        self, events: list[Event], keys_pressed: Sequence[bool]
     ) -> bool:
         """Handle quit and keyboard events."""
+        from core.backend.api import QUIT, KEYDOWN, K_p
         for event in events:
-            if event.type == pygame.QUIT:
+            if event.type == QUIT:
                 return True
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # Secret quit key
+            elif event.type == KEYDOWN and event.key is not None:
+                if event.key == K_p:  # Secret quit key
                     return True
         return False
 
@@ -70,10 +77,11 @@ class MenuScene(SceneHandler):
                 self.star_field.speed = 100
 
     @override
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         """Draw the menu screen."""
         self.star_field.draw()
-        _ = screen.blit(self.star_field, (0, 0))
+        _blit_surface(screen, self.star_field._surface, (0, 0))
+
         self.fractal.draw(screen)
 
         message_display_MT(

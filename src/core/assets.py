@@ -3,8 +3,10 @@ import random
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pygame
+if TYPE_CHECKING:
+    from core.backend.api import GraphicsSurface, Sound
 
 LOGGER = logging.getLogger(__name__)
 
@@ -12,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 ASSETS_DIR = ROOT / "assets"
 MAPS_DIR = ASSETS_DIR / "maps"
 
-_AUDIO_CACHE: dict[tuple[str, str], list[pygame.mixer.Sound]] = {}
+_AUDIO_CACHE: dict[tuple[str, str], list["Sound"]] = {}
 
 
 def _ensure_dir(path: Path) -> Path:
@@ -37,7 +39,7 @@ def iter_asset_files(*parts: str) -> Iterable[Path]:
 
 
 @lru_cache(maxsize=256)
-def get_sprite(sprite_pack: str, sprite_position: int) -> pygame.Surface | None:
+def get_sprite(sprite_pack: str, sprite_position: int) -> "GraphicsSurface | None":
     if not sprite_pack:
         return None
     filenames = list_asset_files(sprite_pack, "Sprites")
@@ -49,12 +51,17 @@ def get_sprite(sprite_pack: str, sprite_position: int) -> pygame.Surface | None:
         sprite_path = filenames[sprite_position]
     except IndexError:
         sprite_path = filenames[0]
-    image = pygame.image.load(sprite_path).convert_alpha()
+    
+    from core.backend import get_backend
+    backend = get_backend()
+    image = backend.graphics.load_image(sprite_path)
     image.set_colorkey((152, 0, 136))
     return image
 
 
-def get_audio(folder: str, state: str) -> pygame.mixer.Sound | None:
+def get_audio(folder: str, state: str) -> "Sound | None":
+    from core.backend import get_backend
+    
     cache_key = (folder, state)
     cached_sounds = _AUDIO_CACHE.get(cache_key)
     if cached_sounds:
@@ -64,18 +71,24 @@ def get_audio(folder: str, state: str) -> pygame.mixer.Sound | None:
     if not filenames:
         LOGGER.warning("Audio folder '%s/%s' is missing.", folder, state)
         return None
-    sounds = [pygame.mixer.Sound(path) for path in filenames]
+    
+    backend = get_backend()
+    sounds = [backend.audio.load_sound(path) for path in filenames]
     _AUDIO_CACHE[cache_key] = sounds
     return random.choice(sounds)
 
 
 @lru_cache(maxsize=8)
-def get_cached_audio(folder_name: str, sub_folder: str) -> pygame.mixer.Sound | None:
+def get_cached_audio(folder_name: str, sub_folder: str) -> "Sound | None":
+    from core.backend import get_backend
+    
     filenames = list_asset_files(folder_name, sub_folder)
     if not filenames:
         LOGGER.warning("Cached audio folder '%s/%s' missing.", folder_name, sub_folder)
         return None
-    return pygame.mixer.Sound(filenames[0])
+    
+    backend = get_backend()
+    return backend.audio.load_sound(filenames[0])
 
 
 def list_maps():

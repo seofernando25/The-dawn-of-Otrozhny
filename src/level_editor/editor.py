@@ -1,10 +1,10 @@
 import enum
 from collections.abc import Sequence
-from typing import Optional, Tuple, override
+from typing import TYPE_CHECKING, Optional, Tuple, override
 
-import pygame
 from config import EDITOR_CONFIG
 from core.audio import AudioManager
+from core.backend import get_backend
 from core.context import build_editor_context
 from core.game_state import GameState
 from level.loader import save_level
@@ -18,6 +18,9 @@ from renderer.text import message_display
 from ui import HudScreen
 from scenes.loop_runner import SceneHandler, run_scene
 from . import tools as editor_tools
+
+if TYPE_CHECKING:
+    from core.backend.api import Clock, Event, GraphicsSurface
 
 
 class EditorTools(enum.Enum):
@@ -57,7 +60,8 @@ class GridManager:
         self.mouse_position: Tuple[int, int] = (0, 0)
         self.real_position: Optional[Tuple[float, float]] = None
 
-        self.mouse_b = pygame.mouse.get_pressed()
+        backend = get_backend()
+        self.mouse_b = backend.input.get_mouse_pressed()
         self.mouseRel: Optional[Tuple[int, int]] = None
 
         from ui import VerticalList
@@ -88,35 +92,37 @@ class GridManager:
         self.current_tool = EditorTools(toolType)
 
     def update(self, events, keys, deltaTime):
+        from core.backend.api import K_b, K_c, K_f, K_g, K_v, K_x, K_z
+
         self.mouse_position = (0, 0)
         self.setTool(self.horizontalButtonIndex)
 
         # Handle tool shortcuts for placement
-        if keys[pygame.K_z]:
+        if keys[K_z]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.hud_draw_obj_help.objects[0].set_active(True)
             self.verticalButtonIndex = 0
-        if keys[pygame.K_x]:
+        if keys[K_x]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.verticalButtonIndex = 1
             self.hud_draw_obj_help.objects[1].set_active(True)
-        if keys[pygame.K_c]:
+        if keys[K_c]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.verticalButtonIndex = 2
             self.hud_draw_obj_help.objects[2].set_active(True)
-        if keys[pygame.K_v]:
+        if keys[K_v]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.verticalButtonIndex = 3
             self.hud_draw_obj_help.objects[3].set_active(True)
-        if keys[pygame.K_b]:
+        if keys[K_b]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.verticalButtonIndex = 4
             self.hud_draw_obj_help.objects[4].set_active(True)
-        if keys[pygame.K_f]:
+        if keys[K_f]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.verticalButtonIndex = 5
             self.hud_draw_obj_help.objects[5].set_active(True)
-        if keys[pygame.K_g]:
+        if keys[K_g]:
             self.hud_draw_obj_help.objects[self.verticalButtonIndex].set_active(False)
             self.verticalButtonIndex = 6
             self.hud_draw_obj_help.objects[6].set_active(True)
@@ -135,10 +141,11 @@ class GridManager:
             active_tool.update(events, keys, deltaTime, self)
 
     def update_mouse_position(self):
-        self.mouse_b = pygame.mouse.get_pressed()
-        self.mouseRel = pygame.mouse.get_rel()
+        backend = get_backend()
+        self.mouse_b = backend.input.get_mouse_pressed()
+        self.mouseRel = backend.input.get_mouse_rel()
 
-        self.mouse_position = pygame.mouse.get_pos()
+        self.mouse_position = backend.input.get_mouse_pos()
 
         cellX = self.mouse_position[0] - self.adjust[0]
         cellX = cellX // self.scale
@@ -157,7 +164,8 @@ class GridManager:
             self.real_position = (cellX, cellY)
             self.mouse_in_grid = True
 
-    def draw(self, screen):
+    def draw(self, screen: "GraphicsSurface"):
+        backend = get_backend()
         for x in range(len(self.grid[0])):
             for y in range(len(self.grid)):
                 color_flag = self.grid[y][x]
@@ -170,35 +178,35 @@ class GridManager:
                 if self.current_cell is not None and self.current_cell == (x, y):
                     wall_color = colors.multiply(wall_color, 0.5)
 
-                pygame.draw.rect(
+                backend.graphics.draw_rect(
                     screen,
                     wall_color,
-                    [
+                    (
                         (x * self.scale + self.adjust[0]),
                         (y * self.scale + self.adjust[1]),
                         self.scale - 1,
                         self.scale - 1,
-                    ],
+                    ),
                 )
 
         count = 0
         for node in self.level.node_entities:
-            pygame.draw.rect(
+            backend.graphics.draw_rect(
                 screen,
                 colors.NAVY_BLUE,
-                [
+                (
                     ((node.px - 0.5) * self.scale + self.adjust[0]),
                     ((node.py - 0.5) * self.scale + self.adjust[1] - 0.5),
                     self.scale - 1,
                     self.scale,
-                ],
+                ),
             )
             for otherNode in node.nodes:
                 scaledStartX = int(node.px * self.scale + self.adjust[0])
                 scaledStartY = int(node.py * self.scale + self.adjust[1])
                 scaledEndX = int(otherNode.px * self.scale + self.adjust[0])
                 scaledEndY = int(otherNode.py * self.scale + self.adjust[1])
-                pygame.draw.line(
+                backend.graphics.draw_line(
                     screen,
                     colors.NAVY_BLUE,
                     (scaledStartX, scaledStartY),
@@ -222,7 +230,7 @@ class GridManager:
                 if entity.patrolPoint is not None:
                     col = colors.RED
 
-            pygame.draw.circle(
+            backend.graphics.draw_circle(
                 screen,
                 col,
                 (
@@ -267,25 +275,28 @@ class EditorScene(SceneHandler):
         self.hud.set_button_text(3, "Options")
         self.hud.set_button_text(4, "SAVE  LOAD")
         self.result = None
-        self._last_events = []
-        self._keys = pygame.key.get_pressed()
+        self._last_events: list["Event"] = []
+        backend = get_backend()
+        self._keys = backend.input.get_pressed_keys()
 
     @override
     def handle_events(
-        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+        self, events: list["Event"], keys_pressed: Sequence[bool]
     ) -> bool:
+        from core.backend.api import K_q, K_RETURN, KEYDOWN, QUIT
+
         self._last_events = events
         self._keys = keys_pressed
 
         for event in events:
-            if event.type == pygame.QUIT:
+            if event.type == QUIT:
                 self.result = GameState.Quit
                 return True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:
+            if event.type == KEYDOWN:
+                if event.key == K_q:
                     self.result = GameState.Menu
                     return True
-                if event.key == pygame.K_RETURN:
+                if event.key == K_RETURN:
                     if self.hud.selected_button == 4:
                         lvl = Level(
                             self.grid_manager.grid,
@@ -304,14 +315,14 @@ class EditorScene(SceneHandler):
         self.grid_manager.horizontalButtonIndex = self.hud.selected_button
 
     @override
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         self.context.screen = screen
-        _ = screen.fill(colors.BLACK)
+        screen.fill(colors.BLACK)
         self.grid_manager.draw(screen)
         self.hud.draw(screen)
 
 
-def editorLoop(clock: pygame.time.Clock, audio_manager: AudioManager) -> GameState:
+def editorLoop(clock: "Clock", audio_manager: AudioManager) -> GameState:
     scene = EditorScene(audio_manager)
     _ = run_scene(scene, clock)
     return scene.result or GameState.Menu
@@ -319,10 +330,11 @@ def editorLoop(clock: pygame.time.Clock, audio_manager: AudioManager) -> GameSta
 
 if __name__ == "__main__":
     from core.audio import AudioManager
+    from core.backend import get_backend, get_clock
 
-    _ = pygame.init()
+    # Backend should already be initialized by the main entry point
     audio = AudioManager()
-    clock = pygame.time.Clock()
+    clock = get_clock()
     _ = editorLoop(clock, audio)
     # Note: AudioManager creation is OK here as this is the entry point.
     # The audio is passed to editorLoop which creates EditorContext with it.

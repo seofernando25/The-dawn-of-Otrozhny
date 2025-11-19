@@ -1,8 +1,6 @@
 import copy
 from collections.abc import Sequence
-from typing import Callable, TypeVar, cast, override
-
-import pygame
+from typing import TYPE_CHECKING, Callable, TypeVar, cast, override
 
 from core import assets
 from core.audio import AudioManager
@@ -15,6 +13,9 @@ from level.level import Level
 from renderer.text import message_display_L
 from scenes.loop_runner import SceneHandler, run_scene_with_hud
 from ui import MapSelectionScreen
+
+if TYPE_CHECKING:
+    from core.backend.api import Event, GraphicsSurface
 
 from .game_loop import run_game_loop
 
@@ -102,17 +103,18 @@ class MapSelectionScene(SceneHandler):
     @override
     def handle_events(
         self,
-        events: list[pygame.event.Event],
+        events: list["Event"],
         keys_pressed: Sequence[bool],
     ) -> bool:
+        from core.backend.api import K_RETURN, K_q, QUIT, KEYDOWN
         _ = keys_pressed
         for event in events:
-            if event.type == pygame.QUIT:
+            if event.type == QUIT:
                 self.result = GameState.Quit
                 return True
-            if event.type == pygame.KEYDOWN:
+            if event.type == KEYDOWN and event.key is not None:
                 key = cast(int, event.key)
-                if key == pygame.K_RETURN:
+                if key == K_RETURN:
                     map_obj = self.actual_map_list[self.hud.selected_button_x][
                         self.hud.selected_button_y
                     ]
@@ -132,7 +134,7 @@ class MapSelectionScene(SceneHandler):
                     else:
                         self.result = GameState.Menu
                     return True
-                if key == pygame.K_q:
+                if key == K_q:
                     self.result = GameState.Menu
                     return True
         return False
@@ -143,7 +145,7 @@ class MapSelectionScene(SceneHandler):
         pass
 
     @override
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         """Draw helper text over the HUD-controlled map grid."""
         message_display_L(
             screen,

@@ -1,14 +1,16 @@
 import datetime
 from collections.abc import Sequence
-from typing import override
-
-import pygame
+from typing import override, TYPE_CHECKING
 
 from config import renderer_config
 from core.context import GameContext, get_screen
 from core.game_state import GameState
 from scenes.loop_runner import SceneHandler, run_scene
 from systems import GameplaySystem, HudSystem, InputSystem, RenderSystem
+from core.backend import get_backend
+
+if TYPE_CHECKING:
+    from core.backend.api import Event, GraphicsSurface
 
 
 def run_game_loop(context: GameContext) -> GameState:
@@ -31,12 +33,13 @@ def run_game_loop(context: GameContext) -> GameState:
     gameplay_system.initialize()
 
     # Timing
-    clock = pygame.time.Clock()
+    backend = get_backend()
+    clock = backend.clock
 
     while True:
         delta_time = clock.get_time() / 1000
-        events = pygame.event.get()
-        keys_pressed = pygame.key.get_pressed()
+        events = backend.input.get_events()
+        keys_pressed = backend.input.get_pressed_keys()
 
         # Process input (handles all player input and game-level input)
         input_result = input_system.process_input(events, keys_pressed, delta_time)
@@ -75,7 +78,7 @@ def run_game_loop(context: GameContext) -> GameState:
         # Render HUD overlay
         hud_system.draw(screen)
 
-        pygame.display.flip()
+        backend.graphics.flip()
         _ = clock.tick()
 
 
@@ -93,14 +96,15 @@ class PostGameScene(SceneHandler):
     @override
     def handle_events(
         self,
-        events: list[pygame.event.Event],
+        events: list["Event"],
         keys_pressed: Sequence[bool],
     ) -> bool:
+        from core.backend.api import KEYDOWN, QUIT, K_q
         for event in events:
-            if event.type == pygame.QUIT:
+            if hasattr(event, "type") and event.type == QUIT:
                 return True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:
+            if hasattr(event, "type") and event.type == KEYDOWN:
+                if hasattr(event, "key") and event.key == K_q:
                     return True
         return False
 
@@ -111,7 +115,7 @@ class PostGameScene(SceneHandler):
             self.msg_accumulated = len(self.msg)
 
     @override
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: "GraphicsSurface") -> None:
         from renderer.text import message_display_MT, message_display_L
 
         message_display_MT(
