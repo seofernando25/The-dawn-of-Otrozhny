@@ -65,7 +65,7 @@ class Level:
         
         # Find and cache player reference in context
         player = next((x for x in self.grid_entities if isinstance(x, Player)), None)
-        if player is not None and context.player is None:
+        if player is not None:
             context.update_player(player)
 
     def pick_random_point(self):
