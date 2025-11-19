@@ -10,9 +10,9 @@ import pygame
 
 LOGGER = logging.getLogger(__name__)
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 ASSETS_DIR = ROOT / "assets"
-MAPS_DIR = ROOT / "maps"
+MAPS_DIR = ASSETS_DIR / "maps"
 
 _AUDIO_CACHE = {}
 

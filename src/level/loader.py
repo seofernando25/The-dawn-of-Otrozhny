@@ -7,8 +7,8 @@ from typing import List, Union
 import numpy as np
 
 from core.assets import MAPS_DIR, list_asset_files
-from core.level import Level
-from core.level_format import (
+from level.level import Level
+from level.schema import (
     LevelData,
     PlayerData,
     CollectibleData,

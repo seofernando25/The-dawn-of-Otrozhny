@@ -7,7 +7,7 @@ DEFAULT_FONT_SIZE = 8
 
 font_cache = {}
 # Get the src directory (parent of renderer)
-dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 FONT_NAME = "ff.ttf"
 FONT_PATH = os.path.join(dir_path, "assets", "fonts", FONT_NAME)
 

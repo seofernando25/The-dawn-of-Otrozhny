@@ -1,15 +1,15 @@
 import pygame
 
 from core import assets
-from core.io import load_level_object, list_maps
-from core.level import Level
+from level.loader import load_level_object, list_maps
+from level.level import Level
 from config import renderer_config
 from renderer.text import message_display_L
 from ui import MapSelectionScreen
 from core.context import build_game_context
 from entities.player import Player
 from core.game_state import GameState
-from loops.loop_runner import SceneHandler, run_scene_with_hud
+from scenes.loop_runner import SceneHandler, run_scene_with_hud
 
 from .game_loop import run_game_loop
 

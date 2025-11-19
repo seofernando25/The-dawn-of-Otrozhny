@@ -7,7 +7,7 @@ ENEMY_CONFIG: Dict[str, Any] = {
     "fov_degrees": 90,
     "move_speed": 2,
     "fov_depth": 6,
-    "sprite_pack": "Droog",
+    "sprite_pack": "droog",
     "camera_yaw_sensitivity": 4,
     "alert_fov_multiplier": 1.5,  # FOV multiplier when in alert states
     "alert_fov_depth_multiplier": 1.5,  # FOV depth multiplier when in alert states

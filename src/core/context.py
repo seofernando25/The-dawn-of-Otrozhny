@@ -9,9 +9,9 @@ from config import renderer_config
 if TYPE_CHECKING:  # typing-only imports
     from audio_manager import AudioManager
     from entities.player import Player
-    from core.level import Level
+    from level.level import Level
     from level_editor.editor import GridManager
-    from core.enemy_state import EnemyStateManager
+    from entities.enemy_state import EnemyStateManager
 
 
 def get_screen() -> pygame.Surface:
@@ -62,7 +62,7 @@ class GameContext(BaseContext):
     def ensure_enemy_state(self) -> "EnemyStateManager":
         """Get or create the enemy state manager."""
         if self.enemy_state is None:
-            from core.enemy_state import EnemyStateManager
+            from entities.enemy_state import EnemyStateManager
             self.enemy_state = EnemyStateManager()
         return self.enemy_state
 
@@ -89,7 +89,7 @@ def build_game_context(
     enemy_state: Optional["EnemyStateManager"] = None,
 ) -> GameContext:
     """Create a GameContext with required dependencies."""
-    from core.enemy_state import EnemyStateManager
+    from entities.enemy_state import EnemyStateManager
 
     if player is None:
         raise ValueError("player is required for GameContext")

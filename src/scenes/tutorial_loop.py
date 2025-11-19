@@ -6,7 +6,7 @@ import pygame
 from ui import menu_tabs
 from renderer.text import message_display_L
 from config import renderer_config
-from loops.loop_runner import SceneHandler
+from scenes.loop_runner import SceneHandler
 from ui import HudScreen
 
 
@@ -62,7 +62,7 @@ class TutorialScene(SceneHandler):
 
 def run_tutorial_loop():
     """Run the tutorial screen loop."""
-    from loops.loop_runner import run_scene_with_hud
+    from scenes.loop_runner import run_scene_with_hud
 
     scene = TutorialScene()
     return run_scene_with_hud(scene, scene.hud)

@@ -5,8 +5,8 @@ import pygame
 from config import EDITOR_CONFIG
 from core.context import build_editor_context
 from core.game_state import GameState
-from core.io import save_level
-from core.level import Level
+from level.loader import save_level
+from level.level import Level
 from entities.enemy import Enemy
 from entities.items import Collectible, Gate, Key
 from entities.player import Player
@@ -14,7 +14,7 @@ from config import renderer_config
 from core import colors
 from renderer.text import message_display
 from ui import HudScreen
-from loops.loop_runner import SceneHandler, run_scene
+from scenes.loop_runner import SceneHandler, run_scene
 from . import tools as editor_tools
 
 

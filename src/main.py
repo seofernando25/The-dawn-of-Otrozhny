@@ -7,9 +7,9 @@ from core import assets
 from core.audio import AudioManager
 from level_editor import editor as levelEditor
 from core.game_state import GameState
-from loops import about_loop, menu_loop, setup_game, tutorial_loop
+from scenes import about_loop, menu_loop, setup_game, tutorial_loop
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def pre_close():

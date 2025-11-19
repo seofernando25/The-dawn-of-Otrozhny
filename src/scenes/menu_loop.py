@@ -7,7 +7,7 @@ from ui import HudScreen
 from renderer import effects as otherEffects
 from renderer.text import message_display_MT
 from config import renderer_config
-from loops.loop_runner import SceneHandler
+from scenes.loop_runner import SceneHandler
 from core.game_state import GameState
 
 
@@ -71,7 +71,7 @@ class MenuScene(SceneHandler):
 
 def run_menu_loop():
     """Run the main menu loop."""
-    from loops.loop_runner import run_scene_with_hud
+    from scenes.loop_runner import run_scene_with_hud
 
     scene = MenuScene()
     return run_scene_with_hud(scene, scene.hud)

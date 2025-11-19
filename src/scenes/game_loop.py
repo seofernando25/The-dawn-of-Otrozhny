@@ -2,7 +2,7 @@ import datetime
 import pygame
 
 from core.game_state import GameState
-from loops.loop_runner import SceneHandler, run_scene
+from scenes.loop_runner import SceneHandler, run_scene
 from core.context import GameContext, get_screen
 from systems import InputSystem, GameplaySystem, RenderSystem, HudSystem
 from config import renderer_config

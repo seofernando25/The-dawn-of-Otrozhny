@@ -7,7 +7,7 @@ from .base import SpriteEntity
 
 class Collectible(SpriteEntity):
     def __init__(self, start_pos, *, context=None):
-        super().__init__(start_pos, "Collectible", context=context)
+        super().__init__(start_pos, "collectible", context=context)
         self.collected = False
 
     def update(self, dt):
@@ -23,7 +23,7 @@ class Collectible(SpriteEntity):
 
 class Gate(SpriteEntity):
     def __init__(self, start_pos, *, context=None):
-        super().__init__(start_pos, "Gate", context=context)
+        super().__init__(start_pos, "gate", context=context)
         self.open = False
 
     def update(self, dt):
@@ -51,7 +51,7 @@ class Gate(SpriteEntity):
 
 class Key(SpriteEntity):
     def __init__(self, start_pos, *, context=None):
-        super().__init__(start_pos, "Key", context=context)
+        super().__init__(start_pos, "key", context=context)
         self.collected = False
 
     def update(self, dt):

@@ -5,7 +5,7 @@ About loop module - displays the about screen with animated text.
 import pygame
 from renderer.text import message_display, message_display_L
 from config import renderer_config
-from loops.loop_runner import SceneHandler
+from scenes.loop_runner import SceneHandler
 
 
 class AboutScene(SceneHandler):
@@ -88,7 +88,7 @@ class AboutScene(SceneHandler):
 
 def run_about_loop():
     """Run the about screen loop."""
-    from loops.loop_runner import run_scene
+    from scenes.loop_runner import run_scene
 
     scene = AboutScene()
     return run_scene(scene)
