@@ -15,16 +15,13 @@ I made this game over the course of about 2 months, and I wasn't very knowledgea
 
 ## Requirements
 
-- Python 3.6
-- pygame
-- numpy
+- uv
 
 ## How to run
 
 ```cmd
-pip install numpy pygame
-cd The dawn of Otrozhny
-python main.py
+uv sync
+uv run src/main.py
 ```
 
 Main Menu
