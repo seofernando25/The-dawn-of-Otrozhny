@@ -56,6 +56,8 @@ def main_loop():
 
     while not done:
         state = menu_loop.run_menu_loop()
+        if state != GameState.Menu:
+            audio.stop_music()
 
         if state == GameState.Quit:
             done = True

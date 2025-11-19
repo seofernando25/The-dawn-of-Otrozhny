@@ -194,6 +194,9 @@ class AudioManager:
 
     def _get_music_channel(self) -> pygame.mixer.Channel | None:
         """Get or create the dedicated music channel."""
-        if not hasattr(self, "_music_channel"):
-            self._music_channel = self._mixer_state.ensure_channel()
-        return self._music_channel
+        channel = getattr(self, "_music_channel", None)
+        if channel is None:
+            channel = self._mixer_state.ensure_channel()
+            if channel is not None:
+                self._music_channel = channel
+        return channel
