@@ -38,7 +38,7 @@ def _get_font(size: int) -> "Font":
 def blit_surface(
     target: SurfaceLike,
     source: SurfaceLike,
-    dest: tuple[Coordinate, Coordinate],
+    dest: tuple[colors.Coordinate, colors.Coordinate],
 ) -> None:
     """
     Blit helper for GraphicsSurface instances.
@@ -51,10 +51,10 @@ def blit_surface(
 def message_display_L(
     screen: SurfaceLike,
     text: str,
-    x: Coordinate,
-    y: Coordinate,
+    x: colors.Coordinate,
+    y: colors.Coordinate,
     size: int = DEFAULT_FONT_SIZE,
-    color: ColorValue = colors.WHITE,
+    color: colors.ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
@@ -65,10 +65,10 @@ def message_display_L(
 def message_display_R(
     screen: SurfaceLike,
     text: str,
-    x: Coordinate,
-    y: Coordinate,
+    x: colors.Coordinate,
+    y: colors.Coordinate,
     size: int = DEFAULT_FONT_SIZE,
-    color: ColorValue = colors.WHITE,
+    color: colors.ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
@@ -80,10 +80,10 @@ def message_display_R(
 def message_display_MB(
     screen: SurfaceLike,
     text: str,
-    x: Coordinate,
-    y: Coordinate,
+    x: colors.Coordinate,
+    y: colors.Coordinate,
     size: int = DEFAULT_FONT_SIZE,
-    color: ColorValue = colors.WHITE,
+    color: colors.ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
@@ -95,10 +95,10 @@ def message_display_MB(
 def message_display_MT(
     screen: SurfaceLike,
     text: str,
-    x: Coordinate,
-    y: Coordinate,
+    x: colors.Coordinate,
+    y: colors.Coordinate,
     size: int,
-    color: ColorValue = colors.WHITE,
+    color: colors.ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
@@ -110,10 +110,10 @@ def message_display_MT(
 def message_display(
     screen: SurfaceLike,
     text: str,
-    x: Coordinate,
-    y: Coordinate,
+    x: colors.Coordinate,
+    y: colors.Coordinate,
     size: int,
-    color: ColorValue = colors.WHITE,
+    color: colors.ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
