@@ -1,20 +1,16 @@
 # Functions to draw text on the screen
 import os
-from typing import TYPE_CHECKING, TypeAlias
+from typing import  TypeAlias
 
 from core import colors
 from core.backend import get_backend
 from core.backend.api import GraphicsSurface
-
-if TYPE_CHECKING:
-    from core.backend.api import Font
+from core.backend.api import Font
 
 SurfaceLike: TypeAlias = GraphicsSurface
 
 DEFAULT_FONT_SIZE = 8
 
-ColorValue = tuple[int, int, int] | list[int] | str
-Coordinate = float
 
 font_cache: dict[int, "Font"] = {}
 # Get the src directory (parent of renderer)
@@ -24,7 +20,7 @@ FONT_PATH = os.path.join(dir_path, "assets", "fonts", FONT_NAME)
 
 
 def text_object(
-    text: str, font: "Font", color: ColorValue = colors.WHITE
+    text: str, font: "Font", color: colors.ColorValue = colors.WHITE
 ) -> tuple["GraphicsSurface", tuple[tuple[int, int], tuple[int, int]]]:  # Returns (surface, rect)
     text_surface = font.render(str(text), True, color)
     # Since we can't easily get the rect from our abstract surface, we'll make a simple rect
@@ -39,14 +35,14 @@ def _get_font(size: int) -> "Font":
     return font_cache[size]
 
 
-def _blit_surface(
+def blit_surface(
     target: SurfaceLike,
     source: SurfaceLike,
     dest: tuple[Coordinate, Coordinate],
 ) -> None:
     """
     Blit helper for GraphicsSurface instances.
-    Handles HudButton objects by extracting their _surface.
+    Handles HudButton objects by extracting their surface.
     """
     # Use the GraphicsSurface abstraction
     target.blit(source, dest)
@@ -63,7 +59,7 @@ def message_display_L(
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
     # We'll simulate the rect positioning by blitting at adjusted coordinates
-    _blit_surface(screen, text_surf, (x, y))
+    blit_surface(screen, text_surf, (x, y))
 
 
 def message_display_R(
@@ -78,7 +74,7 @@ def message_display_R(
     text_surf, _ = text_object(text, font, color)
     # Calculate position for right alignment
     width, _ = font.size(str(text))
-    _blit_surface(screen, text_surf, (x - width, y))
+    blit_surface(screen, text_surf, (x - width, y))
 
 
 def message_display_MB(
@@ -93,7 +89,7 @@ def message_display_MB(
     text_surf, _ = text_object(text, font, color)
     # Calculate position for middle bottom alignment
     width, height = font.size(str(text))
-    _blit_surface(screen, text_surf, (x - width // 2, y - height))
+    blit_surface(screen, text_surf, (x - width // 2, y - height))
 
 
 def message_display_MT(
@@ -108,7 +104,7 @@ def message_display_MT(
     text_surf, _ = text_object(text, font, color)
     # Calculate position for middle top alignment
     width, _ = font.size(str(text))
-    _blit_surface(screen, text_surf, (x - width // 2, y))
+    blit_surface(screen, text_surf, (x - width // 2, y))
 
 
 def message_display(
@@ -123,7 +119,7 @@ def message_display(
     text_surf, _ = text_object(text, font, color)
     # Calculate position for center alignment
     width, height = font.size(str(text))
-    _blit_surface(screen, text_surf, (x - width // 2, y - height // 2))
+    blit_surface(screen, text_surf, (x - width // 2, y - height // 2))
 
 
 def truncline(text: str, maxwidth: int, font: "Font") -> tuple[int, int, str]:

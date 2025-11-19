@@ -2,7 +2,6 @@
 
 from collections.abc import Hashable
 import math
-from typing import TYPE_CHECKING
 
 from core import colors
 from core.backend import get_backend
@@ -10,10 +9,9 @@ from entities.items import Gate
 from entities.player import Player
 from level.loader import LevelObject
 from renderer import minimap
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
+from core.backend.api import GraphicsSurface
 
 # Cache for map previews
 _MAP_PREVIEW_CACHE: dict[tuple[Hashable, tuple[int, int]], "GraphicsSurface"] = {}
@@ -73,4 +71,4 @@ def draw_map_preview(
         cached_surface = preview
         _MAP_PREVIEW_CACHE[signature] = cached_surface
 
-    _blit_surface(screen, cached_surface, (0, 0))
+    blit_surface(screen, cached_surface, (0, 0))

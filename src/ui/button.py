@@ -1,16 +1,11 @@
 """HUD button component."""
 
-from typing import TYPE_CHECKING
 
 from config import renderer_config
 from core import colors
 from core.backend import get_backend
 from renderer.text import message_display, message_display_MT, wrapline
-
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface, Sound
-
-ColorValue = tuple[int, int, int] | list[int] | str
+from core.backend.api import GraphicsSurface, Sound
 
 
 class HudButton:
@@ -32,7 +27,7 @@ class HudButton:
         self.text: str = str(text)
         self.subtitle: str = ""
         self.title: str = ""
-        self.indexColor: list[ColorValue] = [colors.WHITE] * 3
+        self.indexColor: list[colors.ColorValue] = [colors.WHITE] * 3
         self._dirty: bool = True
         self._activated_sound: "Sound | None" = activated_sound
 
@@ -48,7 +43,11 @@ class HudButton:
         """Get the size of the button surface."""
         return self._surface.get_size()
 
-    def fill(self, color: ColorValue) -> None:
+    def get_surface(self) -> "GraphicsSurface":
+        """Get the button surface."""
+        return self._surface
+
+    def fill(self, color: colors.ColorValue) -> None:
         """Fill the button surface with a color."""
         self._surface.fill(color)
 
@@ -61,7 +60,7 @@ class HudButton:
         if self.protected:
             self._dirty = True
 
-    def set_color(self, textIndex: int, color: ColorValue) -> None:
+    def set_color(self, textIndex: int, color: colors.ColorValue) -> None:
         """Set the color for a specific text element."""
         if self.indexColor[textIndex] != color:
             self.indexColor[textIndex] = color

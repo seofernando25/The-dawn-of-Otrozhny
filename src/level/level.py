@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from collections.abc import Sequence
 import numpy as np
 from entities.base import Entity
@@ -6,8 +5,7 @@ from entities.items import Collectible
 from entities.node import Node
 from entities.player import Player
 
-if TYPE_CHECKING:
-    from core.context import GameContext
+from core.context import GameContext
 
 
 class Level:

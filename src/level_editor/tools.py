@@ -5,17 +5,13 @@ Breaks down the monolithic GridManager into smaller, focused tool classes.
 Each tool handles its own input/update/draw logic.
 """
 
-from typing import TYPE_CHECKING
-
 from config import renderer_config
 from core import colors
 from core.backend import get_backend
 from entities.enemy import Enemy
 from entities.node import Node
 from entities.factory import EntityFactory
-
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface
+from core.backend.api import Event, GraphicsSurface
 
 
 class BaseTool:

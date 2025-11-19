@@ -4,13 +4,9 @@ Bootstrap module for backend initialization.
 This module provides centralized initialization and configuration of the backend system.
 """
 
-from typing import TYPE_CHECKING
-
 from core.backend import get_backend, set_backend
 from core.backend.pygame_backend import PygameBackend
-
-if TYPE_CHECKING:
-    from core.backend.api import Backend
+from core.backend.api import Backend
 
 
 def initialize_backend(backend_type: str = "pygame") -> "Backend":

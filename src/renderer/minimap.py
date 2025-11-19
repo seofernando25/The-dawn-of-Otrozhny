@@ -1,20 +1,17 @@
 import math
-from typing import TYPE_CHECKING, Callable
+from typing import  Callable
 
 from core import colors
 from core.backend import get_backend
 from entities.enemy import Enemy
 from entities.items import Collectible, Gate
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 from .raycast import calculate_fov_polygon
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
-    from entities.base import Agent
-    from level.level import Level
-    from level.loader import LevelObject
-else:
-    from entities.base import Agent
+from core.backend.api import GraphicsSurface
+from entities.base import Agent
+from level.level import Level
+from level.loader import LevelObject
 
 # Cache for static minimap surfaces
 _STATIC_SURFACES: dict[tuple[int, tuple[int, int]], "GraphicsSurface"] = {}
@@ -118,7 +115,7 @@ def render_map(screen: "GraphicsSurface", entity: "Agent") -> None:
     scale_y = height / current_map.level_height
 
     static_surface = _get_static_surface(screen, current_map, scale_x, scale_y)
-    _blit_surface(screen, static_surface, (0, 0))
+    blit_surface(screen, static_surface, (0, 0))
 
     fov_points = calculate_fov_polygon(entity)
     # Translate (x, y) coordinates into scaled map space

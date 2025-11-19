@@ -1,17 +1,14 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
 
 from config import renderer_config
 from core import colors
 from core.backend import get_backend
 from core.game_state import GameState
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 from utils import math_helpers
 from ui.button import HudButton
 from ui.helpers import resolve_screen
-
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface, Sound
+from core.backend.api import Event, GraphicsSurface, K_DOWN, K_LEFT, K_RIGHT, K_UP, KEYDOWN, Sound
 
 
 class MapSelectionScreen:
@@ -44,9 +41,9 @@ class MapSelectionScreen:
         _ = self._surface.fill(colors.BLACK)
         for x in range(5):
             for y in range(3):
-                _blit_surface(
+                blit_surface(
                     self._surface,
-                    self.hud_buttons[x][y]._surface,
+                    self.hud_buttons[x][y].get_surface(),
                     (
                         50 + x * 100 + x * renderer_config.HUD_CELL_OFFSET,
                         100 + y * 100 + y * renderer_config.HUD_CELL_OFFSET,
@@ -57,7 +54,7 @@ class MapSelectionScreen:
             self._surface, colors.WHITE, (int(self._pointer_x), int(self._pointer_y)), 10
         )
         target_screen = resolve_screen(screen)
-        _blit_surface(target_screen, self._surface, (0, 0))
+        blit_surface(target_screen, self._surface, (0, 0))
 
     def update(
         self,
@@ -76,7 +73,6 @@ class MapSelectionScreen:
         self._pointer_x = math_helpers.lerp(self._pointer_x, pos[0], delta_time * 10)
         self._pointer_y = math_helpers.lerp(self._pointer_y, pos[1], delta_time * 10)
 
-        from core.backend.api import K_DOWN, K_LEFT, K_RIGHT, K_UP, KEYDOWN
         for event in events:
             if event.type == KEYDOWN and event.key is not None:
                 key = event.key

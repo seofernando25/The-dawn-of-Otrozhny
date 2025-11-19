@@ -1,13 +1,9 @@
 """Floor rendering for first-person view."""
 
-from typing import TYPE_CHECKING
-
 from core import colors
 from core.backend import get_backend
-
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
-    from entities.base import Agent
+from core.backend.api import GraphicsSurface
+from entities.base import Agent
 
 
 def render_floor(screen: "GraphicsSurface", entity: "Agent") -> None:

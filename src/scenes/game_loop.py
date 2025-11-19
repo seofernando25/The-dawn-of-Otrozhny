@@ -1,6 +1,6 @@
 import datetime
 from collections.abc import Sequence
-from typing import override, TYPE_CHECKING
+from typing import override
 
 from config import renderer_config
 from core.context import GameContext, get_screen
@@ -9,8 +9,7 @@ from scenes.loop_runner import SceneHandler, run_scene
 from systems import GameplaySystem, HudSystem, InputSystem, RenderSystem
 from core.backend import get_backend
 
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface
+from core.backend.api import Event, GraphicsSurface
 
 
 def run_game_loop(context: GameContext) -> GameState:

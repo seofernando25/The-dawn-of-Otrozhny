@@ -1,12 +1,10 @@
 import heapq
 import math
 from collections.abc import Iterator
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
 
 # See: http://www.sfu.ca/~arashr/warren.pdf
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 
 def go_to(

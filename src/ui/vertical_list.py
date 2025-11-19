@@ -1,16 +1,14 @@
 """Vertical list UI component."""
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
 
 from config import renderer_config
 from core.backend import get_backend
-from renderer.text import FONT_PATH, _blit_surface
+from renderer.text import FONT_PATH, blit_surface
 from ui.button import HudButton
 from ui.helpers import resolve_screen
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
+from core.backend.api import GraphicsSurface
 
 
 class VerticalList:
@@ -37,9 +35,9 @@ class VerticalList:
             button.redraw()
         target_screen = resolve_screen(screen)
         for index, button in enumerate(self.objects):
-            _blit_surface(
+            blit_surface(
                 target_screen,
-                button._surface,
+                button.get_surface(),
                 (
                     self.px,
                     self.py

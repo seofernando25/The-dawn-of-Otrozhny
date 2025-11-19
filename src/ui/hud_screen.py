@@ -1,14 +1,13 @@
 """HUD screen component."""
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
 
 from config import renderer_config
 from core import colors
 from core.backend import get_backend
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 from utils import math_helpers
-from ui.button import ColorValue, HudButton
+from ui.button import HudButton
 from ui.helpers import (
     generate_hud_viewport,
     generate_hud_surfaces,
@@ -16,9 +15,21 @@ from ui.helpers import (
     resolve_screen,
 )
 
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface, Sound
-
+from core.backend.api import (
+    Event,
+    GraphicsSurface,
+    K_1,
+    K_2,
+    K_3,
+    K_4,
+    K_5,
+    K_LEFT,
+    K_RETURN,
+    K_RIGHT,
+    K_SPACE,
+    KEYDOWN,
+    Sound,
+)
 
 class HudScreen:
     """Main HUD screen that manages multiple HUD buttons."""
@@ -43,7 +54,7 @@ class HudScreen:
         self.onChangedButton: list[Callable[[], None]] = []
 
     def set_button_color(
-        self, buttonIndex: int, textIndex: int, color: ColorValue
+        self, buttonIndex: int, textIndex: int, color: colors.ColorValue
     ) -> None:
         """Set the color of a specific text element in a button."""
         self.hud_buttons[buttonIndex].set_color(textIndex, color)
@@ -84,7 +95,7 @@ class HudScreen:
                 ),
             )
         target_screen = resolve_screen(screen)
-        _blit_surface(
+        blit_surface(
             target_screen,
             self.viewPort,
             (
@@ -114,18 +125,7 @@ class HudScreen:
         self, delta_time: float, events: Sequence["Event"]
     ) -> int | None:
         """Update the HUD screen state."""
-        from core.backend.api import (
-            K_1,
-            K_2,
-            K_3,
-            K_4,
-            K_5,
-            K_LEFT,
-            K_RETURN,
-            K_RIGHT,
-            K_SPACE,
-            KEYDOWN,
-        )
+        
         if self.interactable:
             self.cursorX = math_helpers.lerp(
                 self.cursorX, self.selected_button, delta_time * 15

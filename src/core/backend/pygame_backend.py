@@ -7,11 +7,9 @@ using pygame as the underlying library.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from collections.abc import Sequence
 
-if TYPE_CHECKING:
-    from core.backend.api import ColorValue, Coordinate
+from core.backend.api import ColorValue, Coordinate
 
 import pygame
 import pygame.mixer
@@ -35,6 +33,10 @@ class PygameGraphicsSurface(GraphicsSurface):
     
     def __init__(self, surface: pygame.Surface):
         self._surface = surface
+
+    def get_pygame_surface(self) -> pygame.Surface:
+        """Get the underlying pygame surface (for internal use)."""
+        return self._surface
 
     def get_size(self) -> tuple[int, int]:
         return self._surface.get_size()
@@ -91,6 +93,10 @@ class PygameTexture(Texture):
     def get_size(self) -> tuple[int, int]:
         return self._surface.get_size()
 
+    def get_pygame_surface(self) -> pygame.Surface:
+        """Get the underlying pygame surface (for internal use)."""
+        return self._surface
+
 
 class PygameGraphicsBackend(GraphicsBackend):
     """Pygame implementation of GraphicsBackend."""
@@ -137,13 +143,13 @@ class PygameGraphicsBackend(GraphicsBackend):
 
     def set_icon(self, icon: Texture) -> None:
         if isinstance(icon, PygameTexture):
-            pygame.display.set_icon(icon._surface)
+            pygame.display.set_icon(icon.get_pygame_surface())
         else:
             raise TypeError(f"Expected PygameTexture, got {type(icon)}")
 
     def _resolve_surface(self, surface: GraphicsSurface) -> pygame.Surface:
         if isinstance(surface, PygameGraphicsSurface):
-            return surface._surface
+            return surface.get_pygame_surface()
         if isinstance(surface, pygame.Surface):
             return surface
         raise TypeError(f"Expected GraphicsSurface or pygame.Surface, got {type(surface)}")
@@ -259,6 +265,10 @@ class PygameSound(Sound):
     def __init__(self, sound: pygame.mixer.Sound):
         self._sound = sound
 
+    def get_pygame_sound(self) -> pygame.mixer.Sound:
+        """Get the underlying pygame sound (for internal use)."""
+        return self._sound
+
     def play(self, loops: int = 0, maxtime: int = 0, fade_ms: int = 0):
         channel = self._sound.play(loops, maxtime, fade_ms)
         return PygameChannel(channel)
@@ -272,7 +282,7 @@ class PygameChannel(Channel):
 
     def play(self, sound: Sound, loops: int = 0, maxtime: int = 0, fade_ms: int = 0) -> None:
         if isinstance(sound, PygameSound):
-            self._channel.play(sound._sound, loops, maxtime, fade_ms)
+            self._channel.play(sound.get_pygame_sound(), loops, maxtime, fade_ms)
         else:
             raise TypeError(f"Expected PygameSound, got {type(sound)}")
 
@@ -341,7 +351,31 @@ VIDEOEXPOSE = pygame.VIDEOEXPOSE
 USEREVENT = pygame.USEREVENT
 
 # Key constants
+K_1 = pygame.K_1
+K_2 = pygame.K_2
+K_3 = pygame.K_3
+K_4 = pygame.K_4
+K_5 = pygame.K_5
+K_LEFT = pygame.K_LEFT
+K_RIGHT = pygame.K_RIGHT
+K_UP = pygame.K_UP
+K_DOWN = pygame.K_DOWN
+K_RETURN = pygame.K_RETURN
+K_SPACE = pygame.K_SPACE
+K_ESCAPE = pygame.K_ESCAPE
 K_p = pygame.K_p
+K_q = pygame.K_q
+K_w = pygame.K_w
+K_a = pygame.K_a
+K_s = pygame.K_s
+K_d = pygame.K_d
+K_b = pygame.K_b
+K_c = pygame.K_c
+K_f = pygame.K_f
+K_g = pygame.K_g
+K_v = pygame.K_v
+K_x = pygame.K_x
+K_z = pygame.K_z
 
 
 class PygameBackend(Backend):
@@ -379,7 +413,31 @@ class PygameBackend(Backend):
         api.MOUSEBUTTONDOWN = MOUSEBUTTONDOWN
         api.MOUSEBUTTONUP = MOUSEBUTTONUP
         api.MOUSEMOTION = MOUSEMOTION
+        api.K_1 = K_1
+        api.K_2 = K_2
+        api.K_3 = K_3
+        api.K_4 = K_4
+        api.K_5 = K_5
+        api.K_LEFT = K_LEFT
+        api.K_RIGHT = K_RIGHT
+        api.K_UP = K_UP
+        api.K_DOWN = K_DOWN
+        api.K_RETURN = K_RETURN
+        api.K_SPACE = K_SPACE
+        api.K_ESCAPE = K_ESCAPE
         api.K_p = K_p
+        api.K_q = K_q
+        api.K_w = K_w
+        api.K_a = K_a
+        api.K_s = K_s
+        api.K_d = K_d
+        api.K_b = K_b
+        api.K_c = K_c
+        api.K_f = K_f
+        api.K_g = K_g
+        api.K_v = K_v
+        api.K_x = K_x
+        api.K_z = K_z
         return True
 
     def quit(self) -> None:

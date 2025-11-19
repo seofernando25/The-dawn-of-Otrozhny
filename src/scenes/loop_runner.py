@@ -6,19 +6,13 @@ This module provides a reusable implementation.
 """
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Protocol
+from typing import  Protocol
 
 from core import colors
 from core.backend import get_backend
 from core.game_state import GameState
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface, Clock, Event
-else:
-    # For runtime, we'll use the backend's event type
-    Event = object
-
-# Removed _unwrap_surface - we now use GraphicsSurface directly
+from core.backend.api import GraphicsSurface, Clock, Event
 
 
 class HudLike(Protocol):

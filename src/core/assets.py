@@ -3,10 +3,7 @@ import random
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface, Sound
+from core.backend.api import GraphicsSurface, Sound
 
 LOGGER = logging.getLogger(__name__)
 

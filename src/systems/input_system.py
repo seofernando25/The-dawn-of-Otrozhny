@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import cast, TYPE_CHECKING
+from typing import cast
 
 from config import renderer_config
 from core.context import GameContext
@@ -7,9 +7,7 @@ from core.game_state import GameState
 from entities.player import Player
 from physics import movement
 from core.backend import get_backend
-
-if TYPE_CHECKING:
-    from core.backend.api import Event
+from core.backend.api import Event
 
 
 class InputSystem:

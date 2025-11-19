@@ -9,50 +9,43 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Protocol, TypeAlias, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    # Import necessary types for type checking only to avoid circular imports
-    from core.backend.api import GraphicsSurface, Texture, Font, Sound, Channel
+from core.colors import ColorValue, Coordinate
 
-# Type aliases to maintain compatibility with pygame types
-ColorValue: TypeAlias = tuple[int, int, int] | list[int] | str
-Coordinate: TypeAlias = float
+# Event type constants (pygame values - will be overridden by backend implementation if different)
+QUIT: int = 256  # pygame.QUIT
+KEYDOWN: int = 768  # pygame.KEYDOWN
+KEYUP: int = 769  # pygame.KEYUP
+MOUSEBUTTONDOWN: int = 1025  # pygame.MOUSEBUTTONDOWN
+MOUSEBUTTONUP: int = 1026  # pygame.MOUSEBUTTONUP
+MOUSEMOTION: int = 1024  # pygame.MOUSEMOTION
 
-# Key constants for pygame compatibility
-K_q = 113
-K_ESCAPE = 27
-K_LEFT = 1073741904
-K_RIGHT = 1073741903
-K_UP = 1073741906
-K_DOWN = 1073741905
-K_w = 119
-K_a = 97
-K_s = 115
-K_d = 100
-K_z = 122
-K_x = 120
-K_c = 99
-K_v = 118
-K_b = 98
-K_f = 102
-K_g = 103
-K_p = 112
-K_RETURN = 13
-K_SPACE = 32
-K_1 = 49
-K_2 = 50
-K_3 = 51
-K_4 = 52
-K_5 = 53
-
-# Event constants for pygame compatibility (these will be set from pygame when backend is initialized)
-QUIT = 0  # Placeholder, will be set by pygame backend
-KEYDOWN = 0  # Placeholder, will be set by pygame backend
-KEYUP = 0  # Placeholder, will be set by pygame backend
-MOUSEBUTTONDOWN = 0  # Placeholder, will be set by pygame backend
-MOUSEBUTTONUP = 0  # Placeholder, will be set by pygame backend
-MOUSEMOTION = 0  # Placeholder, will be set by pygame backend
+# Key constants (will be overridden by backend implementation)
+K_1: int = 49
+K_2: int = 50
+K_3: int = 51
+K_4: int = 52
+K_5: int = 53
+K_LEFT: int = 1073741904
+K_RIGHT: int = 1073741903
+K_UP: int = 1073741906
+K_DOWN: int = 1073741905
+K_RETURN: int = 13
+K_SPACE: int = 32
+K_ESCAPE: int = 27
+K_p: int = 112
+K_q: int = 113
+K_w: int = 119
+K_a: int = 97
+K_s: int = 115
+K_d: int = 100
+K_b: int = 98
+K_c: int = 99
+K_f: int = 102
+K_g: int = 103
+K_v: int = 118
+K_x: int = 120
+K_z: int = 122
 
 # Event types
 class Event:

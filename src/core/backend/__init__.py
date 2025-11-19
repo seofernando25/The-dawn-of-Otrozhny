@@ -5,10 +5,7 @@ This module provides access to the backend implementation through singletons
 that can be easily swapped out for different backends.
 """
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from core.backend.api import Backend, GraphicsSurface, InputBackend, AudioBackend, Clock
+from core.backend.api import Backend, GraphicsSurface, InputBackend, AudioBackend, Clock
 
 # Global backend instance
 _backend: "Backend | None" = None

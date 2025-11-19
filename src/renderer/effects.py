@@ -1,15 +1,13 @@
 # Script used mainly to draw "otherEffects.py" on the screen
 # eg: main menu's Sierpinski triangle
 import random
-from typing import TYPE_CHECKING, override
+from typing import  override
 
 from core import colors
 from core.backend import get_backend
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 from utils import math_helpers
-
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
+from core.backend.api import GraphicsSurface
 
 
 # The concept for this class was taken from
@@ -42,7 +40,7 @@ class ChaosObject:
                 self._surface, self.color, center, 1
             )
         self.updates_before_draw = 0
-        _blit_surface(
+        blit_surface(
             screen,
             self._surface,
             (
@@ -145,6 +143,10 @@ class StarField:
             )
             star.screenLastX += self.surface_width // 2
             star.screenLastY += self.surface_height // 2
+
+    def get_surface(self) -> "GraphicsSurface":
+        """Get the star field surface."""
+        return self._surface
 
     def draw(self) -> None:
         backend = get_backend()

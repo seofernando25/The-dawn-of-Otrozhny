@@ -1,5 +1,8 @@
 # Color definitions and functions
 
+Coordinate = float
+ColorValue = tuple[int, int, int] | list[int] | str
+
 # Basic Colors
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)

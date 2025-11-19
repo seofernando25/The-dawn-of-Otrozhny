@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import  cast
 
 from core.context import GameContext
 from entities.enemy_state import EnemyStateManager
@@ -10,8 +10,7 @@ from level.level import Level
 from ui import HudScreen
 from ui.button import HudButton
 
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface
+from core.backend.api import Event, GraphicsSurface
 
 
 class HudSystem:
@@ -126,7 +125,7 @@ class HudSystem:
 
     def get_minimap_surface(self) -> "GraphicsSurface":
         """Get the minimap surface for rendering."""
-        return self._minimap_surface._surface
+        return self._minimap_surface.get_surface()
 
     def draw(self, screen: "GraphicsSurface") -> None:
         """Draw the HUD to the screen."""

@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING
 
 from core import assets
 from core.audio import AudioManager
 from core.backend import get_backend
-
-if TYPE_CHECKING:
-    from core.backend.api import Sound
+from core.backend.api import Sound
 
 
 def get_ui_activation_sound(

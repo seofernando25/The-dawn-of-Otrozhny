@@ -1,16 +1,13 @@
-from typing import TYPE_CHECKING, cast
+from typing import  cast
 
 from config import renderer_config
 from core import colors
-from core.backend import get_backend
 from core.context import GameContext, get_screen
 from entities.player import Player
 from renderer import minimap as renderer_minimap
 from renderer.first_person import render_first_person_canvas
 from renderer.text import message_display_L, message_display_MT
-
-if TYPE_CHECKING:
-    from core.backend.api import Clock, GraphicsSurface
+from core.backend.api import Clock, GraphicsSurface
 
 
 class RenderSystem:

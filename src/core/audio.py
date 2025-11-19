@@ -1,12 +1,8 @@
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
-
 from core import assets
 from core.backend import get_backend
-
-if TYPE_CHECKING:
-    from core.backend.api import Channel, Sound
+from core.backend.api import Channel, Sound
 
 LOGGER = logging.getLogger(__name__)
 

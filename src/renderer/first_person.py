@@ -1,7 +1,5 @@
 """First-person view rendering."""
 
-from typing import TYPE_CHECKING
-
 from core import colors
 from core.backend import get_backend
 from config import renderer_config
@@ -9,8 +7,7 @@ from renderer import raycast
 from renderer.floor import render_floor
 from entities.base import Agent
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
+from core.backend.api import GraphicsSurface
 
 SCREEN_WIDTH = renderer_config.SCREEN_WIDTH
 VIEWPORT_X_OFFSET = renderer_config.VIEWPORT_X_OFFSET

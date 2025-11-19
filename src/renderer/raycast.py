@@ -1,19 +1,18 @@
 import enum
 import math
-from typing import TYPE_CHECKING, cast
+from typing import  cast
 
 import numpy as np
 
 from core import colors
 from core.backend import get_backend
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 from utils import math_helpers
 from config import renderer_config
 from entities.base import SpriteEntity
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
-    from entities.base import Agent
+from core.backend.api import GraphicsSurface
+from entities.base import Agent
 
 RAY_ANGLE_STEP = renderer_config.RAY_ANGLE_STEP
 VIEWPORT_HEIGHT = renderer_config.VIEWPORT_HEIGHT
@@ -348,7 +347,7 @@ def render_walls(screen: "GraphicsSurface", entity: "Agent") -> None:
             img = backend.graphics.scale_surface(scaled_sprite, (target_width, target_height))
             img_width = img.get_width()
             img_height = img.get_height()
-            _blit_surface(
+            blit_surface(
                 screen,
                 img,
                 (int(pos_x - img_width / 2), int(floor - img_height)),

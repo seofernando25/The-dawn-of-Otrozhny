@@ -1,6 +1,6 @@
 import copy
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Callable, TypeVar, override
+from typing import Callable, TypeVar, override
 
 from core import assets
 from core.audio import AudioManager
@@ -13,9 +13,7 @@ from level.level import Level
 from renderer.text import message_display_L
 from scenes.loop_runner import SceneHandler, run_scene_with_hud
 from ui import MapSelectionScreen
-
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface
+from core.backend.api import Event, GraphicsSurface
 
 from .game_loop import run_game_loop
 
@@ -52,7 +50,7 @@ def _build_map_grid(
             actual_map_list[px][py] = map_obj
             from renderer.preview import draw_map_preview
 
-            draw_map_preview(button._surface, map_obj, cache_key=map_path)
+            draw_map_preview(button.get_surface(), map_obj, cache_key=map_path)
             button.redraw()
 
     return actual_map_list

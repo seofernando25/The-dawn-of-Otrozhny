@@ -1,5 +1,5 @@
 import math
-from typing import TYPE_CHECKING, cast
+from typing import  cast
 
 from config import ENTITY_DEFAULTS
 from core import assets
@@ -9,8 +9,7 @@ from physics import movement
 from utils import math_helpers
 from utils.math_helpers import HasPosition
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface
+from core.backend.api import GraphicsSurface
 
 
 class Entity:

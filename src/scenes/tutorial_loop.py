@@ -3,17 +3,13 @@ Tutorial loop module - displays tutorial tabs with briefing/map editor/items/ene
 """
 
 from collections.abc import Sequence
-from typing import Callable, TypeVar, cast, TYPE_CHECKING
+from typing import Callable, TypeVar
 
 from config import renderer_config
 from renderer.text import message_display_L
 from scenes.loop_runner import SceneHandler
 from ui import HudScreen, menu_tabs
-
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface
-
-from core.backend import get_backend
+from core.backend.api import Event, GraphicsSurface
 
 _OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
 

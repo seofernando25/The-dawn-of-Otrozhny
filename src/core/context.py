@@ -1,13 +1,11 @@
 from dataclasses import dataclass, replace
 from importlib import import_module
-from typing import Any, Protocol, runtime_checkable, TYPE_CHECKING
+from typing import Any, Protocol, runtime_checkable
 
-from config import renderer_config
 from core.audio import AudioManager
 from core.backend import get_backend
 
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface, Clock
+from core.backend.api import GraphicsSurface, Clock
 
 EnemyStateManager = Any
 Player = Any

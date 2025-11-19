@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from core import colors
 from core.context import get_screen
 from config import renderer_config
-from renderer.text import _blit_surface
+from renderer.text import blit_surface
 from ui.button import HudButton
-
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface, Sound
+from core.backend.api import GraphicsSurface, Sound
 
 
 def _resolve_screen(screen: "GraphicsSurface | None" = None) -> "GraphicsSurface":
@@ -30,9 +26,9 @@ def render_hud_surfaces(
     for cell_surface in hud_cell_surfaces:
         cell_surface.redraw()
         cell_width = cell_surface.get_width()
-        _blit_surface(
+        blit_surface(
             hud_viewport,
-            cell_surface._surface,
+            cell_surface.get_surface(),
             (
                 renderer_config.HUD_CELL_OFFSET
                 + renderer_config.HUD_CELL_OFFSET * row

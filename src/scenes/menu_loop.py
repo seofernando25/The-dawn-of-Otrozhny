@@ -3,20 +3,17 @@ Menu loop module - handles the main menu with fractal background and other effec
 """
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, override
+from typing import override
 
 from ui import HudScreen
 from renderer import effects as otherEffects
-from renderer.text import _blit_surface, message_display_MT
+from renderer.text import blit_surface, message_display_MT
 from config import renderer_config
 from scenes.loop_runner import SceneHandler
 from core.game_state import GameState
 from core.backend import get_backend
-
-if TYPE_CHECKING:
-    from core.backend.api import GraphicsSurface, Event
-else:
-    Event = object
+from core.backend.api import GraphicsSurface, Event
+from core.backend.api import QUIT, KEYDOWN, K_p
 
 
 class MenuScene(SceneHandler):
@@ -54,7 +51,6 @@ class MenuScene(SceneHandler):
         self, events: list[Event], keys_pressed: Sequence[bool]
     ) -> bool:
         """Handle quit and keyboard events."""
-        from core.backend.api import QUIT, KEYDOWN, K_p
         for event in events:
             if event.type == QUIT:
                 return True
@@ -80,7 +76,7 @@ class MenuScene(SceneHandler):
     def draw(self, screen: "GraphicsSurface") -> None:
         """Draw the menu screen."""
         self.star_field.draw()
-        _blit_surface(screen, self.star_field._surface, (0, 0))
+        blit_surface(screen, self.star_field.get_surface(), (0, 0))
 
         self.fractal.draw(screen)
 

@@ -3,16 +3,13 @@ About loop module - displays the about screen with animated text.
 """
 
 from collections.abc import Sequence
-from typing import override, TYPE_CHECKING
+from typing import override
 
 from renderer.text import message_display, message_display_L
 from config import renderer_config
 from scenes.loop_runner import SceneHandler
 
-if TYPE_CHECKING:
-    from core.backend.api import Event, GraphicsSurface
-
-from core.backend import get_backend
+from core.backend.api import Event, GraphicsSurface
 
 
 class AboutScene(SceneHandler):

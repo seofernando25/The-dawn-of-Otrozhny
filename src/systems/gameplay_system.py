@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from core.context import GameContext
 from core.game_state import GameState
@@ -8,8 +8,7 @@ from entities.enemy_state import EnemyStateManager
 from entities.player import Player
 from level.level import Level
 
-if TYPE_CHECKING:
-    from core.backend.api import Event
+from core.backend.api import Event
 
 
 class GameplaySystem:
