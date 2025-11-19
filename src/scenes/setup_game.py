@@ -1,3 +1,4 @@
+import copy
 from collections.abc import Sequence
 from typing import Callable, TypeVar, cast
 
@@ -60,14 +61,16 @@ def _create_game_context_from_map(
     audio_manager: AudioManager,
 ) -> GameContext | None:
     """Create a GameContext from a map object."""
-    player = next((x for x in map_obj.grid_entities if isinstance(x, Player)), None)
+    working_map = copy.deepcopy(map_obj)
+
+    player = next((x for x in working_map.grid_entities if isinstance(x, Player)), None)
     if player is None:
         return None
 
     context = build_game_context(
         player=player, level=None, audio_manager_service=audio_manager
     )
-    _ = Level.load(map_obj, context=context)
+    _ = Level.load(working_map, context=context)
     return context
 
 

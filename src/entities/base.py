@@ -80,7 +80,6 @@ class Entity:
             )
         return context.player
 
-
 class SpriteEntity(Entity):
     def __init__(
         self,
@@ -130,19 +129,13 @@ class Agent(SpriteEntity):
         next_pos_y = self.py + dirY
         current_map = self._current_map()
 
-        if next_pos_x < 0 or next_pos_x > current_map.level_width:
-            self.px += dirX
-        elif self.py < 0 or self.py > current_map.level_height:
-            self.px += dirX
-        elif current_map.grid[int(next_pos_x)][int(self.py)] == 0:
-            self.px += dirX
+        if 0 <= next_pos_x < current_map.level_width:
+            if current_map.grid[int(next_pos_x)][int(self.py)] == 0:
+                self.px = next_pos_x
 
-        if next_pos_y < 0 or next_pos_y > current_map.level_height:
-            self.py += dirY
-        elif self.px < 0 or self.px > current_map.level_width:
-            self.py += dirY
-        elif current_map.grid[int(self.px)][int(next_pos_y)] == 0:
-            self.py += dirY
+        if 0 <= next_pos_y < current_map.level_height:
+            if current_map.grid[int(self.px)][int(next_pos_y)] == 0:
+                self.py = next_pos_y
 
     def move_to(self, target: HasPosition, deltaTime: float) -> None:
         """Move the agent towards a target using shared movement helpers."""
@@ -170,6 +163,7 @@ class Agent(SpriteEntity):
             (((targetAngle - math.degrees(angle)) % 360) + 540) % 360
         ) - 180
         self.rotate(math.radians(shortest_angle) * deltaTime)
+
 
 
 class SpriteAgent(Agent):

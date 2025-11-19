@@ -25,28 +25,47 @@ class Gate(SpriteEntity):
     def __init__(self, start_pos, *, context=None):
         super().__init__(start_pos, "gate", context=context)
         self.open = False
+        self._grid_pos: tuple[int, int] | None = None
+
+    def set_context(self, context):
+        super().set_context(context)
+        self._grid_pos = (int(self.px), int(self.py))
+        self._apply_grid_state()
 
     def update(self, dt):
         if not self.open:
             player = self._player()
-            dist = math_helpers.distance_to(self.get_pos(), player.get_pos())
-            if dist < COLLISION_DISTANCES["gate_interaction"]:
+            if self._player_can_interact(player):
                 if player.keys > 0:
                     player.keys -= 1
                     self.open = True
                     self.agent_pack_name = ""
-            elif dist < COLLISION_DISTANCES["gate_knockback"] and player.keys == 0:
-                knockback_dx, knockback_dy = math_helpers.slope(
-                    self.get_pos(), player.get_pos()
-                )
-                knockback_length = math.hypot(knockback_dx, knockback_dy)
-                if knockback_length > 0:
-                    strength = COLLISION_DISTANCES["gate_knockback_strength"]
-                    player.move(
-                        (knockback_dx / knockback_length) * strength,
-                        (knockback_dy / knockback_length) * strength,
-                        dt,
-                    )
+                    self._apply_grid_state()
+
+    def _apply_grid_state(self):
+        if self.context is None or self._grid_pos is None:
+            return
+        current_map = self._current_map()
+        grid_x, grid_y = self._grid_pos
+        if not (
+            0 <= grid_x < current_map.level_width
+            and 0 <= grid_y < current_map.level_height
+        ):
+            return
+        current_map.grid[grid_x][grid_y] = 0 if self.open else 2
+
+    def _player_can_interact(self, player) -> bool:
+        gate_pos = self.get_pos()
+        player_pos = player.get_pos()
+        dist = math_helpers.distance_to(gate_pos, player_pos)
+        if dist < COLLISION_DISTANCES["gate_interaction"]:
+            return True
+        gate_tile = (int(gate_pos[0]), int(gate_pos[1]))
+        player_tile = (int(player_pos[0]), int(player_pos[1]))
+        return (
+            abs(gate_tile[0] - player_tile[0]) <= 1
+            and abs(gate_tile[1] - player_tile[1]) <= 1
+        )
 
 
 class Key(SpriteEntity):

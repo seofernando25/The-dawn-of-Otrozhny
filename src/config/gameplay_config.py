@@ -5,8 +5,6 @@ COLLISION_DISTANCES: dict[str, float] = {
     "collectible_pickup": 0.5,  # Distance to pick up collectibles
     "key_pickup": 0.5,  # Distance to pick up keys
     "gate_interaction": 0.5,  # Distance to interact with gates
-    "gate_knockback": 1.0,  # Distance for gate knockback effect
-    "gate_knockback_strength": 0.5,  # Knockback strength multiplier
 }
 
 # Enemy status timer values (in seconds)
