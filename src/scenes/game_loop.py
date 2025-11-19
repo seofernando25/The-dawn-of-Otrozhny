@@ -55,7 +55,7 @@ def run_game_loop(context: GameContext) -> GameState:
         # Note: Player input is now handled by InputSystem above
         gameplay_result = gameplay_system.update(delta_time, events)
         if gameplay_result is not None:
-            game_state, time = gameplay_result
+            _, time = gameplay_result
             # Game ended - show post-game screen
             won = time is not None
             elapsed_time = time if time is not None else 0.0

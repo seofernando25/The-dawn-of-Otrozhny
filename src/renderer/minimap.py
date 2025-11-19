@@ -60,8 +60,14 @@ def draw_grid(
             color = color_fn(x, y, level_map.grid[x][y])
             if color is None:
                 continue
+            # Convert RGBA to RGB if needed (ColorValue only supports RGB)
+            rgb_color: tuple[int, int, int]
+            if len(color) == 4:
+                rgb_color = (color[0], color[1], color[2])  # Strip alpha
+            else:
+                rgb_color = color  
             backend.graphics.draw_rect(
-                surface, color, (scale_x * y, scale_y * x, scale_x + 1, scale_y + 1)
+                surface, rgb_color, (scale_x * y, scale_y * x, scale_x + 1, scale_y + 1)
             )
 
 
@@ -136,7 +142,13 @@ def render_map(screen: "GraphicsSurface", entity: "Agent") -> None:
     )
 
     for c, points in all_fovs:
-        backend.graphics.draw_polygon(screen, c, points)
+        # Convert RGBA to RGB if needed (ColorValue only supports RGB)
+        rgb_color: tuple[int, int, int]
+        if len(c) == 4:
+            rgb_color = (c[0], c[1], c[2])  # Strip alpha
+        else:
+            rgb_color = c  
+        backend.graphics.draw_polygon(screen, rgb_color, points)
 
     color = colors.DARK_GRAY
     for grid_entity in current_map.grid_entities:

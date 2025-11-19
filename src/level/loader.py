@@ -3,7 +3,6 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union
 
 import numpy as np
 
@@ -38,10 +37,10 @@ class LevelObject:
     a full Level instance with context attached.
     """
 
-    grid: List[List[int]]
+    grid: list[list[int]]
     grid_np: np.ndarray
-    grid_entities: List[Entity]
-    node_entities: List[Node]
+    grid_entities: list[Entity]
+    node_entities: list[Node]
 
     @property
     def level_width(self) -> int:
@@ -67,8 +66,8 @@ def get_files_paths_from_folder(folder, *folders):
 
 
 def _entity_to_data(
-    entity: Entity, all_entities: List[Entity]
-) -> Union[PlayerData, CollectibleData, KeyData, GateData, NodeData, EnemyData]:
+    entity: Entity, all_entities: list[Entity]
+) -> PlayerData | CollectibleData | KeyData | GateData | NodeData | EnemyData:
     """Convert an entity to a Pydantic model representation."""
     position = Position(px=entity.px, py=entity.py)
 

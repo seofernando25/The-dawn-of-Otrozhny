@@ -107,10 +107,7 @@ class Enemy(SpriteAgent):
             else:
                 self.pathFindingComplete = True
                 pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
-                if (
-                    isinstance(pathfinding_dist, (int, float))
-                    and targetDistance > pathfinding_dist
-                ):
+                if targetDistance > pathfinding_dist:
                     self.move_to(self.target, dt)
 
             pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
@@ -118,22 +115,15 @@ class Enemy(SpriteAgent):
 
             if (
                 isinstance(self.target, Node)
-                and isinstance(pathfinding_dist, (int, float))
                 and targetDistance < pathfinding_dist
             ):
                 self.timeGuarded += dt
                 patrol_rot = ENEMY_CONFIG["patrol_rotation_speed"]
-                if isinstance(patrol_rot, (int, float)):
-                    rotation_speed = math.radians(patrol_rot) * dt
-                else:
-                    rotation_speed = 0
+                rotation_speed = math.radians(patrol_rot) * dt
                 self.rotate(rotation_speed)
 
                 guard_time = ENEMY_CONFIG["patrol_guard_time"]
-                if (
-                    isinstance(guard_time, (int, float))
-                    and self.timeGuarded > guard_time
-                ):
+                if self.timeGuarded > guard_time:
                     self.change_patrol_point()
 
     def change_target(self, target):
@@ -164,11 +154,7 @@ class Enemy(SpriteAgent):
         """Retarget to a random point on the map."""
         if attempts is None:
             retarget_attempts = ENEMY_CONFIG["retarget_attempts"]
-            attempts = (
-                int(retarget_attempts)
-                if isinstance(retarget_attempts, (int, float))
-                else 10
-            )
+            attempts = int(retarget_attempts)
         for _ in range(attempts):
             random_entity = Entity(current_map.pick_random_point())
             distance = math_helpers.distance_to(self.get_pos(), random_entity.get_pos())

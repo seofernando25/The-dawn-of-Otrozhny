@@ -1,5 +1,5 @@
 import math
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 from config import ENTITY_DEFAULTS
 from core import assets
@@ -29,11 +29,11 @@ class Entity:
         self,
         start_pos: tuple[float, float],
         *,
-        context: Optional[GameContext] = None,
+        context: GameContext | None = None,
     ):
         self.px: float = float(start_pos[0])
         self.py: float = float(start_pos[1])
-        self.context: Optional["GameContext"] = context
+        self.context: "GameContext | None" = context
 
     def update(self, dt: float) -> None:
         pass
@@ -89,7 +89,7 @@ class SpriteEntity(Entity):
         start_pos: tuple[float, float],
         agent_pack_name: str = "Default",
         *,
-        context: Optional[GameContext] = None,
+        context: GameContext | None = None,
     ):
         super().__init__(start_pos, context=context)
         self.agent_pack_name = agent_pack_name
@@ -106,7 +106,7 @@ class Agent(SpriteEntity):
         move_speed: float,
         fov_depth: float,
         *,
-        context: Optional[GameContext] = None,
+        context: GameContext | None = None,
     ):
         super().__init__(start_pos, context=context)
         self.health = ENTITY_DEFAULTS["health"]
@@ -177,7 +177,7 @@ class SpriteAgent(Agent):
         fov_depth: float,
         agent_pack: str,
         *,
-        context: Optional["GameContext"] = None,
+        context: "GameContext | None" = None,
     ):
         super().__init__(start_pos, fov, move_speed, fov_depth, context=context)
         self.agent_pack_name = agent_pack

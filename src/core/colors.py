@@ -30,7 +30,7 @@ GRAY_VARIATION_4 = (160, 160, 160)
 
 def truncate_color(color: list[int] | tuple[int, ...]) -> list[int]:
     new_color: list[int] = []
-    for index, luminosity in enumerate(color):
+    for luminosity in color:
         if luminosity < 0:
             luminosity = 0
         if luminosity > 255:
@@ -42,14 +42,14 @@ def truncate_color(color: list[int] | tuple[int, ...]) -> list[int]:
 
 def divide(color: list[int] | tuple[int, ...], n: int | float) -> list[int]:
     new_color: list[int] = []
-    for index, luminosity in enumerate(color):
+    for index in range(len(color)):
         new_color.append(int(color[index] / n))
     return truncate_color(new_color)
 
 
 def multiply(color: list[int] | tuple[int, ...], n: int | float) -> list[int]:
     new_color: list[int] = []
-    for index, luminosity in enumerate(color):
+    for index in range(len(color)):
         new_color.append(int(color[index] * n))
     return truncate_color(new_color)
 
@@ -60,6 +60,6 @@ def lerp_color(
     from utils import math_helpers
 
     new_color: list[int] = []
-    for index, luminosity in enumerate(color1):
+    for index in range(len(color1)):
         new_color.append(int(math_helpers.lerp(int(color1[index]), color2[index], t)))
     return truncate_color(new_color)

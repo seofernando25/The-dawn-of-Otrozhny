@@ -3,6 +3,7 @@ import sys
 
 from core import assets
 from core.audio import AudioManager
+from core.backend import get_backend
 from level_editor import editor as levelEditor
 from core.game_state import GameState
 from scenes import about_loop, menu_loop, setup_game, tutorial_loop

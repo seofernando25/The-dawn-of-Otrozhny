@@ -1,6 +1,6 @@
 import copy
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Callable, TypeVar, cast, override
+from typing import TYPE_CHECKING, Callable, TypeVar, override
 
 from core import assets
 from core.audio import AudioManager
@@ -52,7 +52,7 @@ def _build_map_grid(
             actual_map_list[px][py] = map_obj
             from renderer.preview import draw_map_preview
 
-            draw_map_preview(button, map_obj, cache_key=map_path)
+            draw_map_preview(button._surface, map_obj, cache_key=map_path)
             button.redraw()
 
     return actual_map_list
@@ -113,7 +113,7 @@ class MapSelectionScene(SceneHandler):
                 self.result = GameState.Quit
                 return True
             if event.type == KEYDOWN and event.key is not None:
-                key = cast(int, event.key)
+                key = event.key
                 if key == K_RETURN:
                     map_obj = self.actual_map_list[self.hud.selected_button_x][
                         self.hud.selected_button_y

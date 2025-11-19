@@ -8,7 +8,7 @@ Input reading should be handled by the InputSystem.
 """
 
 import math
-from typing import Protocol, cast
+from typing import Protocol
 
 from config import renderer_config
 from utils import math_helpers
@@ -119,7 +119,7 @@ def move_to_target(
 ) -> tuple[float, float]:
     """Return the movement vector that would move the entity toward the given target."""
     if isinstance(target, tuple):
-        target_pos = cast(tuple[float, float], target)
+        target_pos = target
     else:
         target_pos = target.get_pos()
 
@@ -144,7 +144,7 @@ def look_at(
 ) -> None:
     """Rotate the entity toward the target, optionally clamping turn speed."""
     if isinstance(target, tuple):
-        target_pos = cast(tuple[float, float], target)
+        target_pos = target
     else:
         target_pos = target.get_pos()
 

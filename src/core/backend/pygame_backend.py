@@ -7,8 +7,8 @@ using pygame as the underlying library.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence
-from collections.abc import Sequence as AbcSequence
+from typing import TYPE_CHECKING
+from collections.abc import Sequence
 
 if TYPE_CHECKING:
     from core.backend.api import ColorValue, Coordinate
@@ -40,11 +40,17 @@ class PygameGraphicsSurface(GraphicsSurface):
         return self._surface.get_size()
 
     def blit(self, source: GraphicsSurface, dest: tuple[Coordinate, Coordinate] | Coordinate):
+        # Normalize dest to always be a tuple (pygame requires tuple, not single Coordinate)
+        if isinstance(dest, (int, float)):
+            dest_tuple: tuple[Coordinate, Coordinate] = (dest, dest)
+        else:
+            dest_tuple = dest
+        
         if isinstance(source, PygameGraphicsSurface):
-            _ = self._surface.blit(source._surface, dest)
+            _ = self._surface.blit(source._surface, dest_tuple)
         elif isinstance(source, pygame.Surface):
             # Allow direct pygame.Surface for backward compatibility
-            _ = self._surface.blit(source, dest)
+            _ = self._surface.blit(source, dest_tuple)
         else:
             raise TypeError(f"Expected PygameGraphicsSurface or pygame.Surface, got {type(source)}")
 
@@ -255,9 +261,7 @@ class PygameSound(Sound):
 
     def play(self, loops: int = 0, maxtime: int = 0, fade_ms: int = 0):
         channel = self._sound.play(loops, maxtime, fade_ms)
-        if channel is not None:
-            return PygameChannel(channel)
-        return None
+        return PygameChannel(channel)
 
 
 class PygameChannel(Channel):
@@ -298,13 +302,11 @@ class PygameAudioBackend(AudioBackend):
         return PygameSound(sound)
 
     def get_init(self) -> bool:
-        return pygame.mixer.get_init() is not None
+        return bool(pygame.mixer.get_init())
 
     def find_channel(self, force: bool = False) -> Channel | None:
         channel = pygame.mixer.find_channel(force)
-        if channel is not None:
-            return PygameChannel(channel)
-        return None
+        return PygameChannel(channel)
 
     def pre_init(self, frequency: int, size: int, channels: int, buffer: int) -> None:
         pygame.mixer.pre_init(frequency, size, channels, buffer)

@@ -25,9 +25,7 @@ def get_screen():
     """Get or create the main screen surface using the backend."""
     backend = get_backend()
     screen = backend.graphics.get_display_surface()
-    if screen is None:
-        screen = backend.graphics.set_display_mode(renderer_config.SCREEN_SIZE)
-        screen.set_alpha(None)
+    screen.set_alpha(None)
     return screen
 
 
@@ -98,8 +96,6 @@ def build_game_context(
     """Create a GameContext with required dependencies."""
     if player is None:
         raise ValueError("player is required for GameContext")
-    if audio_manager_service is None:
-        raise ValueError("audio_manager_service is required for GameContext")
 
     screen = screen or get_screen()
     if enemy_state is None:
@@ -123,8 +119,6 @@ def build_editor_context(
     grid_manager: Any | None = None,
 ) -> EditorContext:
     """Factory helper for editor-specific tooling."""
-    if audio_manager_service is None:
-        raise ValueError("audio_manager_service is required for EditorContext")
 
     screen = screen or get_screen()
     ctx = EditorContext(

@@ -1,4 +1,5 @@
-from typing import List, Optional, Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING
+from collections.abc import Sequence
 import numpy as np
 from entities.base import Entity
 from entities.items import Collectible
@@ -14,15 +15,15 @@ class Level:
         self,
         grid: Sequence[Sequence[int]],
         grid_entities: Sequence["Entity"],
-        node_entities: Optional[Sequence["Node"]] = None,
-        grid_np: Optional[np.ndarray] = None,
+        node_entities: Sequence["Node"] | None = None,
+        grid_np: np.ndarray | None = None,
     ):
         self.grid = grid
         self.grid_np = (
             grid_np if grid_np is not None else np.array(grid, dtype=np.int16)
         )
-        self.grid_entities: List["Entity"] = list(grid_entities)
-        self.node_entities: List["Node"] = (
+        self.grid_entities: list["Entity"] = list(grid_entities)
+        self.node_entities: list["Node"] = (
             list(node_entities) if node_entities is not None else []
         )
         self.level_width = len(grid[0])
@@ -52,8 +53,7 @@ class Level:
         This method sets context on all entities (both grid entities and node entities)
         and updates the context with the player reference if found.
         """
-        # Type: ignore needed because self is Level, and update_level expects Level
-        context.update_level(self)  # type: ignore[arg-type]
+        context.update_level(self)  
 
         # Attach context to all grid entities
         for entity in self.grid_entities:

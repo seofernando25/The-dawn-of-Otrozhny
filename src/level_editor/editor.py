@@ -1,6 +1,6 @@
 import enum
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional, Tuple, override
+from typing import TYPE_CHECKING, override
 
 from config import EDITOR_CONFIG
 from core.audio import AudioManager
@@ -42,7 +42,7 @@ class GridManager:
         self.verticalButtonIndex = 1
         self.horizontalButtonIndex = 0
         self.grid: list[list[int]] = [
-            [0 for x in range(grid_width)] for y in range(grid_height)
+            [0 for _ in range(grid_width)] for _ in range(grid_height)
         ]
         self.level = Level(self.grid, [], [])
         for y in range(grid_height):
@@ -52,17 +52,17 @@ class GridManager:
             self.grid[0][y] = 1
             self.grid[grid_height - 1][y] = 1
 
-        self.current_cell: Optional[Tuple[int, int]] = None
+        self.current_cell: tuple[int, int] | None = None
         self.scale = EDITOR_CONFIG["default_scale"]
-        self.adjust: Tuple[float, float] = (0.0, 0.0)
+        self.adjust: tuple[float, float] = (0.0, 0.0)
         self.current_tool = EditorTools.node_editor
         self.mouse_in_grid = False
-        self.mouse_position: Tuple[int, int] = (0, 0)
-        self.real_position: Optional[Tuple[float, float]] = None
+        self.mouse_position: tuple[int, int] = (0, 0)
+        self.real_position: tuple[float, float] | None = None
 
         backend = get_backend()
         self.mouse_b = backend.input.get_mouse_pressed()
-        self.mouseRel: Optional[Tuple[int, int]] = None
+        self.mouseRel: tuple[int, int] | None = None
 
         from ui import VerticalList
 

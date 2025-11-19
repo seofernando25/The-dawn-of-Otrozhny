@@ -45,30 +45,10 @@ def _blit_surface(
     dest: tuple[Coordinate, Coordinate],
 ) -> None:
     """
-    Blit helper that supports both GraphicsSurface instances and raw pygame surfaces.
-    Also handles HudButton objects by extracting their _surface.
+    Blit helper for GraphicsSurface instances.
+    Handles HudButton objects by extracting their _surface.
     """
-    import pygame
-    from core.backend.pygame_backend import PygameGraphicsSurface
-    
-    # Handle HudButton objects by extracting their _surface
-    if hasattr(source, '_surface') and not isinstance(source, PygameGraphicsSurface):
-        # It's likely a HudButton or similar wrapper
-        source = source._surface  # type: ignore[attr-defined]
-    
-    # Handle case where target is a raw pygame.Surface (for backward compatibility)
-    if isinstance(target, pygame.Surface):
-        if isinstance(source, PygameGraphicsSurface):
-            target.blit(source._surface, dest)  # type: ignore[attr-defined]
-        elif isinstance(source, pygame.Surface):
-            target.blit(source, dest)
-        else:
-            raise TypeError(
-                f"Unsupported source surface type {type(source)} for pygame target"
-            )
-        return
-    
-    # Both are GraphicsSurface - use the abstraction
+    # Use the GraphicsSurface abstraction
     target.blit(source, dest)
 
 
@@ -81,7 +61,7 @@ def message_display_L(
     color: ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
-    text_surf, text_rect = text_object(text, font, color)
+    text_surf, _ = text_object(text, font, color)
     # We'll simulate the rect positioning by blitting at adjusted coordinates
     _blit_surface(screen, text_surf, (x, y))
 
@@ -95,7 +75,7 @@ def message_display_R(
     color: ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
-    text_surf, text_rect = text_object(text, font, color)
+    text_surf, _ = text_object(text, font, color)
     # Calculate position for right alignment
     width, _ = font.size(str(text))
     _blit_surface(screen, text_surf, (x - width, y))
@@ -110,7 +90,7 @@ def message_display_MB(
     color: ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
-    text_surf, text_rect = text_object(text, font, color)
+    text_surf, _ = text_object(text, font, color)
     # Calculate position for middle bottom alignment
     width, height = font.size(str(text))
     _blit_surface(screen, text_surf, (x - width // 2, y - height))
@@ -125,7 +105,7 @@ def message_display_MT(
     color: ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
-    text_surf, text_rect = text_object(text, font, color)
+    text_surf, _ = text_object(text, font, color)
     # Calculate position for middle top alignment
     width, _ = font.size(str(text))
     _blit_surface(screen, text_surf, (x - width // 2, y))
@@ -140,7 +120,7 @@ def message_display(
     color: ColorValue = colors.WHITE,
 ) -> None:
     font = _get_font(size)
-    text_surf, text_rect = text_object(text, font, color)
+    text_surf, _ = text_object(text, font, color)
     # Calculate position for center alignment
     width, height = font.size(str(text))
     _blit_surface(screen, text_surf, (x - width // 2, y - height // 2))

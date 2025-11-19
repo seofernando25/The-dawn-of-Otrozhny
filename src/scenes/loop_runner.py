@@ -95,8 +95,6 @@ def run_scene(
         scene_handler.update(delta_time)
 
         screen = backend.graphics.get_display_surface()
-        if screen is None:
-            raise RuntimeError("Display surface is not initialized")
         screen.fill(bg_color)
         scene_handler.draw(screen)
         backend.graphics.flip()
@@ -136,8 +134,6 @@ def run_scene_with_hud(
         scene_handler.update(delta_time)
 
         screen = backend.graphics.get_display_surface()
-        if screen is None:
-            raise RuntimeError("Display surface is not initialized")
         screen.fill(bg_color)
         scene_handler.draw(screen)
 

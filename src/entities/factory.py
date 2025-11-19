@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type
+from typing import Any
 
 from core.context import GameContext
 from entities.base import Entity
@@ -8,7 +8,7 @@ from entities.node import Node
 from entities.player import Player
 
 
-ENTITY_REGISTRY: dict[str, Type[Entity]] = {
+ENTITY_REGISTRY: dict[str, type[Entity]] = {
     "player": Player,
     "enemy": Monster,
     "monster": Monster,
@@ -33,7 +33,7 @@ class EntityFactory:
         entity_type: str,
         position: tuple[float, float],
         *,
-        context: Optional["GameContext"] = None,
+        context: "GameContext | None" = None,
         **kwargs,
     ) -> Entity:
         """Create an entity of the specified type."""
@@ -62,8 +62,8 @@ class EntityFactory:
     def create_from_data(
         entity_data: dict[str, Any],
         *,
-        context: Optional["GameContext"] = None,
-        nodes_by_index: Optional[dict[int, Node]] = None,
+        context: "GameContext | None" = None,
+        nodes_by_index: dict[int, Node] | None = None,
     ) -> Entity:
         """Create an entity from serialized data."""
         entity_type = entity_data["type"]
@@ -80,6 +80,6 @@ class EntityFactory:
         return EntityFactory.create(entity_type, position, context=context, **kwargs)
 
     @staticmethod
-    def register(entity_type: str, entity_class: Type[Entity]) -> None:
+    def register(entity_type: str, entity_class: type[Entity]) -> None:
         """Register a new entity type with the factory."""
         ENTITY_REGISTRY[entity_type.lower()] = entity_class

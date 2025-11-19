@@ -1,7 +1,7 @@
 """HUD screen component."""
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from config import renderer_config
 from core import colors
@@ -132,7 +132,7 @@ class HudScreen:
             )
             for event in events:
                 if event.type == KEYDOWN and event.key is not None:
-                    key = cast(int, event.key)
+                    key = event.key
                     if key == K_LEFT:
                         self.change_selected_button(-1)
 

@@ -20,29 +20,26 @@ class Monster(Enemy):
             player = self._player()
             dist_to_player = math_helpers.distance_to(self.get_pos(), player.get_pos())
             attack_dist = ENEMY_CONFIG["attack_distance"]
-            if isinstance(attack_dist, (int, float)):
-                if (
-                    self.target is player
-                    and dist_to_player < attack_dist
-                    and self.canSeePlayer
-                ):
-                    self.attack(player, dt)
-                if (
-                    self.target is player
-                    and dist_to_player < attack_dist
-                    and not self.canSeePlayer
-                ):
-                    self.look_at(player, dt)
+            if (
+                self.target is player
+                and dist_to_player < attack_dist
+                and self.canSeePlayer
+            ):
+                self.attack(player, dt)
+            if (
+                self.target is player
+                and dist_to_player < attack_dist
+                and not self.canSeePlayer
+            ):
+                self.look_at(player, dt)
         sound_dist = ENEMY_CONFIG["sound_trigger_distance"]
-        if isinstance(sound_dist, (int, float)) and dist_to_player < sound_dist:
+        if dist_to_player < sound_dist:
             enemy_state = self._enemy_state()
             self.play_sound(dist_to_player, enemy_state.status.name)
 
     def play_sound(self, distance, flag, force=False):
         """Play a sound effect with distance-based volume."""
         context = self.requires_context()
-        if context.audio is None:
-            return
 
         volume = math_helpers.translate(
             distance,
@@ -68,11 +65,11 @@ class Monster(Enemy):
         target.health -= dt * DAMAGE_CONFIG["enemy_attack_dps"]
         target.look_at(self, dt)
         angle_range = ENEMY_CONFIG["attack_angle_range"]
-        if isinstance(angle_range, tuple) and len(angle_range) == 2:
+        if len(angle_range) == 2:
             angle_min, angle_max = angle_range
             target.angleY += dt * random.randint(int(angle_min), int(angle_max))
         rot_range = ENEMY_CONFIG["attack_rotation_range"]
-        if isinstance(rot_range, tuple) and len(rot_range) == 2:
+        if len(rot_range) == 2:
             rot_min, rot_max = rot_range
             target.rotate(dt * random.randint(int(rot_min), int(rot_max)))
         player = self._player()

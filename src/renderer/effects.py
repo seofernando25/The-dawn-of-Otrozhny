@@ -36,8 +36,10 @@ class ChaosObject:
         backend = get_backend()
         for x in range(self.updates_before_draw):
             point = self.drawn_points[len(self.drawn_points) - 1 - x]
+            # Ensure point is exactly 2 elements for type safety
+            center: tuple[float, float] = (float(point[0]), float(point[1]))
             backend.graphics.draw_circle(
-                self._surface, self.color, tuple([int(x) for x in point]), 1
+                self._surface, self.color, center, 1
             )
         self.updates_before_draw = 0
         _blit_surface(
