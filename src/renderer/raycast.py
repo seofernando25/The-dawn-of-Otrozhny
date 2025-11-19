@@ -252,8 +252,10 @@ def render_walls(screen, entity):
         if ray is None:
             continue
         wall_distance, _, _, _, table_side = ray
-        if wall_distance == 0:
+        if wall_distance <= 0:
             continue
+        if wall_distance < 0.1:
+            wall_distance = 0.1
         line_height = abs(screen_height / wall_distance)
         ceiling = -line_height + half_height + entity.angleY
         floor = line_height + half_height + entity.angleY
