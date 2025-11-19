@@ -109,7 +109,9 @@ class Agent(SpriteEntity):
         self.health = ENTITY_DEFAULTS["health"]
         self.entitiesInSight: list[tuple[HasPosition, float]] = []
         self.canSeePlayer = False
-        self.rayDistanceTable: dict[str, float] = {}
+        self.rayDistanceTable: list[
+            tuple[float, float, float, int, object] | None
+        ] = []
         self.fov = math.radians(fov)
         self.fov_depth = float(fov_depth)
         self.angleY = 0.0

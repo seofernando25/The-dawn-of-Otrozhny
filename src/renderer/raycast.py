@@ -251,7 +251,7 @@ def render_walls(screen, entity):
     for idx, ray in enumerate(ray_table):
         if ray is None:
             continue
-        wall_distance, _, _, _, table_side = ray
+        wall_distance, dir_x, dir_y, tile_id, table_side = ray
         if wall_distance <= 0:
             continue
         if wall_distance < 0.1:
@@ -259,34 +259,46 @@ def render_walls(screen, entity):
         line_height = abs(screen_height / wall_distance)
         ceiling = -line_height + half_height + entity.angleY
         floor = line_height + half_height + entity.angleY
-        wall_color = _get_wall_color(table_side)
+        hit_x = entity.px + dir_x * wall_distance
+        hit_y = entity.py + dir_y * wall_distance
+        wall_color = _shade_wall_color(
+            _get_wall_color(table_side),
+            tile_id,
+            hit_x,
+            hit_y,
+        )
         draw_commands.append(
             (abs(wall_distance), "wall", idx * thickness, ceiling, floor, wall_color)
         )
 
-    entity.entitiesInSight.sort(key=lambda x: x[1])
     projection_disit = entity.planeX * entity.dirY - entity.dirX * entity.planeY
     if projection_disit != 0:
         inverse_projection_dist = 1 / projection_disit
-        for enemy, _ in entity.entitiesInSight:
-            if not issubclass(type(enemy), SpriteEntity) or enemy == entity:
-                continue
+        level = getattr(getattr(entity, "context", None), "level", None)
+        if level is not None:
+            for sprite in level.grid_entities:
+                if not isinstance(sprite, SpriteEntity) or sprite is entity:
+                    continue
 
-            dx, dy = math_helpers.slope(entity.get_pos(), enemy.get_pos())
-            new_x = inverse_projection_dist * (entity.dirY * dx - entity.dirX * dy)
-            new_y = inverse_projection_dist * (-entity.planeY * dx + entity.planeX * dy)
+                dx, dy = math_helpers.slope(entity.get_pos(), sprite.get_pos())
+                new_x = inverse_projection_dist * (entity.dirY * dx - entity.dirX * dy)
+                new_y = inverse_projection_dist * (-entity.planeY * dx + entity.planeX * dy)
 
-            if abs(new_y) < 0.1:
-                continue
+                if new_y <= 0:
+                    continue
+                if abs(new_y) < 0.1:
+                    new_y = 0.1
 
-            sprite_distance = abs(new_y) - 2
-            line_height = abs(screen_height / new_y)
-            ceiling = -line_height + half_height + entity.angleY
-            floor = line_height + half_height + entity.angleY
-            screen_x = (screen_width / 2) * (1 + new_x / new_y)
-            draw_commands.append(
-                (sprite_distance, "sprite", screen_x, ceiling, floor, enemy)
-            )
+                sprite_distance = abs(new_y)
+                line_height = abs(screen_height / new_y)
+                ceiling = -line_height + half_height + entity.angleY
+                floor = line_height + half_height + entity.angleY
+                screen_x = (screen_width / 2) * (1 + new_x / new_y)
+                if screen_x < -screen_width or screen_x > screen_width * 2:
+                    continue
+                draw_commands.append(
+                    (sprite_distance, "sprite", screen_x, ceiling, floor, sprite)
+                )
 
     draw_commands.sort(key=lambda cmd: cmd[0], reverse=True)
 
@@ -337,3 +349,23 @@ def _get_wall_color(table_side):
     if table_side == WallDirection.WEST:
         wall_color = list(colors.GRAY_VARIATION_4)
     return wall_color
+
+
+def _shade_wall_color(color, tile_id, hit_x, hit_y):
+    """Texture variation based on world hit position."""
+    if tile_id is None:
+        return color
+    tile_id = int(tile_id)
+    tile_x = math.floor(hit_x)
+    tile_y = math.floor(hit_y)
+    frac_x = hit_x - tile_x
+    frac_y = hit_y - tile_y
+
+    base = math.sin((tile_id + tile_x) * 0.52 + frac_x * 1.57)
+    base += math.cos((tile_id + tile_y) * 0.37 + frac_y * 1.57)
+    variation = int(base * 2) 
+    shaded = []
+    for channel in color:
+        value = max(0, min(255, channel + variation))
+        shaded.append(value)
+    return shaded

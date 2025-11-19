@@ -1,9 +1,12 @@
 from collections.abc import Sequence
 from typing import cast
+
 import pygame
+
 from config import renderer_config
-from utils import math_helpers
 from core import colors
+from core.game_state import GameState
+from utils import math_helpers
 from ui.button import HudButton
 from ui.helpers import resolve_screen
 
@@ -52,10 +55,9 @@ class MapSelectionScreen(pygame.Surface):
 
     def update(
         self,
-        dt: float,
+        delta_time: float,
         events: Sequence[pygame.event.Event],
-        screen: pygame.Surface | None = None,
-    ) -> None:
+    ) -> GameState | int | None:
         """Update the map selection screen state."""
         pos = (
             100
@@ -65,8 +67,8 @@ class MapSelectionScreen(pygame.Surface):
             + self.selected_button_y * 100
             + self.selected_button_y * renderer_config.HUD_CELL_OFFSET,
         )
-        self._pointer_x = math_helpers.lerp(self._pointer_x, pos[0], dt * 10)
-        self._pointer_y = math_helpers.lerp(self._pointer_y, pos[1], dt * 10)
+        self._pointer_x = math_helpers.lerp(self._pointer_x, pos[0], delta_time * 10)
+        self._pointer_y = math_helpers.lerp(self._pointer_y, pos[1], delta_time * 10)
 
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -79,7 +81,8 @@ class MapSelectionScreen(pygame.Surface):
                     self.change_selected_button(-1, False)
                 elif key == pygame.K_DOWN:
                     self.change_selected_button(1, False)
-        self.draw(screen)
+        self.draw()
+        return None
 
     def change_selected_button(self, amount: int, change_x: bool = True) -> None:
         """Change the currently selected button in the grid."""
