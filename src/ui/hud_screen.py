@@ -51,7 +51,6 @@ class HudScreen:
         self.dynamic: bool = dynamic
         self.selected_button: int = 0
         self.cursorX: float = float(self.selected_button)
-        # Should have created an event handler class :/
         self.onChangedButton: list[Callable[[], None]] = []
 
     def set_button_color(

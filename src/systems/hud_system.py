@@ -18,7 +18,6 @@ class HudSystem:
 
     def __init__(self, context: GameContext):
         self.context: GameContext = context
-        # Get UI sound from audio manager for button activation sounds
         from ui.audio_helpers import get_ui_activation_sound
 
         activated_sound = get_ui_activation_sound(context.audio)
@@ -35,8 +34,6 @@ class HudSystem:
         }
         self._initialize_hud()
 
-        # Cache minimap surface reference for cleaner access
-        # The last HUD button is used for the minimap
         self._minimap_surface: HudButton = self.hud.hud_buttons[-1]
 
     def _initialize_hud(self):
@@ -47,7 +44,6 @@ class HudSystem:
         self.hud.set_button_title(2, "Keys")
         self.hud.set_button_title(3, "Status")
 
-        # Allow Loop to control hud button surface draw calls
         self.hud.hud_buttons[-1].protected = False
 
     def update(
@@ -75,7 +71,6 @@ class HudSystem:
             return None
         enemy_state = enemy_state_obj
 
-        # Update HUD values with caching
         self._update_keys(player.keys)
         self._update_enemy_status(enemy_state.status, enemy_state.status_time_left)
         self._update_collectibles(

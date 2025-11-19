@@ -1,5 +1,3 @@
-# Script used mainly to draw "otherEffects.py" on the screen
-# eg: main menu's Sierpinski triangle
 import random
 
 from core import colors
@@ -9,9 +7,6 @@ from utils import math_helpers
 from core.backend.api import GraphicsSurface
 
 
-# The concept for this class was taken from
-# this numberphile video
-# https://www.youtube.com/watch?v=kbKtFN71Lfs
 class ChaosObject:
     def __init__(self, center: tuple[int, int], size: int, n_sides: int) -> None:
         backend = get_backend()
@@ -32,7 +27,6 @@ class ChaosObject:
         backend = get_backend()
         for x in range(self.updates_before_draw):
             point = self.drawn_points[len(self.drawn_points) - 1 - x]
-            # Ensure point is exactly 2 elements for type safety
             center: tuple[float, float] = (float(point[0]), float(point[1]))
             backend.graphics.draw_circle(self._surface, self.color, center, 1)
         self.updates_before_draw = 0

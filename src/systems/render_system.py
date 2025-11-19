@@ -19,7 +19,6 @@ class RenderSystem:
 
     def render_frame(self, clock: Clock) -> None:
         """Render a complete frame including first-person view and debug info."""
-        # Screen should always be set in context, but fallback for safety
         screen = self.context.screen
         if screen is None:
             screen = get_screen()
@@ -31,7 +30,6 @@ class RenderSystem:
             return
         player = player_obj
 
-        # Render first-person view
         view_port = render_first_person_canvas(
             player, canvas=self._first_person_surface
         )
@@ -41,7 +39,6 @@ class RenderSystem:
             (renderer_config.VIEWPORT_X_OFFSET, renderer_config.VIEWPORT_Y_OFFSET),
         )
 
-        # Render debug info
         message_display_L(screen, f"FPS: {int(clock.get_fps())}", 15, 10, 15)
         message_display_MT(
             screen,

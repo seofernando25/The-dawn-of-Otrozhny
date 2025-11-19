@@ -187,7 +187,6 @@ class SpriteAgent(Agent):
         backend = get_backend()
         angle = math.atan2(self.dirY, self.dirX)
         if not hasattr(camObj, "get_pos"):
-            # Return empty transparent surface
             empty_surface = backend.graphics.create_surface((0, 0))
             return empty_surface
         camera_provider = cast(HasPosition, camObj)
@@ -199,7 +198,6 @@ class SpriteAgent(Agent):
 
         curr = assets.get_sprite(self.agent_pack_name, 0)
         if curr is None:
-            # Return empty transparent surface
             empty_surface = backend.graphics.create_surface((0, 0))
             return empty_surface
         if math.degrees(angleCamDelta) < 180:

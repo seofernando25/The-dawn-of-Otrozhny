@@ -23,12 +23,10 @@ class InputSystem:
         delta_time: float,
     ) -> GameState | None:
         """Process all input and return a GameState if input requests a state change."""
-        # Process game-level input first
         game_state = self._process_game_input(events, keys_pressed)
         if game_state is not None:
             return game_state
 
-        # Process player input if player exists
         if self.context.player is not None:
             self._process_player_input(events, keys_pressed, delta_time)
 
@@ -50,11 +48,9 @@ class InputSystem:
         """Process game-level input like quit and menu."""
         from core.backend.api import K_q, QUIT
 
-        # Check for quit to menu (holding Q)
         if self._is_key_pressed(keys_pressed, K_q):
             return GameState.Menu
 
-        # Check for window close
         for event in events:
             if hasattr(event, "type") and event.type == QUIT:
                 return GameState.Quit
@@ -88,17 +84,14 @@ class InputSystem:
 
         backend = get_backend()
 
-        # Handle ESC key for mouse toggle
         for event in events:
             if hasattr(event, "type") and event.type == KEYDOWN:
                 if hasattr(event, "key") and event.key == K_ESCAPE:
                     self._toggle_mouse_look(player)
 
-        # Update mouse visibility and grab state
         backend.input.set_mouse_visible(not player.mouseEnable)
         backend.input.set_event_grab(player.mouseEnable)
 
-        # Get screen size for mouse calculations
         screen_surface = self.context.screen
         if screen_surface is not None:
             screen_size = screen_surface.get_size()
@@ -109,16 +102,13 @@ class InputSystem:
         screen_center_x = screen_width // 2
         screen_center_y = screen_height // 2
 
-        # Handle mouse look if enabled
         if player.mouseEnable:
             mouse_pos = backend.input.get_mouse_pos()
             mouse_delta_x = mouse_pos[0] - screen_center_x
             mouse_delta_y = mouse_pos[1] - screen_center_y
 
-            # Reset mouse to center
             backend.input.set_mouse_pos((screen_center_x, screen_center_y))
 
-            # Apply mouse look rotation
             movement.apply_mouse_look(
                 player,
                 delta_time,
@@ -128,7 +118,6 @@ class InputSystem:
                 screen_center_y,
             )
         else:
-            # Handle keyboard rotation when mouse look is disabled
             movement.apply_keyboard_rotation(
                 player,
                 delta_time,
@@ -138,7 +127,6 @@ class InputSystem:
                 pitch_down=self._is_key_pressed(keys_pressed, K_DOWN),
             )
 
-        # Calculate movement vector from keyboard input
         newPx, newPy = movement.calculate_movement_vector(
             player,
             delta_time,
@@ -148,7 +136,6 @@ class InputSystem:
             move_right=self._is_key_pressed(keys_pressed, K_d),
         )
 
-        # Apply movement to player
         player.move(newPx, newPy, delta_time)
 
     def _toggle_mouse_look(self, player: Player) -> None:
@@ -156,7 +143,6 @@ class InputSystem:
         player.mouseEnable = not player.mouseEnable
 
         backend = get_backend()
-        # Reset mouse to center when toggling
         screen_surface = self.context.screen
         if screen_surface is not None:
             screen_size = screen_surface.get_size()

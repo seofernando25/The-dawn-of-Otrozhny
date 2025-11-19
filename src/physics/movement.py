@@ -41,7 +41,6 @@ def calculate_movement_vector(
     newPy = 0.0
     angle = math.atan2(-entity.dirY, entity.dirX)
 
-    # Movement input
     if move_right:
         newPx -= math.sin(angle) * 2 * dt
         newPy -= math.cos(angle) * 2 * dt
@@ -75,7 +74,6 @@ def apply_mouse_look(
     entity.rotate(-entity.cameraYawSens * 0.05 * dt * mouse_delta_x)
     entity.angleY -= 0.05 * dt * entity.cameraPitchSens * mouse_delta_y
 
-    # Clamp vertical angle
     entity.angleY = math_helpers.clamp(
         entity.angleY,
         -renderer_config.VIEWPORT_HEIGHT,
@@ -104,7 +102,6 @@ def apply_keyboard_rotation(
     if pitch_down:
         entity.angleY -= entity.cameraPitchSens * dt
 
-    # Clamp vertical angle
     entity.angleY = math_helpers.clamp(
         entity.angleY,
         -renderer_config.VIEWPORT_HEIGHT,
@@ -127,7 +124,6 @@ def move_to_target(
     targetDistance = math.hypot(dx, dy)
 
     if targetDistance > 0.5:
-        # Normalize direction and scale by move speed
         move_distance = entity.moveSpeed * dt
         norm_dx = dx / targetDistance * move_distance
         norm_dy = dy / targetDistance * move_distance
@@ -151,17 +147,12 @@ def look_at(
     dx, dy = math_helpers.slope(entity.get_pos(), target_pos)
     target_angle = math.atan2(dy, dx)
 
-    # Get current entity angle from direction vector
     current_angle = math.atan2(entity.dirY, entity.dirX)
-
-    # Calculate shortest rotation direction
     angle_diff = target_angle - current_angle
     angle_diff = (angle_diff + math.pi) % (2 * math.pi) - math.pi
 
-    # Apply rotation
     speed = turn_speed if turn_speed is not None else entity.cameraYawSens * dt * 2
     if abs(angle_diff) < speed:
-        # Rotate to exact target angle
         entity.rotate(angle_diff)
     else:
         entity.rotate(math.copysign(speed, angle_diff))

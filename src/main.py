@@ -84,11 +84,7 @@ def main_loop():
 
         if state == GameState.Edit:
             while state == GameState.Edit:
-                # We need to pass the actual pygame clock for editorLoop as it's expecting pygame specific object
-                # Let's handle this differently - first let's just pass None for now and handle the editor later
-                state = levelEditor.editorLoop(
-                    clock, audio
-                )  # This might need special handling
+                state = levelEditor.editorLoop(clock, audio)
             ensure_music("Menu")
             if state == GameState.Quit:
                 done = True

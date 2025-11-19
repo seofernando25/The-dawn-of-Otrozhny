@@ -1,4 +1,3 @@
-# Functions to draw text on the screen
 import os
 from typing import TypeAlias
 
@@ -13,7 +12,6 @@ DEFAULT_FONT_SIZE = 8
 
 
 font_cache: dict[int, "Font"] = {}
-# Get the src directory (parent of renderer)
 dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 FONT_NAME = "ff.ttf"
 FONT_PATH = os.path.join(dir_path, "assets", "fonts", FONT_NAME)
@@ -23,9 +21,8 @@ def text_object(
     text: str, font: "Font", color: colors.ColorValue = colors.WHITE
 ) -> tuple[
     "GraphicsSurface", tuple[tuple[int, int], tuple[int, int]]
-]:  # Returns (surface, rect)
+]:
     text_surface = font.render(str(text), True, color)
-    # Since we can't easily get the rect from our abstract surface, we'll make a simple rect
     width, height = font.size(str(text))
     return text_surface, ((0, 0), (width, height))
 
@@ -46,7 +43,6 @@ def blit_surface(
     Blit helper for GraphicsSurface instances.
     Handles HudButton objects by extracting their surface.
     """
-    # Use the GraphicsSurface abstraction
     target.blit(source, dest)
 
 
@@ -60,7 +56,6 @@ def message_display_L(
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
-    # We'll simulate the rect positioning by blitting at adjusted coordinates
     blit_surface(screen, text_surf, (x, y))
 
 
@@ -74,7 +69,6 @@ def message_display_MB(
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
-    # Calculate position for middle bottom alignment
     width, height = font.size(str(text))
     blit_surface(screen, text_surf, (x - width // 2, y - height))
 
@@ -89,7 +83,6 @@ def message_display_MT(
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
-    # Calculate position for middle top alignment
     width, _ = font.size(str(text))
     blit_surface(screen, text_surf, (x - width // 2, y))
 
@@ -104,7 +97,6 @@ def message_display(
 ) -> None:
     font = _get_font(size)
     text_surf, _ = text_object(text, font, color)
-    # Calculate position for center alignment
     width, height = font.size(str(text))
     blit_surface(screen, text_surf, (x - width // 2, y - height // 2))
 

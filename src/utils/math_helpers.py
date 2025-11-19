@@ -35,10 +35,6 @@ def translate(
     return value * scale + offset
 
 
-# y2 - y1 over
-# x2 - x1
-
-
 def slope(
     aCoord: tuple[float, float], bCoord: tuple[float, float]
 ) -> tuple[float, float]:
@@ -50,9 +46,6 @@ def slope(
 def distance_to(aCoord: tuple[float, float], bCoord: tuple[float, float]) -> float:
     dx, dy = slope(aCoord, bCoord)
     return math.hypot(dx, dy)
-
-
-# Wraps angle to 360 deg
 
 
 def fixed_angle(angle: float) -> float:
@@ -76,9 +69,6 @@ def project(
     b = dy * math.sin(proportional_angle / 2)
     projected = a + b
     return projected
-
-
-# Simple math function to create polygons
 
 
 def points_from_polygon_sides(

@@ -16,7 +16,6 @@ def render_floor(screen: "GraphicsSurface", entity: "Agent") -> None:
     floor_start = max(0, min(screen_height, floor_start))
     if floor_start >= screen_height:
         return
-    # Draw a filled rectangle for the floor
     backend.graphics.draw_rect(
         screen,
         colors.DARK_GRAY,
