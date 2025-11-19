@@ -1,7 +1,6 @@
 # Script used mainly to draw "otherEffects.py" on the screen
 # eg: main menu's Sierpinski triangle
 import random
-from typing import override
 
 from core import colors
 from core.backend import get_backend
@@ -24,7 +23,6 @@ class ChaosObject:
         self.color: tuple[int, int, int] = colors.WHITE
         self.surface_size: int = size
         self.center: tuple[int, int] = center
-        self.n_of_itterations: int = 0
         self.drawn_points: list[tuple[float, float]] = []
         self.current_point: tuple[float, float] = self.points[0]
         self.drawn_points.append(self.current_point)
@@ -49,31 +47,11 @@ class ChaosObject:
 
     def update(self) -> None:
         self.updates_before_draw += 1
-        self.n_of_itterations += 1
         rand_pos = random.randint(0, len(self.points) - 1)
         newPx = math_helpers.lerp(self.current_point[0], self.points[rand_pos][0], 0.5)
         newPy = math_helpers.lerp(self.current_point[1], self.points[rand_pos][1], 0.5)
         self.current_point = (newPx, newPy)
         self.drawn_points.append(self.current_point)
-
-
-class ChaosSnowFlake(ChaosObject):
-    def __init__(self, center: tuple[int, int], size: int) -> None:
-        super().__init__(center, size, 5)
-        self.previous: int | None = None
-        self.current_point: tuple[float, float] = self.points[0]
-
-    @override
-    def update(self) -> None:
-        rand_pos = random.randint(0, len(self.points) - 1)
-        while rand_pos == self.previous:
-            rand_pos = random.randint(0, len(self.points) - 1)
-
-        newPx = math_helpers.lerp(self.current_point[0], self.points[rand_pos][0], 0.5)
-        newPy = math_helpers.lerp(self.current_point[1], self.points[rand_pos][1], 0.5)
-        self.current_point = (newPx, newPy)
-        self.drawn_points.append(self.current_point)
-        self.previous = rand_pos
 
 
 class StarField:

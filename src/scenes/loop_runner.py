@@ -43,29 +43,6 @@ class SceneHandler(Protocol):
         ...
 
 
-class SimpleSceneHandler:
-    """Base class for simple scenes that just handle quit events."""
-
-    def handle_events(self, events: list[Event], keys_pressed: Sequence[bool]) -> bool:
-        """Handle basic quit events and return True if should quit."""
-        _ = keys_pressed
-        from core.backend.api import QUIT, KEYDOWN
-        from core.backend.api import K_q
-
-        for event in events:
-            if event.type == QUIT:
-                return True
-            elif event.type == KEYDOWN and event.key is not None:
-                if event.key == K_q:
-                    return True
-        return False
-
-    def update(self, delta_time: float) -> None:
-        """Default empty update method."""
-        _ = delta_time
-        pass
-
-
 def run_scene(
     scene_handler: SceneHandler,
     clock: Clock | None = None,

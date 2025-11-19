@@ -120,7 +120,6 @@ class AudioManager:
 
     def __init__(self):
         self._channels: dict[str, "Channel"] = {}
-        self._active_ui_sound: Sound | None = None
         self._mixer_state: _MixerState = _MixerState()
         self._music_channel: Channel | None = None
         result = self._mixer_state.ensure_initialized()
@@ -170,23 +169,6 @@ class AudioManager:
         except Exception as e:
             LOGGER.error(f"Failed to play music {pack}/{music_id}: {e}")
             return None
-
-    def set_ui_sound(self, ui_sound_id: str, pack: str = "music"):
-        """Cache the UI sound effect that will be played by play_ui_sound."""
-        self._active_ui_sound = assets.get_cached_audio(pack, ui_sound_id)
-
-    def play_ui_sound(self) -> "Channel | None":
-        """Play the previously configured UI sound effect and return its channel if any."""
-        if self._active_ui_sound is None:
-            return None
-
-        return play_sound_low_level(self._active_ui_sound, force=True)
-
-    def stop_sound(self, sound_id: str):
-        """Stop the channel currently associated with the given sound identifier."""
-        channel = self._channels.get(sound_id)
-        if channel:
-            channel.stop()
 
     def stop_music(self):
         """Stop background music."""

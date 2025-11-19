@@ -7,8 +7,6 @@ class Node(Entity):
 
     def __init__(self, start_pos, *, context=None):
         super().__init__(start_pos, context=context)
-        self.behaviour = None
-        self.destination_point = 0
         self.nodes = []
 
     def join_node(self, nextNode):

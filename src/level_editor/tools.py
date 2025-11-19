@@ -108,24 +108,6 @@ class PlaceTool(BaseTool):
         self.name = "Draw Mode"
         self.object_to_place = None
         self.current_type_index = 0
-        self.entity_types = [
-            "Player",
-            "Enemy",
-            "Node",
-            "Wall",
-            "Collectible",
-            "Key",
-            "Gate",
-        ]
-        self.entity_classes = [
-            None,
-            None,
-            Node,
-            None,
-            None,
-            None,
-            None,
-        ]  # Will be imported
 
     @override
     def update(self, events, keys, delta_time, grid_manager):

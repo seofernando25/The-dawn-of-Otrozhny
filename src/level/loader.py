@@ -60,11 +60,6 @@ def list_maps():
     return [(str(path), path.stem) for path in maps_dir.glob("*.json")]
 
 
-def get_files_paths_from_folder(folder, *folders):
-    files = list_asset_files(folder, *folders)
-    return files or None
-
-
 def _entity_to_data(
     entity: Entity, all_entities: list[Entity]
 ) -> PlayerData | CollectibleData | KeyData | GateData | NodeData | EnemyData:

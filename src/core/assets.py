@@ -1,6 +1,5 @@
 import logging
 import random
-from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
 from core.backend.api import GraphicsSurface, Sound
@@ -25,14 +24,6 @@ def list_asset_files(*parts: str) -> list[str]:
         LOGGER.warning("Asset directory missing: %s", target)
         return []
     return sorted(str(p) for p in target.iterdir() if p.is_file())
-
-
-def iter_asset_files(*parts: str) -> Iterable[Path]:
-    target = ASSETS_DIR.joinpath(*parts)
-    if not target.exists():
-        LOGGER.warning("Asset directory missing: %s", target)
-        return []
-    return (p for p in sorted(target.iterdir()) if p.is_file())
 
 
 @lru_cache(maxsize=256)

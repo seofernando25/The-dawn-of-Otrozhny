@@ -1,6 +1,6 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from importlib import import_module
-from typing import Any, Protocol, runtime_checkable
+from typing import Any
 
 from core.audio import AudioManager
 from core.backend import get_backend
@@ -27,23 +27,12 @@ def get_screen():
     return screen
 
 
-@runtime_checkable
-class SupportsClose(Protocol):
-    """Subset of objects that expose ``quit`` or ``close``."""
-
-    def quit(self) -> None: ...
-
-
 @dataclass
 class BaseContext:
     """Base container for shared services."""
 
     screen: "GraphicsSurface | None"
     audio: "AudioManager"
-
-    def with_override(self, **kwargs: object) -> "BaseContext":
-        """Return a shallow copy with the provided overrides."""
-        return replace(self, **kwargs)
 
 
 @dataclass

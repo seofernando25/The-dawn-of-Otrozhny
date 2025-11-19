@@ -28,7 +28,6 @@ class Enemy(SpriteAgent):
         self.pathFindingComplete = False
         self._base_fov = self.fov
         self._base_fov_depth = self.fov_depth
-        self.lastPathFindingPoint = None
         self.cameraYawSens = ENEMY_CONFIG["camera_yaw_sensitivity"]
 
     def _enemy_state(self):
@@ -131,7 +130,6 @@ class Enemy(SpriteAgent):
             self.target = target
             x, y = target.get_pos()
             my_pos = (int(self.px), int(self.py))
-            self.lastPathFindingPoint = target.get_pos()
             self.pathFindingComplete = False
             self.pathFindingNodesTarget = target
             current_map = self._current_map()
@@ -164,6 +162,3 @@ class Enemy(SpriteAgent):
                 return True
         return False
 
-    def change_enemy_status(self, status):
-        """Change the shared enemy status. Requires context to be set."""
-        self._enemy_state().change_status(status)

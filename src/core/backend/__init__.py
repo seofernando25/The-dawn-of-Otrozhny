@@ -23,16 +23,6 @@ def get_backend() -> Backend:
     return _backend
 
 
-def get_graphics() -> GraphicsSurface:
-    """Get the main graphics surface."""
-    return get_backend().graphics.get_display_surface()
-
-
-def get_input() -> InputBackend:
-    """Get the input backend."""
-    return get_backend().input
-
-
 def get_audio() -> AudioBackend:
     """Get the audio backend."""
     return get_backend().audio

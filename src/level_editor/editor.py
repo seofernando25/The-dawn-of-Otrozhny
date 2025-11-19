@@ -26,13 +26,6 @@ class EditorTools(enum.Enum):
     drawing_mode = 1
     wall_editor = 2
     options = 3
-    save_load = 4
-
-
-class PencilType:
-    player = 0
-    enemy = 1
-    node = 2
 
 
 class GridManager:
@@ -54,12 +47,9 @@ class GridManager:
         self.scale = EDITOR_CONFIG["default_scale"]
         self.adjust: tuple[float, float] = (0.0, 0.0)
         self.current_tool = EditorTools.node_editor
-        self.mouse_in_grid = False
         self.mouse_position: tuple[int, int] = (0, 0)
-        self.real_position: tuple[float, float] | None = None
 
         backend = get_backend()
-        self.mouse_b = backend.input.get_mouse_pressed()
         self.mouseRel: tuple[int, int] | None = None
 
         from ui import VerticalList
@@ -140,7 +130,6 @@ class GridManager:
 
     def update_mouse_position(self):
         backend = get_backend()
-        self.mouse_b = backend.input.get_mouse_pressed()
         self.mouseRel = backend.input.get_mouse_rel()
 
         self.mouse_position = backend.input.get_mouse_pos()
@@ -156,11 +145,8 @@ class GridManager:
             or cellY >= len(self.grid)
         ):
             self.current_cell = None
-            self.mouse_in_grid = False
         else:
             self.current_cell = (round(cellX), round(cellY))
-            self.real_position = (cellX, cellY)
-            self.mouse_in_grid = True
 
     def draw(self, screen: "GraphicsSurface"):
         backend = get_backend()

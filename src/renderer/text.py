@@ -64,21 +64,6 @@ def message_display_L(
     blit_surface(screen, text_surf, (x, y))
 
 
-def message_display_R(
-    screen: SurfaceLike,
-    text: str,
-    x: colors.Coordinate,
-    y: colors.Coordinate,
-    size: int = DEFAULT_FONT_SIZE,
-    color: colors.ColorValue = colors.WHITE,
-) -> None:
-    font = _get_font(size)
-    text_surf, _ = text_object(text, font, color)
-    # Calculate position for right alignment
-    width, _ = font.size(str(text))
-    blit_surface(screen, text_surf, (x - width, y))
-
-
 def message_display_MB(
     screen: SurfaceLike,
     text: str,

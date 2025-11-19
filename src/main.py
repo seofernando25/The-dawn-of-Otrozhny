@@ -22,8 +22,6 @@ def pre_close():
 
 def pre_init(audio: AudioManager):
     """Pre-load audio assets and UI sounds."""
-    # Set up UI sound for buttons (used throughout the application)
-    _ = audio.set_ui_sound("Active_UI", "music")
     # Pre-load music tracks to avoid loading delays during gameplay
     _ = assets.get_cached_audio("music", "Menu")
     _ = assets.get_cached_audio("music", "Game")

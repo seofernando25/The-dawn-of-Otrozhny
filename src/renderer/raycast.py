@@ -79,7 +79,6 @@ def generate_distance_table(entity: "Agent") -> None:
 
     active = np.ones(degrees, dtype=bool)
     hit_mask = np.zeros(degrees, dtype=bool)
-    miss_mask = np.zeros(degrees, dtype=bool)
     last_side = np.zeros(degrees, dtype=np.int8)
     steps = np.zeros(degrees, dtype=np.int16)
 
@@ -108,11 +107,9 @@ def generate_distance_table(entity: "Agent") -> None:
         out_of_bounds = active & (
             (map_x < 0) | (map_x >= level_width) | (map_y < 0) | (map_y >= level_height)
         )
-        miss_mask |= out_of_bounds
         active &= ~out_of_bounds
 
         depth_exceeded = active & (steps >= fov_depth)
-        miss_mask |= depth_exceeded
         active &= ~depth_exceeded
 
         if not active.any():
@@ -157,8 +154,6 @@ def generate_distance_table(entity: "Agent") -> None:
                 WallDirection.NORTH.value,
             ),
         )
-
-    miss_mask |= active
 
     ray_table = []
     for idx in range(degrees):

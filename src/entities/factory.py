@@ -79,7 +79,3 @@ class EntityFactory:
 
         return EntityFactory.create(entity_type, position, context=context, **kwargs)
 
-    @staticmethod
-    def register(entity_type: str, entity_class: type[Entity]) -> None:
-        """Register a new entity type with the factory."""
-        ENTITY_REGISTRY[entity_type.lower()] = entity_class

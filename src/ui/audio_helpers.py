@@ -11,7 +11,6 @@ def get_ui_activation_sound(
     if audio_manager is None:
         return None
 
-    audio_manager.set_ui_sound("Active_UI", "music")
     # Get the file path and load it using the backend abstraction
     filenames = assets.list_asset_files("music", "Active_UI")
     if not filenames:

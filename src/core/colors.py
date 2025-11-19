@@ -9,17 +9,12 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
-TRANSPARENT = (0, 0, 0, 0)
-
 # Color Mixture
-DIM_RED = (200, 0, 0)
 YELLOW = (255, 255, 0)
 YELLOW_WHITE = (255, 255, 144)
 NAVY_BLUE = (0, 0, 144)
-BRIGHT_BLUE = (100, 100, 255)
 ACCENTUADED_BLUE = (25, 25, 255)
 PINK = (255, 0, 255)
-CYAN = (0, 255, 255)
 MAROON = (128, 0, 0)
 GRAY = (144, 144, 144)
 DARK_GRAY = (100, 100, 100)
@@ -43,26 +38,8 @@ def truncate_color(color: list[int] | tuple[int, ...]) -> list[int]:
     return new_color
 
 
-def divide(color: list[int] | tuple[int, ...], n: int | float) -> list[int]:
-    new_color: list[int] = []
-    for index in range(len(color)):
-        new_color.append(int(color[index] / n))
-    return truncate_color(new_color)
-
-
 def multiply(color: list[int] | tuple[int, ...], n: int | float) -> list[int]:
     new_color: list[int] = []
     for index in range(len(color)):
         new_color.append(int(color[index] * n))
-    return truncate_color(new_color)
-
-
-def lerp_color(
-    color1: list[int] | tuple[int, ...], color2: list[int] | tuple[int, ...], t: float
-) -> list[int]:
-    from utils import math_helpers
-
-    new_color: list[int] = []
-    for index in range(len(color1)):
-        new_color.append(int(math_helpers.lerp(int(color1[index]), color2[index], t)))
     return truncate_color(new_color)
