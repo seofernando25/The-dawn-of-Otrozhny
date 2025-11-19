@@ -1,11 +1,8 @@
-from __future__ import annotations
-
 import logging
 import random
 from functools import lru_cache
 from pathlib import Path
 from typing import Iterable, List, Sequence
-
 import pygame
 
 LOGGER = logging.getLogger(__name__)

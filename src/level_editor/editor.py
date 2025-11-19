@@ -310,7 +310,7 @@ def editorLoop(clock, audio_manager):
 
 
 if __name__ == "__main__":
-    from audio_manager import AudioManager
+    from core.audio import AudioManager
     
     pygame.init()
     audio = AudioManager()

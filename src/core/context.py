@@ -1,18 +1,14 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, replace
-from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
-
+from typing import Optional, Protocol, runtime_checkable, TYPE_CHECKING
 import pygame
 from config import renderer_config
+from core.audio import AudioManager
+from entities.enemy_state import EnemyStateManager
+from entities.player import Player
+from level.level import Level
 
-if TYPE_CHECKING:  # typing-only imports
-    from audio_manager import AudioManager
-    from entities.player import Player
-    from level.level import Level
+if TYPE_CHECKING:
     from level_editor.editor import GridManager
-    from entities.enemy_state import EnemyStateManager
-
 
 def get_screen() -> pygame.Surface:
     """Get or create the main pygame screen surface."""
@@ -62,7 +58,6 @@ class GameContext(BaseContext):
     def ensure_enemy_state(self) -> "EnemyStateManager":
         """Get or create the enemy state manager."""
         if self.enemy_state is None:
-            from entities.enemy_state import EnemyStateManager
             self.enemy_state = EnemyStateManager()
         return self.enemy_state
 
@@ -89,8 +84,6 @@ def build_game_context(
     enemy_state: Optional["EnemyStateManager"] = None,
 ) -> GameContext:
     """Create a GameContext with required dependencies."""
-    from entities.enemy_state import EnemyStateManager
-
     if player is None:
         raise ValueError("player is required for GameContext")
     if audio_manager_service is None:

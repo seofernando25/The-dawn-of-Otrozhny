@@ -1,13 +1,9 @@
 import math
-from typing import TYPE_CHECKING
-from utils import math_helpers
-from physics import pathfinding
 from config import ENEMY_CONFIG
-from .base import Entity, EnemyStatus, SpriteAgent
+from physics import pathfinding
 from renderer.raycast import generate_distance_table
-
-if TYPE_CHECKING:
-    pass
+from utils import math_helpers
+from .base import Entity, EnemyStatus, SpriteAgent
 
 
 class Enemy(SpriteAgent):

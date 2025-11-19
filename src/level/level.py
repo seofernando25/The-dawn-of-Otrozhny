@@ -1,16 +1,12 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, List, Optional, Sequence
-
+from typing import List, Optional, Sequence, TYPE_CHECKING
 import numpy as np
-
+from entities.base import Entity
 from entities.items import Collectible
+from entities.node import Node
 from entities.player import Player
 
 if TYPE_CHECKING:
     from core.context import GameContext
-    from entities.base import Entity
-    from entities.node import Node
 
 
 class Level:

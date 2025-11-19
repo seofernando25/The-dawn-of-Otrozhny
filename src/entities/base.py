@@ -1,17 +1,12 @@
 import enum
 import math
-from typing import Optional, TYPE_CHECKING
-
+from typing import Optional
 import pygame
 
-from core import assets, colors
-from utils import math_helpers
 from config import ENTITY_DEFAULTS
+from core import assets, colors
 from physics import movement
-
-if TYPE_CHECKING:
-    from core.context import GameContext
-
+from utils import math_helpers
 
 class Entity:
     """

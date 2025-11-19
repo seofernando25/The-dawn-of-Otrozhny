@@ -1,14 +1,4 @@
-"""Enemy state manager for shared enemy status across all enemies.
-
-This manager handles the global alert system where all enemies share
-the same status state. This is by design - when one enemy detects the
-player, all enemies become alert.
-"""
-
-from __future__ import annotations
-
 from dataclasses import dataclass
-
 from entities.base import EnemyStatus
 
 

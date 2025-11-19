@@ -1,12 +1,10 @@
-from typing import Optional, Tuple, Dict, Type, TYPE_CHECKING
+from typing import Dict, Optional, Tuple, Type
+from core.context import GameContext
 from entities.base import Entity
-from entities.player import Player
+from entities.items import Collectible, Gate, Key
 from entities.monster import Monster
 from entities.node import Node
-from entities.items import Collectible, Key, Gate
-
-if TYPE_CHECKING:
-    from core.context import GameContext
+from entities.player import Player
 
 
 ENTITY_REGISTRY: Dict[str, Type[Entity]] = {
