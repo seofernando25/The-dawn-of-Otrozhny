@@ -15,18 +15,8 @@ def clamp(n: float, minn: float, maxn: float) -> float:
     return max(min(maxn, n), minn)
 
 
-# Linear interpolation
-# Sauce: https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
-
-
 def lerp(v0: float, v1: float, t: float) -> float:
     return (1 - t) * v0 + t * v1
-
-
-# Scales one number to another
-
-
-_TRANSLATE_CACHE: dict[tuple[float, float, float, float], tuple[float, float]] = {}
 
 
 def translate(
@@ -36,19 +26,12 @@ def translate(
     final_min: float,
     final_max: float,
 ) -> float:
-    key = (value_min, value_max, final_min, final_max)
-    cached = _TRANSLATE_CACHE.get(key)
-    if cached is None:
-        left_length = value_max - value_min
-        if left_length == 0:
-            scale = 0.0
-            offset = final_min
-        else:
-            scale = (final_max - final_min) / left_length
-            offset = final_min - value_min * scale
-        cached = (scale, offset)
-        _TRANSLATE_CACHE[key] = cached
-    scale, offset = cached
+    """Map a value from one range to another (linear interpolation)."""
+    left_length = value_max - value_min
+    if left_length == 0:
+        return final_min
+    scale = (final_max - final_min) / left_length
+    offset = final_min - value_min * scale
     return value * scale + offset
 
 
