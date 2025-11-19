@@ -1,93 +1,104 @@
 # Functions to draw text on the screen
-from core import colors
 import os
 import pygame
+from core import colors
 
 DEFAULT_FONT_SIZE = 8
 
-font_cache = {}
+ColorValue = tuple[int, int, int] | list[int] | str
+Coordinate = float
+
+font_cache: dict[int, pygame.font.Font] = {}
 # Get the src directory (parent of renderer)
 dir_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 FONT_NAME = "ff.ttf"
 FONT_PATH = os.path.join(dir_path, "assets", "fonts", FONT_NAME)
 
 
-def text_object(text, font, color=colors.WHITE):
+def text_object(
+    text: str, font: pygame.font.Font, color: ColorValue = colors.WHITE
+) -> tuple[pygame.Surface, pygame.Rect]:
     text_surface = font.render(str(text), True, color)
     return text_surface, text_surface.get_rect()
 
 
-def message_display_L(screen, text, x, y, size=DEFAULT_FONT_SIZE, color=colors.WHITE):
-    if size in font_cache:
-        f = font_cache[size]
-        text_surf, text_rect = text_object(text, f, color)
-        text_rect.topleft = (x, y)
-        return screen.blit(text_surf, text_rect)
+def _get_font(size: int) -> pygame.font.Font:
+    if size not in font_cache:
+        font_cache[size] = pygame.font.Font(FONT_PATH, size)
+    return font_cache[size]
 
-    font = pygame.font.Font(FONT_PATH, size)
+
+def message_display_L(
+    screen: pygame.Surface,
+    text: str,
+    x: Coordinate,
+    y: Coordinate,
+    size: int = DEFAULT_FONT_SIZE,
+    color: ColorValue = colors.WHITE,
+) -> None:
+    font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.topleft = (x, y)
-    font_cache[size] = font
-    return screen.blit(text_surf, text_rect)
+    screen.blit(text_surf, text_rect)
 
 
-def message_display_R(screen, text, x, y, size=DEFAULT_FONT_SIZE, color=colors.WHITE):
-    if size in font_cache:
-        f = font_cache[size]
-        text_surf, text_rect = text_object(text, f, color)
-        text_rect.topleft = (x, y)
-        return screen.blit(text_surf, text_rect)
-
-    font = pygame.font.Font(FONT_PATH, size)
+def message_display_R(
+    screen: pygame.Surface,
+    text: str,
+    x: Coordinate,
+    y: Coordinate,
+    size: int = DEFAULT_FONT_SIZE,
+    color: ColorValue = colors.WHITE,
+) -> None:
+    font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.topright = (x, y)
-    font_cache[size] = font
-    return screen.blit(text_surf, text_rect)
+    screen.blit(text_surf, text_rect)
 
 
-def message_display_MB(screen, text, x, y, size=DEFAULT_FONT_SIZE, color=colors.WHITE):
-    if size in font_cache:
-        f = font_cache[size]
-        text_surf, text_rect = text_object(text, f, color)
-        text_rect.midbottom = (x, y)
-        return screen.blit(text_surf, text_rect)
-
-    font = pygame.font.Font(FONT_PATH, size)
+def message_display_MB(
+    screen: pygame.Surface,
+    text: str,
+    x: Coordinate,
+    y: Coordinate,
+    size: int = DEFAULT_FONT_SIZE,
+    color: ColorValue = colors.WHITE,
+) -> None:
+    font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.midbottom = (x, y)
-    font_cache[size] = font
-    return screen.blit(text_surf, text_rect)
+    screen.blit(text_surf, text_rect)
 
 
-def message_display_MT(screen, text, x, y, size, color=colors.WHITE):
-    if size in font_cache:
-        f = font_cache[size]
-        text_surf, text_rect = text_object(text, f, color)
-        text_rect.midtop = (x, y)
-        return screen.blit(text_surf, text_rect)
-
-    font = pygame.font.Font(FONT_PATH, size)
+def message_display_MT(
+    screen: pygame.Surface,
+    text: str,
+    x: Coordinate,
+    y: Coordinate,
+    size: int,
+    color: ColorValue = colors.WHITE,
+) -> None:
+    font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.midtop = (x, y)
-    font_cache[size] = font
-    return screen.blit(text_surf, text_rect)
+    screen.blit(text_surf, text_rect)
 
 
-def message_display(screen, text, x, y, size, color=colors.WHITE):
-    if size in font_cache:
-        f = font_cache[size]
-        text_surf, text_rect = text_object(text, f, color)
-        text_rect.center = (x, y)
-        return screen.blit(text_surf, text_rect)
-
-    font = pygame.font.Font(FONT_PATH, size)
+def message_display(
+    screen: pygame.Surface,
+    text: str,
+    x: Coordinate,
+    y: Coordinate,
+    size: int,
+    color: ColorValue = colors.WHITE,
+) -> None:
+    font = _get_font(size)
     text_surf, text_rect = text_object(text, font, color)
     text_rect.center = (x, y)
-    font_cache[size] = font
-    return screen.blit(text_surf, text_rect)
+    screen.blit(text_surf, text_rect)
 
 
-def truncline(text, maxwidth, font):
+def truncline(text: str, maxwidth: int, font: pygame.font.Font) -> tuple[int, int, str]:
     text = str(text)
     real = len(text)
     stext = text
@@ -109,10 +120,10 @@ def truncline(text, maxwidth, font):
     return real, done, stext
 
 
-def wrapline(text, pixel_max_width, size):
+def wrapline(text: str, pixel_max_width: int, size: int) -> list[str]:
     """Wrap text to fit within a pixel width."""
     done = 0
-    wrapped = []
+    wrapped: list[str] = []
     if size in font_cache:
         font = font_cache[size]
     else:
@@ -122,4 +133,3 @@ def wrapline(text, pixel_max_width, size):
         wrapped.append(stext.strip())
         text = text[nl:]
     return wrapped
-

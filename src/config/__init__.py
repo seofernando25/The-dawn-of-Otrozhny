@@ -55,4 +55,3 @@ __all__ = [
     "HUD_CELL_TITLE_FONT_SIZE",
     "HUD_CELL_OTHER_FONT_SIZE",
 ]
-

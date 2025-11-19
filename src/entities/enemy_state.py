@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from entities.base import EnemyStatus
+from entities.status import EnemyStatus
 
 
 @dataclass
 class EnemyStateManager:
     """Manages shared enemy status state across all enemies in the game.
-    
+
     This is a global alert system where all enemies share the same status.
     When one enemy detects the player, all enemies become alert.
     """
@@ -41,4 +41,3 @@ class EnemyStateManager:
         """Reset the manager to normal state (used when starting a new game)."""
         self.status = EnemyStatus.Normal
         self.status_time_left = 0.0
-

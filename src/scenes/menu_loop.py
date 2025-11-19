@@ -23,9 +23,16 @@ class MenuScene(SceneHandler):
         self.hud.set_button_text(4, "Exit")
 
         self.fractal = otherEffects.ChaosObject(
-            (renderer_config.SCREEN_WIDTH // 2, (renderer_config.SCREEN_HEIGHT // 2) + 15), 225, 3
+            (
+                renderer_config.SCREEN_WIDTH // 2,
+                (renderer_config.SCREEN_HEIGHT // 2) + 15,
+            ),
+            225,
+            3,
         )
-        self.star_field = otherEffects.StarField((renderer_config.SCREEN_WIDTH, renderer_config.SCREEN_HEIGHT))
+        self.star_field = otherEffects.StarField(
+            (renderer_config.SCREEN_WIDTH, renderer_config.SCREEN_HEIGHT)
+        )
 
         # Connect fractal speed to HUD button changes
         self.hud.onChangedButton.append(self.star_field.change_speed)

@@ -1,8 +1,9 @@
 import logging
 import random
+from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, List, Sequence
+
 import pygame
 
 LOGGER = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 ASSETS_DIR = ROOT / "assets"
 MAPS_DIR = ASSETS_DIR / "maps"
 
-_AUDIO_CACHE = {}
+_AUDIO_CACHE: dict[tuple[str, str], list[pygame.mixer.Sound]] = {}
 
 
 def _ensure_dir(path: Path) -> Path:
@@ -19,7 +20,7 @@ def _ensure_dir(path: Path) -> Path:
     return path
 
 
-def list_asset_files(*parts: Sequence[str]) -> List[str]:
+def list_asset_files(*parts: str) -> list[str]:
     target = ASSETS_DIR.joinpath(*parts)
     if not target.exists():
         LOGGER.warning("Asset directory missing: %s", target)
@@ -27,7 +28,7 @@ def list_asset_files(*parts: Sequence[str]) -> List[str]:
     return sorted(str(p) for p in target.iterdir() if p.is_file())
 
 
-def iter_asset_files(*parts: Sequence[str]) -> Iterable[Path]:
+def iter_asset_files(*parts: str) -> Iterable[Path]:
     target = ASSETS_DIR.joinpath(*parts)
     if not target.exists():
         LOGGER.warning("Asset directory missing: %s", target)
@@ -36,7 +37,7 @@ def iter_asset_files(*parts: Sequence[str]) -> Iterable[Path]:
 
 
 @lru_cache(maxsize=256)
-def get_sprite(sprite_pack: str, sprite_position: int):
+def get_sprite(sprite_pack: str, sprite_position: int) -> pygame.Surface | None:
     if not sprite_pack:
         return None
     filenames = list_asset_files(sprite_pack, "Sprites")
@@ -53,7 +54,7 @@ def get_sprite(sprite_pack: str, sprite_position: int):
     return image
 
 
-def get_audio(folder: str, state: str):
+def get_audio(folder: str, state: str) -> pygame.mixer.Sound | None:
     cache_key = (folder, state)
     cached_sounds = _AUDIO_CACHE.get(cache_key)
     if cached_sounds:
@@ -69,7 +70,7 @@ def get_audio(folder: str, state: str):
 
 
 @lru_cache(maxsize=8)
-def get_cached_audio(folder_name: str, sub_folder: str):
+def get_cached_audio(folder_name: str, sub_folder: str) -> pygame.mixer.Sound | None:
     filenames = list_asset_files(folder_name, sub_folder)
     if not filenames:
         LOGGER.warning("Cached audio folder '%s/%s' missing.", folder_name, sub_folder)
@@ -91,4 +92,3 @@ def list_asset_packs():
         if path.is_dir() and (path / "Sprites").exists():
             packs.append(path.name)
     return sorted(packs)
-

@@ -5,7 +5,6 @@ import math
 
 
 def go_to(start, target, grid):
-
     open_heap = []
     heapq.heappush(open_heap, (get_heuristic(start, target), start))
     cameFrom = {}
@@ -69,4 +68,3 @@ def reconstruct_path(cameFrom, current):
         current = cameFrom[current]
         result.append(current)
     return list(reversed(result))
-

@@ -53,11 +53,13 @@ class GridManager:
         self.current_tool = EditorTools.node_editor
         self.mouse_in_grid = False
         self.mouse_position: Tuple[int, int] = (0, 0)
+        self.real_position: Optional[Tuple[float, float]] = None
 
         self.mouse_b = pygame.mouse.get_pressed()
         self.mouseRel: Optional[Tuple[int, int]] = None
 
         from ui import VerticalList
+
         self.hud_draw_obj_help = VerticalList(
             [
                 "Z: Player",
@@ -71,9 +73,7 @@ class GridManager:
             renderer_config.SCREEN_WIDTH - 150,
             10,
         )
-        self.hud_draw_pos_help = VerticalList(
-            ["(000, 000)", "1234567890123"], 10, 10
-        )
+        self.hud_draw_pos_help = VerticalList(["(000, 000)", "1234567890123"], 10, 10)
         self.tools = {
             EditorTools.options: editor_tools.MoveTool(),
             EditorTools.drawing_mode: editor_tools.PlaceTool(),
@@ -231,7 +231,7 @@ class GridManager:
             )
             message_display(
                 screen,
-                count,
+                str(count),
                 int(entity.px * self.scale + self.adjust[0]),
                 int(entity.py * self.scale + self.adjust[1]),
                 self.scale // 2,
@@ -256,6 +256,7 @@ class EditorScene(SceneHandler):
         self.grid_manager = self.context.ensure_grid_manager(GridManager(20, 20))
         # Get UI sound from audio manager for button activation sounds
         from ui.audio_helpers import get_ui_activation_sound
+
         activated_sound = get_ui_activation_sound(self.context.audio)
         self.hud = HudScreen(activated_sound=activated_sound)
         self.hud.set_button_text(0, "Node Editor")
@@ -311,11 +312,10 @@ def editorLoop(clock, audio_manager):
 
 if __name__ == "__main__":
     from core.audio import AudioManager
-    
+
     pygame.init()
     audio = AudioManager()
     clock = pygame.time.Clock()
     editorLoop(clock, audio)
     # Note: AudioManager creation is OK here as this is the entry point.
     # The audio is passed to editorLoop which creates EditorContext with it.
-

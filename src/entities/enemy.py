@@ -3,7 +3,8 @@ from config import ENEMY_CONFIG
 from physics import pathfinding
 from renderer.raycast import generate_distance_table
 from utils import math_helpers
-from .base import Entity, EnemyStatus, SpriteAgent
+from .base import Entity, SpriteAgent
+from .status import EnemyStatus
 
 
 class Enemy(SpriteAgent):
@@ -12,10 +13,10 @@ class Enemy(SpriteAgent):
     def __init__(self, start_pos, patrolPoint=None, *, context=None):
         super().__init__(
             start_pos,
-            ENEMY_CONFIG["fov_degrees"],
-            ENEMY_CONFIG["move_speed"],
-            ENEMY_CONFIG["fov_depth"],
-            ENEMY_CONFIG["sprite_pack"],
+            float(ENEMY_CONFIG["fov_degrees"]),
+            float(ENEMY_CONFIG["move_speed"]),
+            float(ENEMY_CONFIG["fov_depth"]),
+            str(ENEMY_CONFIG["sprite_pack"]),
             context=context,
         )
         self.patrolPoint = patrolPoint
@@ -24,8 +25,8 @@ class Enemy(SpriteAgent):
         self.pathFindingNodes = None
         self.timeGuarded = 0
         self.pathFindingComplete = False
-        self.originalFov = self.FOV
-        self.originalFovDepth = self.FOVDepth
+        self._base_fov = self.fov
+        self._base_fov_depth = self.fov_depth
         self.lastPathFindingPoint = None
         self.cameraYawSens = ENEMY_CONFIG["camera_yaw_sensitivity"]
 
@@ -47,7 +48,7 @@ class Enemy(SpriteAgent):
         current_map = self._current_map()
         player = self._player()
         # Timer logic is now handled by EnemyStateManager.update() in game loop
-        
+
         enemy_state = self._enemy_state()
         if enemy_state.status == EnemyStatus.Normal:
             self.change_target(self.patrolPoint)
@@ -81,11 +82,13 @@ class Enemy(SpriteAgent):
             EnemyStatus.Alert,
             EnemyStatus.Caution,
         ):
-            self.FOV = self.originalFov * ENEMY_CONFIG["alert_fov_multiplier"]
-            self.FOVDepth = self.originalFovDepth * ENEMY_CONFIG["alert_fov_depth_multiplier"]
+            self.fov = self._base_fov * ENEMY_CONFIG["alert_fov_multiplier"]
+            self.fov_depth = (
+                self._base_fov_depth * ENEMY_CONFIG["alert_fov_depth_multiplier"]
+            )
         else:
-            self.FOV = self.originalFov
-            self.FOVDepth = self.originalFovDepth
+            self.fov = self._base_fov
+            self.fov_depth = self._base_fov_depth
 
         if self.target is not None:
             dx, dy = math_helpers.slope(self.get_pos(), self.target.get_pos())
@@ -93,7 +96,9 @@ class Enemy(SpriteAgent):
             if self.pathFindingNodes is not None and len(self.pathFindingNodes) > 0:
                 nextStep = self.pathFindingNodes[0]
 
-                nextPathNodeDistance = math_helpers.distance_to(self.get_pos(), nextStep)
+                nextPathNodeDistance = math_helpers.distance_to(
+                    self.get_pos(), nextStep
+                )
                 adjustment = ENEMY_CONFIG["pathfinding_node_adjustment"]
                 adjustedNextStep = (nextStep[0] + adjustment, nextStep[1] + adjustment)
                 self.move_to(Entity(adjustedNextStep), dt)
@@ -102,12 +107,20 @@ class Enemy(SpriteAgent):
             else:
                 self.pathFindingComplete = True
                 pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
-                if isinstance(pathfinding_dist, (int, float)) and targetDistance > pathfinding_dist:
+                if (
+                    isinstance(pathfinding_dist, (int, float))
+                    and targetDistance > pathfinding_dist
+                ):
                     self.move_to(self.target, dt)
 
             pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
             from .node import Node
-            if isinstance(self.target, Node) and isinstance(pathfinding_dist, (int, float)) and targetDistance < pathfinding_dist:
+
+            if (
+                isinstance(self.target, Node)
+                and isinstance(pathfinding_dist, (int, float))
+                and targetDistance < pathfinding_dist
+            ):
                 self.timeGuarded += dt
                 patrol_rot = ENEMY_CONFIG["patrol_rotation_speed"]
                 if isinstance(patrol_rot, (int, float)):
@@ -117,7 +130,10 @@ class Enemy(SpriteAgent):
                 self.rotate(rotation_speed)
 
                 guard_time = ENEMY_CONFIG["patrol_guard_time"]
-                if isinstance(guard_time, (int, float)) and self.timeGuarded > guard_time:
+                if (
+                    isinstance(guard_time, (int, float))
+                    and self.timeGuarded > guard_time
+                ):
                     self.change_patrol_point()
 
     def change_target(self, target):
@@ -130,7 +146,9 @@ class Enemy(SpriteAgent):
             self.pathFindingComplete = False
             self.pathFindingNodesTarget = target
             current_map = self._current_map()
-            self.pathFindingNodes = pathfinding.go_to(my_pos, (int(x), int(y)), current_map.grid)
+            self.pathFindingNodes = pathfinding.go_to(
+                my_pos, (int(x), int(y)), current_map.grid
+            )
             if self.pathFindingNodes and len(self.pathFindingNodes) > 0:
                 self.pathFindingNodes.pop(0)
 
@@ -146,7 +164,11 @@ class Enemy(SpriteAgent):
         """Retarget to a random point on the map."""
         if attempts is None:
             retarget_attempts = ENEMY_CONFIG["retarget_attempts"]
-            attempts = int(retarget_attempts) if isinstance(retarget_attempts, (int, float)) else 10
+            attempts = (
+                int(retarget_attempts)
+                if isinstance(retarget_attempts, (int, float))
+                else 10
+            )
         for _ in range(attempts):
             random_entity = Entity(current_map.pick_random_point())
             distance = math_helpers.distance_to(self.get_pos(), random_entity.get_pos())
@@ -160,4 +182,3 @@ class Enemy(SpriteAgent):
     def change_enemy_status(self, status):
         """Change the shared enemy status. Requires context to be set."""
         self._enemy_state().change_status(status)
-

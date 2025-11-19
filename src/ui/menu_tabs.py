@@ -2,7 +2,7 @@ from renderer.text import message_display_MB, message_display_L
 from core.context import get_screen
 from config import renderer_config
 from core import colors
-from entities.base import EnemyStatus
+from entities.status import EnemyStatus
 
 
 def _screen():
@@ -600,4 +600,3 @@ def render_tutorial_tab_5():
         renderer_config.VIEWPORT_Y_OFFSET * 2 + 20 * row,
         12,
     )
-

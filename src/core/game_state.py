@@ -8,4 +8,3 @@ class GameState(enum.Enum):
     Tutorial = 2
     About = 3
     Quit = 4
-

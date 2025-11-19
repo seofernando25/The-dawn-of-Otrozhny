@@ -13,8 +13,6 @@ from entities.node import Node
 from entities.factory import EntityFactory
 
 
-
-
 class BaseTool:
     """Base class for level editor tools."""
 

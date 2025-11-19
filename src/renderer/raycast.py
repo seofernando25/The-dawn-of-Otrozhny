@@ -30,8 +30,8 @@ def generate_distance_table(entity):
     if current_map is None:
         raise RuntimeError("GameContext.level is not set.")
     grid = current_map.grid_np
-    fov_depth = int(math.ceil(entity.FOVDepth))
-    degrees = max(1, math.ceil(math.degrees(entity.FOV)))
+    fov_depth = int(math.ceil(entity.fov_depth))
+    degrees = max(1, math.ceil(math.degrees(entity.fov)))
     inv_degrees = 1.0 / degrees
 
     entity_dir_x = entity.dirX

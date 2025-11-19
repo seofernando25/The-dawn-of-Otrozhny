@@ -1,4 +1,5 @@
 """Floor rendering for first-person view."""
+
 from core import colors
 
 
@@ -15,4 +16,3 @@ def render_floor(screen, entity):
         colors.DARK_GRAY,
         [(0, floor_start), (screen_width, screen_height - floor_start)],
     )
-

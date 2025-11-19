@@ -2,40 +2,58 @@
 Tutorial loop module - displays tutorial tabs with briefing/map editor/items/enemy status/help.
 """
 
+from collections.abc import Sequence
+from typing import Callable, TypeVar, cast
+
 import pygame
-from ui import menu_tabs
-from renderer.text import message_display_L
+
 from config import renderer_config
+from renderer.text import message_display_L
 from scenes.loop_runner import SceneHandler
-from ui import HudScreen
+from ui import HudScreen, menu_tabs
+
+_OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
+
+try:
+    from typing import override
+except ImportError:  # pragma: no cover
+    def override(func: _OverrideFunc, /) -> _OverrideFunc:
+        return func
 
 
 class TutorialScene(SceneHandler):
     """Scene handler for the tutorial screen."""
 
     def __init__(self):
-        self.hud = HudScreen()
+        self.hud: HudScreen = HudScreen()
         self.hud.set_button_text(0, "Briefing")
         self.hud.set_button_text(1, "Map Editor")
         self.hud.set_button_text(2, "Items")
         self.hud.set_button_text(3, "Enemy Status")
         self.hud.set_button_text(4, "?")
 
-    def handle_events(self, events, keys_pressed):
+    @override
+    def handle_events(
+        self, events: list[pygame.event.Event], keys_pressed: Sequence[bool]
+    ) -> bool:
+        _ = keys_pressed
         """Handle quit events."""
         for event in events:
             if event.type == pygame.QUIT:
                 return True
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:
+                key = cast(int, event.key)
+                if key == pygame.K_q:
                     return True
         return False
 
-    def update(self, delta_time):
+    @override
+    def update(self, delta_time: float) -> None:
         """No update logic for tutorial."""
         pass
 
-    def draw(self, screen):
+    @override
+    def draw(self, screen: pygame.Surface) -> None:
         """Draw tutorial content based on selected tab."""
         if self.hud.selected_button == 0:
             menu_tabs.render_tutorial_tab_4()
@@ -48,7 +66,7 @@ class TutorialScene(SceneHandler):
         if self.hud.selected_button == 4:
             menu_tabs.render_tutorial_tab_5()
 
-        self.hud.update(0, [])  # Update HUD visuals
+        _ = self.hud.update(0, [])  # Update HUD visuals
         self.hud.draw(screen)
 
         message_display_L(

@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
 
 import pygame
 from core import assets
@@ -11,12 +11,13 @@ LOGGER = logging.getLogger(__name__)
 # Low-level pygame mixer operations
 # ============================================================================
 
+
 class _MixerState:
     """Encapsulates pygame mixer initialization state."""
-    
+
     def __init__(self):
         self._initialized = False
-    
+
     def ensure_initialized(self) -> bool:
         """Ensure pygame.mixer is initialized."""
         if self._initialized and pygame.mixer.get_init():
@@ -30,10 +31,10 @@ class _MixerState:
             LOGGER.warning("Unable to initialize audio: %s", exc)
             self._initialized = False
         return self._initialized
-    
+
     def ensure_channel(
-        self, channel: Optional[pygame.mixer.Channel] = None
-    ) -> Optional[pygame.mixer.Channel]:
+        self, channel: pygame.mixer.Channel | None = None
+    ) -> pygame.mixer.Channel | None:
         """Get or create a pygame mixer channel."""
         if not self.ensure_initialized():
             return None
@@ -52,36 +53,40 @@ def ensure_initialized() -> bool:
 
 
 def ensure_channel(
-    channel: Optional[pygame.mixer.Channel] = None,
-) -> Optional[pygame.mixer.Channel]:
+    channel: pygame.mixer.Channel | None = None,
+) -> pygame.mixer.Channel | None:
     """Get or create a pygame mixer channel."""
     return _MIXER_STATE.ensure_channel(channel)
 
 
-def _normalize_volume(
-    volume: Union[None, float, Sequence[float]],
-) -> Optional[Tuple[float, float]]:
+VolumeInput = None | float | int | Sequence[float]
+
+
+def _normalize_volume(volume: VolumeInput) -> tuple[float, float] | None:
     """Normalize volume to a tuple of (left, right) channels."""
     if volume is None:
         return None
     if isinstance(volume, Sequence):
-        if len(volume) == 2:
-            return (float(volume[0]), float(volume[1]))
-        if len(volume) == 1:
-            return (float(volume[0]), float(volume[0]))
-    return (float(volume), float(volume))
+        values = [float(v) for v in volume]
+        if not values:
+            return None
+        if len(values) == 1:
+            return (values[0], values[0])
+        return (values[0], values[1])
+    scalar = float(volume)
+    return (scalar, scalar)
 
 
 def play_sound_low_level(
-    sound: Optional[pygame.mixer.Sound],
+    sound: pygame.mixer.Sound | None,
     *,
-    channel: Optional[pygame.mixer.Channel] = None,
+    channel: pygame.mixer.Channel | None = None,
     loops: int = 0,
     maxtime: int = 0,
     fade_ms: int = 0,
-    volume: Union[None, float, Sequence[float]] = None,
+    volume: None | float | Sequence[float] = None,
     force: bool = False,
-) -> Optional[pygame.mixer.Channel]:
+) -> pygame.mixer.Channel | None:
     """Low-level function to play a pygame Sound object."""
     if sound is None:
         return channel
@@ -101,6 +106,7 @@ def play_sound_low_level(
 # High-level game audio management
 # ============================================================================
 
+
 class AudioManager:
     """
     Centralized audio management system.
@@ -109,18 +115,20 @@ class AudioManager:
     """
 
     def __init__(self):
-        self._channels = {}
-        self._active_ui_sound = None
-        self._mixer_state = _MixerState()
-        self._mixer_state.ensure_initialized()
+        self._channels: dict[str, pygame.mixer.Channel] = {}
+        self._active_ui_sound: pygame.mixer.Sound | None = None
+        self._mixer_state: _MixerState = _MixerState()
+        self._music_channel: pygame.mixer.Channel | None = None
+        result = self._mixer_state.ensure_initialized()
+        _ = result  # Suppress unused call result
 
     def play_sound(
         self,
         sound_id: str,
         pack: str = "assets",
-        volume: Optional[Tuple[float, float]] = None,
+        volume: tuple[float, float] | None = None,
         force: bool = False,
-    ) -> Optional[pygame.mixer.Channel]:
+    ) -> pygame.mixer.Channel | None:
         """Play a sound from the requested pack and return the mixer channel if one was available."""
         try:
             sound = assets.get_audio(pack, sound_id)
@@ -135,14 +143,16 @@ class AudioManager:
             # Store channel for this sound ID for potential interruption
             self._channels[sound_id] = channel
 
-            return play_sound_low_level(sound, channel=channel, volume=volume, force=force)
+            return play_sound_low_level(
+                sound, channel=channel, volume=volume, force=force
+            )
         except Exception as e:
             LOGGER.error(f"Failed to play sound {pack}/{sound_id}: {e}")
             return None
 
     def play_music(
         self, music_id: str, pack: str = "music"
-    ) -> Optional[pygame.mixer.Channel]:
+    ) -> pygame.mixer.Channel | None:
         """Play looping background music and return the dedicated music channel if successful."""
         try:
             music = assets.get_cached_audio(pack, music_id)
@@ -163,7 +173,7 @@ class AudioManager:
         """Cache the UI sound effect that will be played by play_ui_sound."""
         self._active_ui_sound = assets.get_cached_audio(pack, ui_sound_id)
 
-    def play_ui_sound(self) -> Optional[pygame.mixer.Channel]:
+    def play_ui_sound(self) -> pygame.mixer.Channel | None:
         """Play the previously configured UI sound effect and return its channel if any."""
         if self._active_ui_sound is None:
             return None
@@ -182,7 +192,7 @@ class AudioManager:
         if channel:
             channel.stop()
 
-    def _get_music_channel(self) -> Optional[pygame.mixer.Channel]:
+    def _get_music_channel(self) -> pygame.mixer.Channel | None:
         """Get or create the dedicated music channel."""
         if not hasattr(self, "_music_channel"):
             self._music_channel = self._mixer_state.ensure_channel()

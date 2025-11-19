@@ -1,56 +1,69 @@
 """HUD screen component."""
-from typing import Optional
+
+from collections.abc import Callable, Sequence
+from typing import cast
 import pygame
 import pygame.constants as pyConst
 from config import renderer_config
 from utils import math_helpers
 from core import colors
+from ui.button import ColorValue, HudButton
 from ui.helpers import (
-    _generate_hud_viewport,
-    _generate_hud_surfaces,
+    generate_hud_viewport,
+    generate_hud_surfaces,
     render_hud_surfaces,
-    _resolve_screen,
+    resolve_screen,
 )
 
 
 class HudScreen:
     """Main HUD screen that manages multiple HUD buttons."""
-    
-    def __init__(self, interactable=True, dynamic=False, *, activated_sound=None):
-        self.viewPort = _generate_hud_viewport()
-        self.viewPort.fill(colors.GRAY_VARIATION_2)
-        self.hud_buttons = _generate_hud_surfaces(self.viewPort, activated_sound=activated_sound)
-        self.interactable = interactable
-        self.dynamic = dynamic
-        self.selected_button = 0
-        self.cursorX = self.selected_button
-        # Should have created an event handler class :/
-        self.onChangedButton = []
 
-    def set_button_color(self, buttonIndex, textIndex, color):
+    def __init__(
+        self,
+        *,
+        interactable: bool = True,
+        dynamic: bool = False,
+        activated_sound: pygame.mixer.Sound | None = None,
+    ):
+        self.viewPort: pygame.Surface = generate_hud_viewport()
+        _ = self.viewPort.fill(colors.GRAY_VARIATION_2)
+        self.hud_buttons: list[HudButton] = generate_hud_surfaces(
+            self.viewPort, activated_sound=activated_sound
+        )
+        self.interactable: bool = interactable
+        self.dynamic: bool = dynamic
+        self.selected_button: int = 0
+        self.cursorX: float = float(self.selected_button)
+        # Should have created an event handler class :/
+        self.onChangedButton: list[Callable[[], None]] = []
+
+    def set_button_color(
+        self, buttonIndex: int, textIndex: int, color: ColorValue
+    ) -> None:
         """Set the color of a specific text element in a button."""
         self.hud_buttons[buttonIndex].set_color(textIndex, color)
 
-    def set_button_subtitle(self, buttonIndex, text):
+    def set_button_subtitle(self, buttonIndex: int, text: str) -> None:
         """Set the subtitle of a button."""
         self.hud_buttons[buttonIndex].set_subtitle(text)
 
-    def set_button_title(self, buttonIndex, text):
+    def set_button_title(self, buttonIndex: int, text: str) -> None:
         """Set the title of a button."""
         self.hud_buttons[buttonIndex].set_title(text)
 
-    def set_button_text(self, buttonIndex, text):
+    def set_button_text(self, buttonIndex: int, text: str) -> None:
         """Set the main text of a button."""
         self.hud_buttons[buttonIndex].set_text(text)
 
-    def draw(self, screen: Optional[pygame.Surface] = None):
+    def draw(self, screen: pygame.Surface | None = None) -> None:
         """Draw the HUD screen."""
         if self.interactable or self.dynamic:
-            self.viewPort.fill(colors.GRAY_VARIATION_2)
+            _ = self.viewPort.fill(colors.GRAY_VARIATION_2)
         render_hud_surfaces(self.viewPort, self.hud_buttons)
 
         if self.interactable:
-            pygame.draw.rect(
+            _ = pygame.draw.rect(
                 self.viewPort,
                 colors.BLACK,
                 [
@@ -64,8 +77,8 @@ class HudScreen:
                     -10,
                 ],
             )
-        target_screen = _resolve_screen(screen)
-        target_screen.blit(
+        target_screen = resolve_screen(screen)
+        _ = target_screen.blit(
             self.viewPort,
             (
                 renderer_config.VIEWPORT_X_OFFSET,
@@ -75,7 +88,7 @@ class HudScreen:
             ),
         )
 
-    def change_selected_button(self, amount, change_to=False):
+    def change_selected_button(self, amount: int, change_to: bool = False) -> None:
         """Change the currently selected button."""
         for x in self.onChangedButton:
             x()
@@ -90,33 +103,37 @@ class HudScreen:
             self.selected_button = 0
         self.hud_buttons[self.selected_button].set_active(True)
 
-    def update(self, dt, events):
+    def update(
+        self, delta_time: float, events: Sequence[pygame.event.Event]
+    ) -> int | None:
         """Update the HUD screen state."""
         if self.interactable:
-            self.cursorX = math_helpers.lerp(self.cursorX, self.selected_button, dt * 15)
+            self.cursorX = math_helpers.lerp(
+                self.cursorX, self.selected_button, delta_time * 15
+            )
             for event in events:
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pyConst.K_LEFT:
+                    key = cast(int, event.key)
+                    if key == pyConst.K_LEFT:
                         self.change_selected_button(-1)
 
-                    if event.key == pyConst.K_RIGHT:
+                    if key == pyConst.K_RIGHT:
                         self.change_selected_button(1)
 
-                    if event.key == pyConst.K_1:
+                    if key == pyConst.K_1:
                         self.change_selected_button(0, True)
 
-                    if event.key == pyConst.K_2:
+                    if key == pyConst.K_2:
                         self.change_selected_button(1, True)
 
-                    if event.key == pyConst.K_3:
+                    if key == pyConst.K_3:
                         self.change_selected_button(2, True)
 
-                    if event.key == pyConst.K_4:
+                    if key == pyConst.K_4:
                         self.change_selected_button(3, True)
 
-                    if event.key == pyConst.K_5:
+                    if key == pyConst.K_5:
                         self.change_selected_button(4, True)
 
-                    if event.key == pyConst.K_RETURN or event.key == pyConst.K_SPACE:
+                    if key == pyConst.K_RETURN or key == pyConst.K_SPACE:
                         return self.selected_button
-

@@ -5,16 +5,33 @@ All loops follow the same pattern: while not done → handle events → draw →
 This module provides a reusable implementation.
 """
 
+from collections.abc import Sequence
+from typing import Optional, Protocol
+
 import pygame
+
 from core import colors
-from typing import Protocol, Optional
 from core.game_state import GameState
+
+
+class HudLike(Protocol):
+    def update(
+        self, delta_time: float, events: Sequence[pygame.event.Event]
+    ) -> GameState | int | None:
+        ...
+
+    def draw(self, screen: pygame.Surface) -> None:
+        ...
 
 
 class SceneHandler(Protocol):
     """Protocol for scene handlers that can be run by the loop runner."""
 
-    def handle_events(self, events: list[pygame.event.Event], keys_pressed: tuple) -> bool:
+    def handle_events(
+        self,
+        events: list[pygame.event.Event],
+        keys_pressed: Sequence[bool],
+    ) -> bool:
         """Handle pygame events. Return True to quit."""
         ...
 
@@ -48,8 +65,8 @@ class SimpleSceneHandler:
 def run_scene(
     scene_handler: SceneHandler,
     clock: Optional[pygame.time.Clock] = None,
-    bg_color=colors.BLACK,
-):
+    bg_color: tuple[int, int, int] = colors.BLACK,
+) -> bool:
     """Run a scene via the unified loop pattern and return False when it requests to quit."""
     if clock is None:
         clock = pygame.time.Clock()
@@ -79,10 +96,10 @@ def run_scene(
 
 def run_scene_with_hud(
     scene_handler: SceneHandler,
-    hud,
+    hud: HudLike,
     clock: Optional[pygame.time.Clock] = None,
-    bg_color=colors.BLACK,
-):
+    bg_color: tuple[int, int, int] = colors.BLACK,
+) -> bool | GameState:
     """Run a HUD-enabled scene loop and return False when the handler or HUD requests exit."""
     if clock is None:
         clock = pygame.time.Clock()
@@ -95,9 +112,11 @@ def run_scene_with_hud(
 
         result = hud.update(delta_time, events)
         if result is not None:
-            if isinstance(result, int) and 0 <= result <= 4:
+            if isinstance(result, GameState):
+                return result
+            if isinstance(result, int):
                 return GameState(result)
-            return result
+            raise ValueError(f"Unexpected HUD update result: {type(result)}")
 
         if scene_handler.handle_events(events, keys_pressed):
             return False

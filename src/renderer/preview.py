@@ -1,16 +1,27 @@
 """Map preview rendering for level selection."""
+
+from collections.abc import Hashable
 import math
-from core import colors
+
 import pygame
+
+from core import colors
 from entities.items import Gate
 from entities.player import Player
+from level.loader import LevelObject
 from renderer import minimap
 
 # Cache for map previews
-_MAP_PREVIEW_CACHE = {}
+_MAP_PREVIEW_CACHE: dict[
+    tuple[Hashable, tuple[int, int]], pygame.Surface
+] = {}
 
 
-def draw_map_preview(screen, map_obj, cache_key=None):
+def draw_map_preview(
+    screen: pygame.Surface,
+    map_obj: LevelObject,
+    cache_key: Hashable | None = None,
+) -> None:
     """Draw a preview of a map on the given screen surface."""
     signature = (
         cache_key or id(map_obj),
@@ -58,4 +69,3 @@ def draw_map_preview(screen, map_obj, cache_key=None):
         _MAP_PREVIEW_CACHE[signature] = cached_surface
 
     screen.blit(cached_surface, (0, 0))
-

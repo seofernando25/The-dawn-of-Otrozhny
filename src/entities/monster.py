@@ -21,9 +21,17 @@ class Monster(Enemy):
             dist_to_player = math_helpers.distance_to(self.get_pos(), player.get_pos())
             attack_dist = ENEMY_CONFIG["attack_distance"]
             if isinstance(attack_dist, (int, float)):
-                if self.target is player and dist_to_player < attack_dist and self.canSeePlayer:
+                if (
+                    self.target is player
+                    and dist_to_player < attack_dist
+                    and self.canSeePlayer
+                ):
                     self.attack(player, dt)
-                if self.target is player and dist_to_player < attack_dist and not self.canSeePlayer:
+                if (
+                    self.target is player
+                    and dist_to_player < attack_dist
+                    and not self.canSeePlayer
+                ):
                     self.look_at(player, dt)
         sound_dist = ENEMY_CONFIG["sound_trigger_distance"]
         if isinstance(sound_dist, (int, float)) and dist_to_player < sound_dist:
@@ -35,7 +43,7 @@ class Monster(Enemy):
         context = self.requires_context()
         if context.audio is None:
             return
-        
+
         volume = math_helpers.translate(
             distance,
             SOUND_CONFIG["volume_distance_min"],
@@ -70,4 +78,3 @@ class Monster(Enemy):
         player = self._player()
         dist_to_player = math_helpers.distance_to(self.get_pos(), player.get_pos())
         self.play_sound(dist_to_player, "Attack", True)
-

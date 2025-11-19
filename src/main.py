@@ -30,7 +30,7 @@ def main_loop():
     """Main orchestration loop that wires all menu/game/editor scenes."""
     # Create AudioManager instance (no singleton pattern)
     audio = AudioManager()
-    
+
     pygame.init()
     pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
     pygame.display.set_caption("The dawn of Otrozhny")
@@ -48,6 +48,7 @@ def main_loop():
         nonlocal current_music
         if current_music == track_name:
             return
+        audio.stop_music()
         audio.play_music(track_name, "music")
         current_music = track_name
 

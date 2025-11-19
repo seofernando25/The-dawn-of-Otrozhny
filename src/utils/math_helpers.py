@@ -1,8 +1,17 @@
-# Basic math functions
 import math
+from typing import Protocol
 
 
-def clamp(n, minn, maxn):
+class HasPosition(Protocol):
+    def get_pos(self) -> tuple[float, float]: ...
+
+
+class SupportsPosition(HasPosition, Protocol):
+    fov: float
+    angle: float
+
+
+def clamp(n: float, minn: float, maxn: float) -> float:
     return max(min(maxn, n), minn)
 
 
@@ -10,17 +19,23 @@ def clamp(n, minn, maxn):
 # Sauce: https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
 
 
-def lerp(v0, v1, t) -> float:
+def lerp(v0: float, v1: float, t: float) -> float:
     return (1 - t) * v0 + t * v1
 
 
 # Scales one number to another
 
 
-_TRANSLATE_CACHE = {}
+_TRANSLATE_CACHE: dict[tuple[float, float, float, float], tuple[float, float]] = {}
 
 
-def translate(value, value_min, value_max, final_min, final_max):
+def translate(
+    value: float,
+    value_min: float,
+    value_max: float,
+    final_min: float,
+    final_max: float,
+) -> float:
     key = (value_min, value_max, final_min, final_max)
     cached = _TRANSLATE_CACHE.get(key)
     if cached is None:
@@ -41,13 +56,13 @@ def translate(value, value_min, value_max, final_min, final_max):
 # x2 - x1
 
 
-def slope(aCoord, bCoord):
+def slope(aCoord: tuple[float, float], bCoord: tuple[float, float]) -> tuple[float, float]:
     dy = bCoord[1] - aCoord[1]
     dx = bCoord[0] - aCoord[0]
     return dx, dy
 
 
-def distance_to(aCoord, bCoord):
+def distance_to(aCoord: tuple[float, float], bCoord: tuple[float, float]) -> float:
     dx, dy = slope(aCoord, bCoord)
     return math.hypot(dx, dy)
 
@@ -55,20 +70,20 @@ def distance_to(aCoord, bCoord):
 # Wraps angle to 360 deg
 
 
-def fixed_angle(angle):
+def fixed_angle(angle: float) -> float:
     angle = angle % math.radians(360)
     if angle < math.radians(0):
         angle += math.radians(360)
     return angle
 
 
-def project(camera, p2, table_angle):
+def project(camera: SupportsPosition, p2: tuple[float, float], table_angle: float) -> float:
     camera_pos = camera.get_pos()
     dx, dy = slope(camera_pos, p2)
 
     angle = math.atan2(dy, dx)
 
-    proportional_angle = angle + camera.FOV + table_angle + -camera.angle * 2
+    proportional_angle = angle + camera.fov + table_angle + -camera.angle * 2
 
     a = dx * math.cos(proportional_angle / 2)
     b = dy * math.sin(proportional_angle / 2)
@@ -79,14 +94,20 @@ def project(camera, p2, table_angle):
 # Simple math function to create polygons
 
 
-def points_from_polygon_sides(n_sides, radius, adjusted=False):
+def points_from_polygon_sides(
+    n_sides: int,
+    radius: float,
+    adjusted: bool = False,
+) -> list[tuple[float, float]]:
     segment_size = math.radians(360) / n_sides
 
-    points = []
+    points: list[tuple[float, float]] = []
 
     for x in range(n_sides):
-        px = math.sin(segment_size * x) * radius + radius
-        py = math.cos(segment_size * x) * radius + radius
+        angle = segment_size * x
+        if adjusted:
+            angle += segment_size / 2
+        px = math.sin(angle) * radius + radius
+        py = radius - math.cos(angle) * radius
         points.append((px, py))
     return points
-

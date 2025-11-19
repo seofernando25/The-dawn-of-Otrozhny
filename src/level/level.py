@@ -48,21 +48,21 @@ class Level:
     def attach_context(self, context: "GameContext"):
         """
         Attach the shared context to all level entities and cache references.
-        
+
         This method sets context on all entities (both grid entities and node entities)
         and updates the context with the player reference if found.
         """
         # Type: ignore needed because self is Level, and update_level expects Level
         context.update_level(self)  # type: ignore[arg-type]
-        
+
         # Attach context to all grid entities
         for entity in self.grid_entities:
             entity.set_context(context)
-        
+
         # Attach context to all node entities
         for node in self.node_entities:
             node.set_context(context)
-        
+
         # Find and cache player reference in context
         player = next((x for x in self.grid_entities if isinstance(x, Player)), None)
         if player is not None:
@@ -74,16 +74,15 @@ class Level:
 
         max_attempts = self.level_width * self.level_height * 2
         attempts = 0
-        
+
         while attempts < max_attempts:
             random_w = random.randint(0, self.level_width - 1)
             random_h = random.randint(0, self.level_height - 1)
             if self.grid[random_w][random_h] == 0:
                 return (random_w, random_h)
             attempts += 1
-        
+
         raise RuntimeError(
             f"Failed to find empty point in level after {max_attempts} attempts. "
             f"Level may be completely filled with walls."
         )
-

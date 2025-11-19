@@ -8,21 +8,37 @@ Input reading should be handled by the InputSystem.
 """
 
 import math
-from utils import math_helpers
+from typing import Protocol
+
 from config import renderer_config
+from utils import math_helpers
+from utils.math_helpers import HasPosition
+
+
+class SupportsAgent(Protocol):
+    dirX: float
+    dirY: float
+    moveSpeed: float
+    cameraYawSens: float
+    cameraPitchSens: float
+    angleY: float
+
+    def rotate(self, amount: float) -> None: ...
+
+    def get_pos(self) -> tuple[float, float]: ...
 
 
 def calculate_movement_vector(
-    entity,
-    dt,
-    move_forward=False,
-    move_backward=False,
-    move_left=False,
-    move_right=False,
-):
+    entity: SupportsAgent,
+    dt: float,
+    move_forward: bool = False,
+    move_backward: bool = False,
+    move_left: bool = False,
+    move_right: bool = False,
+) -> tuple[float, float]:
     """Calculate movement vector from boolean input flags."""
-    newPx = 0
-    newPy = 0
+    newPx = 0.0
+    newPy = 0.0
     angle = math.atan2(-entity.dirY, entity.dirX)
 
     # Movement input
@@ -46,17 +62,17 @@ def calculate_movement_vector(
 
 
 def apply_mouse_look(
-    entity,
-    dt,
-    mouse_delta_x,
-    mouse_delta_y,
-    screen_center_x,
-    screen_center_y,
-):
+    entity: SupportsAgent,
+    dt: float,
+    mouse_delta_x: float,
+    mouse_delta_y: float,
+    screen_center_x: float,
+    screen_center_y: float,
+) -> None:
     """Apply mouse look rotation to entity."""
     entity.rotate(-entity.cameraYawSens * 0.05 * dt * mouse_delta_x)
     entity.angleY -= 0.05 * dt * entity.cameraPitchSens * mouse_delta_y
-    
+
     # Clamp vertical angle
     entity.angleY = math_helpers.clamp(
         entity.angleY,
@@ -66,13 +82,13 @@ def apply_mouse_look(
 
 
 def apply_keyboard_rotation(
-    entity,
-    dt,
-    rotate_left=False,
-    rotate_right=False,
-    pitch_up=False,
-    pitch_down=False,
-):
+    entity: SupportsAgent,
+    dt: float,
+    rotate_left: bool = False,
+    rotate_right: bool = False,
+    pitch_up: bool = False,
+    pitch_down: bool = False,
+) -> None:
     """Apply keyboard-based rotation to entity."""
     if rotate_left:
         entity.rotate(entity.cameraYawSens * dt)
@@ -85,7 +101,7 @@ def apply_keyboard_rotation(
 
     if pitch_down:
         entity.angleY -= entity.cameraPitchSens * dt
-    
+
     # Clamp vertical angle
     entity.angleY = math_helpers.clamp(
         entity.angleY,
@@ -94,12 +110,16 @@ def apply_keyboard_rotation(
     )
 
 
-def move_to_target(entity, target, dt):
+def move_to_target(
+    entity: SupportsAgent,
+    target: HasPosition | tuple[float, float],
+    dt: float,
+) -> tuple[float, float]:
     """Return the movement vector that would move the entity toward the given target."""
-    if hasattr(target, "get_pos"):
-        target_pos = target.get_pos()
-    else:
+    if isinstance(target, tuple):
         target_pos = target
+    else:
+        target_pos = target.get_pos()
 
     dx, dy = math_helpers.slope(entity.get_pos(), target_pos)
     targetDistance = math.hypot(dx, dy)
@@ -111,15 +131,20 @@ def move_to_target(entity, target, dt):
         norm_dy = dy / targetDistance * move_distance
         return norm_dx, norm_dy
 
-    return 0, 0
+    return 0.0, 0.0
 
 
-def look_at(entity, target, dt, turn_speed=None):
+def look_at(
+    entity: SupportsAgent,
+    target: HasPosition | tuple[float, float],
+    dt: float,
+    turn_speed: float | None = None,
+) -> None:
     """Rotate the entity toward the target, optionally clamping turn speed."""
-    if hasattr(target, "get_pos"):
-        target_pos = target.get_pos()
-    else:
+    if isinstance(target, tuple):
         target_pos = target
+    else:
+        target_pos = target.get_pos()
 
     dx, dy = math_helpers.slope(entity.get_pos(), target_pos)
     target_angle = math.atan2(dy, dx)

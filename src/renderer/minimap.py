@@ -1,11 +1,15 @@
 import math
-
+from typing import TYPE_CHECKING, Union
 import pygame
 
 from core import colors
 from entities.enemy import Enemy
 from entities.items import Collectible, Gate
 from .raycast import calculate_fov_polygon
+
+if TYPE_CHECKING:
+    from entities.base import Agent
+    from level.level import Level
 
 # Cache for static minimap surfaces
 _STATIC_SURFACES = {}
@@ -60,17 +64,17 @@ def _get_static_surface(screen, level_map, scale_x, scale_y):
     return surface
 
 
-def render_map(screen, entity):
+def render_map(screen: pygame.Surface, entity: "Agent") -> None:
     if not hasattr(entity, "context") or entity.context is None:
         raise RuntimeError("Entity requires a GameContext for minimap rendering.")
-    current_map = entity.context.level
+    current_map: Union["Level", None] = entity.context.level
     if current_map is None:
         raise RuntimeError("GameContext.level is not set.")
     scale_x = screen.get_width() / current_map.level_width
     scale_y = screen.get_height() / current_map.level_height
 
     static_surface = _get_static_surface(screen, current_map, scale_x, scale_y)
-    screen.blit(static_surface, (0, 0))
+    _ = screen.blit(static_surface, (0, 0))
 
     fov_points = calculate_fov_polygon(entity)
     # Translate (x, y) coordinates into scaled map space
@@ -81,12 +85,12 @@ def render_map(screen, entity):
     if len(fov_points) > 2:
         pygame.draw.polygon(screen, colors.WHITE, fov_points)
 
-    for enemy in current_map.grid_entities:
-        px = int(enemy.px * scale_y)
-        py = int(enemy.py * scale_x)
-        if issubclass(type(enemy), Enemy):
+    for mapped_entity in current_map.grid_entities:
+        px = int(mapped_entity.px * scale_y)
+        py = int(mapped_entity.py * scale_x)
+        if isinstance(mapped_entity, Enemy):
             pygame.draw.circle(screen, colors.RED, [py, px], 2)
-        if issubclass(type(enemy), Collectible) and enemy.collected:
+        if isinstance(mapped_entity, Collectible) and mapped_entity.collected:
             pygame.draw.circle(screen, colors.YELLOW_WHITE, [py, px], 2)
 
     pygame.draw.circle(
@@ -96,14 +100,14 @@ def render_map(screen, entity):
     [pygame.draw.polygon(screen, c, points) for c, points in all_fovs]
 
     color = colors.DARK_GRAY
-    for e in current_map.grid_entities:
-        if issubclass(type(e), Gate) and not e.open:
+    for grid_entity in current_map.grid_entities:
+        if isinstance(grid_entity, Gate) and not grid_entity.open:
             pygame.draw.rect(
                 screen,
                 color,
                 [
-                    scale_x * math.floor(e.py),
-                    scale_y * math.floor(e.px),
+                    scale_x * math.floor(grid_entity.py),
+                    scale_y * math.floor(grid_entity.px),
                     scale_x + 1,
                     scale_y + 1,
                 ],

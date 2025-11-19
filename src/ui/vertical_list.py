@@ -1,34 +1,43 @@
 """Vertical list UI component."""
-from typing import Optional
+
+from collections.abc import Sequence
+
 import pygame
+
 from config import renderer_config
 from renderer.text import FONT_PATH
 from ui.button import HudButton
-from ui.helpers import _resolve_screen
+from ui.helpers import resolve_screen
 
 
 class VerticalList:
     """A vertical list of buttons."""
-    
-    def __init__(self, str_list, px, py):
-        self.items = str_list
-        self.objects = []
-        self.px = px
-        self.py = py
+
+    def __init__(self, str_list: Sequence[str], px: int, py: int) -> None:
+        self.items: list[str] = list(str_list)
+        self.objects: list[HudButton] = []
+        self.px: int = px
+        self.py: int = py
         font = pygame.font.Font(FONT_PATH, renderer_config.HUD_CELL_TITLE_FONT_SIZE)
-        for line in str_list:
+        for line in self.items:
             self.objects.append(
-                HudButton(font.size(line)[0], renderer_config.HUD_CELL_TITLE_FONT_SIZE, line)
+                HudButton(
+                    font.size(line)[0], renderer_config.HUD_CELL_TITLE_FONT_SIZE, line
+                )
             )
 
-    def draw(self, screen: Optional[pygame.Surface] = None):
+    def draw(self, screen: pygame.Surface | None = None) -> None:
         """Draw the vertical list."""
-        for buttons in self.objects:
-            buttons.redraw()
-        target_screen = _resolve_screen(screen)
-        for x in range(len(self.objects)):
-            target_screen.blit(
-                self.objects[x],
-                (self.px, self.py + x * renderer_config.HUD_CELL_TITLE_FONT_SIZE + x * 10),
+        for button in self.objects:
+            button.redraw()
+        target_screen = resolve_screen(screen)
+        for index, button in enumerate(self.objects):
+            _ = target_screen.blit(
+                button,
+                (
+                    self.px,
+                    self.py
+                    + index * renderer_config.HUD_CELL_TITLE_FONT_SIZE
+                    + index * 10,
+                ),
             )
-

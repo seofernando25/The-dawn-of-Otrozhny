@@ -4,7 +4,7 @@ from .base import Entity
 
 class Node(Entity):
     """A node in the pathfinding network for enemy patrol routes."""
-    
+
     def __init__(self, start_pos, *, context=None):
         super().__init__(start_pos, context=context)
         self.behaviour = None
@@ -30,6 +30,7 @@ class Node(Entity):
 
         if biased:
             from config import ENEMY_CONFIG
+
             bias_factor = ENEMY_CONFIG["node_bias_factor"]
             for _ in range(int(len(self.nodes) * bias_factor)):
                 node_list.append(node_list[-1])
@@ -39,4 +40,3 @@ class Node(Entity):
             return node_list[node_pos]
         else:
             return self
-

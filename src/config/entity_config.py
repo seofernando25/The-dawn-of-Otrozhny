@@ -1,9 +1,7 @@
 """Entity configuration constants."""
 
-from typing import Dict, Any
-
 # Enemy configuration
-ENEMY_CONFIG: Dict[str, Any] = {
+ENEMY_CONFIG: dict[str, object] = {
     "fov_degrees": 90,
     "move_speed": 2,
     "fov_depth": 6,
@@ -26,7 +24,7 @@ ENEMY_CONFIG: Dict[str, Any] = {
 }
 
 # Player configuration
-PLAYER_CONFIG: Dict[str, Any] = {
+PLAYER_CONFIG: dict[str, object] = {
     "fov_degrees": 90,
     "move_speed": 2,
     "camera_yaw_sensitivity": 2,
@@ -35,9 +33,8 @@ PLAYER_CONFIG: Dict[str, Any] = {
 }
 
 # Default entity values
-ENTITY_DEFAULTS: Dict[str, Any] = {
+ENTITY_DEFAULTS: dict[str, float | int] = {
     "health": 100,
     "plane_y": 0.66,  # Camera plane Y component
     "move_to_look_speed_multiplier": 2,  # Look speed multiplier when moving to target
 }
-

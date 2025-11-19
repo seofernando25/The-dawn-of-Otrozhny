@@ -70,25 +70,25 @@ class StarField(pygame.Surface):
     class Star:
         def __init__(self, parent_width, parent_height):
             spread = 3
-            self.x = random.randint(-parent_width // spread, parent_width // spread)
-            self.y = random.randint(-parent_height // spread, parent_height // spread)
-            self.z = random.randint(1, parent_width)
-            self.lastZ = self.z
+            self.x: float = float(random.randint(-parent_width // spread, parent_width // spread))
+            self.y: float = float(random.randint(-parent_height // spread, parent_height // spread))
+            self.z: float = float(random.randint(1, parent_width))
+            self.lastZ: float = self.z
 
-            self.screenX = 0
-            self.screenY = 0
+            self.screenX: float = 0.0
+            self.screenY: float = 0.0
 
-            self.screenLastX = 0
-            self.screenLastY = 0
+            self.screenLastX: float = 0.0
+            self.screenLastY: float = 0.0
 
     def __init__(self, size):
         super().__init__(size)
 
-        self.speed = random.randint(1, 5)
+        self.speed: float = float(random.randint(1, 5))
         self.surface_width = self.get_width()
         self.surface_height = self.get_height()
 
-        self.stars = []
+        self.stars: list[StarField.Star] = []
         for x in range(250):
             self.stars.append(StarField.Star(size[0], size[1]))
 
@@ -147,4 +147,3 @@ class StarField(pygame.Surface):
         while abs(self.speed - num) < 3:
             num = random.randint(1, 10)
         self.speed = num
-
