@@ -33,7 +33,7 @@ class EntityFactory:
         entity_type: str,
         position: tuple[float, float],
         *,
-        context: "GameContext | None" = None,
+        context: GameContext | None = None,
         **kwargs,
     ) -> Entity:
         """Create an entity of the specified type."""
@@ -62,7 +62,7 @@ class EntityFactory:
     def create_from_data(
         entity_data: dict[str, Any],
         *,
-        context: "GameContext | None" = None,
+        context: GameContext | None = None,
         nodes_by_index: dict[int, Node] | None = None,
     ) -> Entity:
         """Create an entity from serialized data."""

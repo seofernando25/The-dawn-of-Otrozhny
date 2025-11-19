@@ -5,13 +5,14 @@ Breaks down the monolithic GridManager into smaller, focused tool classes.
 Each tool handles its own input/update/draw logic.
 """
 
+from typing import override
 from config import renderer_config
 from core import colors
 from core.backend import get_backend
 from entities.enemy import Enemy
 from entities.node import Node
 from entities.factory import EntityFactory
-from core.backend.api import Event, GraphicsSurface
+from core.backend.api import GraphicsSurface
 
 
 class BaseTool:
@@ -54,6 +55,7 @@ class MoveTool(BaseTool):
         self.name = "Options"
         self.selected_entity = None
 
+    @override
     def update(self, events, keys, delta_time, grid_manager):
         backend = get_backend()
         mouse_pos = backend.input.get_mouse_pos()
@@ -77,6 +79,7 @@ class MoveTool(BaseTool):
         else:
             self.selected_entity = None
 
+    @override
     def draw(self, screen: "GraphicsSurface", grid_manager):
         backend = get_backend()
         if self.selected_entity:
@@ -124,8 +127,10 @@ class PlaceTool(BaseTool):
             None,
         ]  # Will be imported
 
+    @override
     def update(self, events, keys, delta_time, grid_manager):
         from core.backend.api import K_b, K_c, K_f, K_g, K_v, K_x, K_z
+
         # Handle keyboard input for type selection
         for i, key in enumerate(
             [
@@ -248,6 +253,7 @@ class WallEditorTool(BaseTool):
         super().__init__()
         self.name = "Wall Editor"
 
+    @override
     def update(self, events, keys, delta_time, grid_manager):
         backend = get_backend()
         mouse_pos = backend.input.get_mouse_pos()
@@ -278,15 +284,17 @@ class NodeTool(BaseTool):
                 return node
         return None
 
+    @override
     def update(self, events, keys, delta_time, grid_manager):
         from core.backend.api import MOUSEBUTTONDOWN, MOUSEBUTTONUP
+
         backend = get_backend()
         mouse_pos = backend.input.get_mouse_pos()
         current_cell = self.get_cursor_cell(mouse_pos, grid_manager)
 
         for event in events:
             if event.type == MOUSEBUTTONDOWN:
-                if hasattr(event, 'button') and event.button == 1:
+                if hasattr(event, "button") and event.button == 1:
                     node = self._find_node_at(current_cell, grid_manager)
                     if node is None:
                         self.selected_node = None
@@ -298,7 +306,7 @@ class NodeTool(BaseTool):
                             self.selected_node.join_node(node)
                             self.selected_node = node
                         self.is_dragging = True
-                elif hasattr(event, 'button') and event.button == 3:
+                elif hasattr(event, "button") and event.button == 3:
                     node = self._find_node_at(current_cell, grid_manager)
                     if node is not None:
                         for other_node in node.nodes[:]:
@@ -307,7 +315,12 @@ class NodeTool(BaseTool):
                             self.selected_node = None
                             self.is_dragging = False
 
-            elif hasattr(event, 'type') and hasattr(event, 'button') and event.type == MOUSEBUTTONUP and event.button == 1:
+            elif (
+                hasattr(event, "type")
+                and hasattr(event, "button")
+                and event.type == MOUSEBUTTONUP
+                and event.button == 1
+            ):
                 if self.is_dragging:
                     node = self._find_node_at(current_cell, grid_manager)
                     if node and self.selected_node and node != self.selected_node:
@@ -315,6 +328,7 @@ class NodeTool(BaseTool):
                         self.selected_node = node
                 self.is_dragging = False
 
+    @override
     def draw(self, screen: "GraphicsSurface", grid_manager):
         backend = get_backend()
         if self.selected_node:
@@ -337,15 +351,17 @@ class NavigationTool(BaseTool):
         super().__init__()
         self.name = "Navigation"
 
+    @override
     def update(self, events, keys, delta_time, grid_manager):
         from core.backend.api import K_a, K_d, K_s, K_w, MOUSEBUTTONDOWN
+
         backend = get_backend()
         # Handle zoom
         for event in events:
             if event.type == MOUSEBUTTONDOWN:
-                if hasattr(event, 'button') and event.button == 4:  # Mouse wheel up
+                if hasattr(event, "button") and event.button == 4:  # Mouse wheel up
                     grid_manager.scale += 1
-                elif hasattr(event, 'button') and event.button == 5:  # Mouse wheel down
+                elif hasattr(event, "button") and event.button == 5:  # Mouse wheel down
                     grid_manager.scale -= 1
 
         if grid_manager.scale < 2:

@@ -1,5 +1,5 @@
 import math
-from typing import  Callable
+from typing import Callable
 
 from core import colors
 from core.backend import get_backend
@@ -62,7 +62,7 @@ def draw_grid(
             if len(color) == 4:
                 rgb_color = (color[0], color[1], color[2])  # Strip alpha
             else:
-                rgb_color = color  
+                rgb_color = color
             backend.graphics.draw_rect(
                 surface, rgb_color, (scale_x * y, scale_y * x, scale_x + 1, scale_y + 1)
             )
@@ -107,7 +107,7 @@ def render_map(screen: "GraphicsSurface", entity: "Agent") -> None:
     backend = get_backend()
     if not hasattr(entity, "context") or entity.context is None:
         raise RuntimeError("Entity requires a GameContext for minimap rendering.")
-    current_map: "Level | None" = entity.context.level
+    current_map: Level | None = entity.context.level
     if current_map is None:
         raise RuntimeError("GameContext.level is not set.")
     width, height = screen.get_size()
@@ -144,7 +144,7 @@ def render_map(screen: "GraphicsSurface", entity: "Agent") -> None:
         if len(c) == 4:
             rgb_color = (c[0], c[1], c[2])  # Strip alpha
         else:
-            rgb_color = c  
+            rgb_color = c
         backend.graphics.draw_polygon(screen, rgb_color, points)
 
     color = colors.DARK_GRAY

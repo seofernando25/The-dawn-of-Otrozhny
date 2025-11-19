@@ -99,6 +99,7 @@ class PostGameScene(SceneHandler):
         keys_pressed: Sequence[bool],
     ) -> bool:
         from core.backend.api import KEYDOWN, QUIT, K_q
+
         for event in events:
             if hasattr(event, "type") and event.type == QUIT:
                 return True

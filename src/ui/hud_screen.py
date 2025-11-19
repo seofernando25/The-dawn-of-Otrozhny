@@ -31,6 +31,7 @@ from core.backend.api import (
     Sound,
 )
 
+
 class HudScreen:
     """Main HUD screen that manages multiple HUD buttons."""
 
@@ -39,7 +40,7 @@ class HudScreen:
         *,
         interactable: bool = True,
         dynamic: bool = False,
-        activated_sound: "Sound | None" = None,
+        activated_sound: Sound | None = None,
     ):
         self.viewPort = generate_hud_viewport()
         _ = self.viewPort.fill(colors.GRAY_VARIATION_2)
@@ -71,7 +72,7 @@ class HudScreen:
         """Set the main text of a button."""
         self.hud_buttons[buttonIndex].set_text(text)
 
-    def draw(self, screen: "GraphicsSurface | None" = None) -> None:
+    def draw(self, screen: GraphicsSurface | None = None) -> None:
         """Draw the HUD screen."""
         backend = get_backend()
         if self.interactable or self.dynamic:
@@ -85,9 +86,7 @@ class HudScreen:
                 colors.BLACK,
                 (
                     int(
-                        self.cursorX * (width / 5)
-                        + renderer_config.HUD_CELL_OFFSET
-                        + 5
+                        self.cursorX * (width / 5) + renderer_config.HUD_CELL_OFFSET + 5
                     ),
                     height,
                     100,
@@ -121,11 +120,9 @@ class HudScreen:
             self.selected_button = 0
         self.hud_buttons[self.selected_button].set_active(True)
 
-    def update(
-        self, delta_time: float, events: Sequence["Event"]
-    ) -> int | None:
+    def update(self, delta_time: float, events: Sequence["Event"]) -> int | None:
         """Update the HUD screen state."""
-        
+
         if self.interactable:
             self.cursorX = math_helpers.lerp(
                 self.cursorX, self.selected_button, delta_time * 15

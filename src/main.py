@@ -7,7 +7,10 @@ from core.backend import get_backend
 from level_editor import editor as levelEditor
 from core.game_state import GameState
 from scenes import about_loop, menu_loop, setup_game, tutorial_loop
-from core.bootstrap import initialize_backend, get_or_initialize_backend, shutdown_backend
+from core.bootstrap import (
+    initialize_backend,
+    shutdown_backend,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -34,6 +37,7 @@ def main_loop():
     backend = initialize_backend("pygame")
     # Initialize display mode before loading textures (required for convert/convert_alpha)
     from config import renderer_config
+
     backend.graphics.set_display_mode(renderer_config.SCREEN_SIZE)
     backend.input.set_allowed_events(["QUIT", "KEYDOWN", "KEYUP"])
     backend.graphics.set_caption("The dawn of Otrozhny")
@@ -84,7 +88,9 @@ def main_loop():
             while state == GameState.Edit:
                 # We need to pass the actual pygame clock for editorLoop as it's expecting pygame specific object
                 # Let's handle this differently - first let's just pass None for now and handle the editor later
-                state = levelEditor.editorLoop(clock, audio)  # This might need special handling
+                state = levelEditor.editorLoop(
+                    clock, audio
+                )  # This might need special handling
             ensure_music("Menu")
             if state == GameState.Quit:
                 done = True

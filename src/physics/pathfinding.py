@@ -6,7 +6,6 @@ from collections.abc import Sequence
 # See: http://www.sfu.ca/~arashr/warren.pdf
 
 
-
 def go_to(
     start: tuple[int, int],
     target: tuple[int, int],

@@ -9,15 +9,15 @@ from core.backend.pygame_backend import PygameBackend
 from core.backend.api import Backend
 
 
-def initialize_backend(backend_type: str = "pygame") -> "Backend":
+def initialize_backend(backend_type: str = "pygame") -> Backend:
     """
     Initialize and return the specified backend.
-    
+
     Args:
         backend_type: Type of backend to initialize ("pygame" is currently the only option)
-        
+
     Returns:
-        Initialized backend instance
+        Backend
     """
     if backend_type == "pygame":
         backend = PygameBackend()
@@ -28,12 +28,12 @@ def initialize_backend(backend_type: str = "pygame") -> "Backend":
         raise ValueError(f"Unknown backend type: {backend_type}")
 
 
-def get_or_initialize_backend() -> "Backend":
+def get_or_initialize_backend() -> Backend:
     """
     Get the current backend or initialize it if it doesn't exist.
-    
+
     Returns:
-        Backend instance
+        Backend
     """
     return get_backend()
 

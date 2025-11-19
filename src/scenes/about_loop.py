@@ -25,11 +25,12 @@ class AboutScene(SceneHandler):
     ) -> bool:
         """Handle quit events."""
         from core.backend.api import QUIT, KEYDOWN, K_q
+
         for event in events:
             if event.type == QUIT:
                 return True
             elif event.type == KEYDOWN:
-                if hasattr(event, 'key') and event.key == K_q:
+                if hasattr(event, "key") and event.key == K_q:
                     return True
         return False
 

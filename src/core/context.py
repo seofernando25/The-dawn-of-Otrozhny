@@ -50,10 +50,10 @@ class BaseContext:
 class GameContext(BaseContext):
     """Aggregates runtime state for the main gameplay loops."""
 
-    player: "Any | None" = None  # Keeping as Any for now since Player type is not defined elsewhere
-    level: "Any | None" = None   # Keeping as Any for now since Level type is not defined elsewhere
-    clock: "Clock | None" = None
-    enemy_state: "EnemyStateManager | None" = None
+    player: Any | None = None
+    level: Any | None = None
+    clock: Clock | None = None
+    enemy_state: EnemyStateManager | None = None
 
     def update_level(self, level: Any) -> None:
         """Swap the active level reference."""
@@ -63,7 +63,7 @@ class GameContext(BaseContext):
         """Swap the active player reference."""
         self.player = player
 
-    def ensure_enemy_state(self) -> "EnemyStateManager":
+    def ensure_enemy_state(self) -> EnemyStateManager:
         """Get or create the enemy state manager."""
         if self.enemy_state is None:
             self.enemy_state = _build_enemy_state()
@@ -74,9 +74,9 @@ class GameContext(BaseContext):
 class EditorContext(BaseContext):
     """Context wrapper dedicated to the level editor."""
 
-    grid_manager: "Any | None" = None  # Keeping as Any since GridManager type is not defined elsewhere
+    grid_manager: Any | None = None
 
-    def ensure_grid_manager(self, manager: "GridManager") -> "GridManager":
+    def ensure_grid_manager(self, manager: GridManager) -> GridManager:
         """Set and return the grid manager, enabling fluent initialization."""
         self.grid_manager = manager
         return manager
@@ -86,9 +86,9 @@ def build_game_context(
     *,
     player: Any,
     level: Any | None = None,
-    screen: "GraphicsSurface | None" = None,
-    audio_manager_service: "AudioManager",
-    clock: "Clock | None" = None,
+    screen: GraphicsSurface | None = None,
+    audio_manager_service: AudioManager,
+    clock: Clock | None = None,
     enemy_state: Any | None = None,
 ) -> GameContext:
     """Create a GameContext with required dependencies."""
@@ -112,8 +112,8 @@ def build_game_context(
 
 def build_editor_context(
     *,
-    screen: "GraphicsSurface | None" = None,
-    audio_manager_service: "AudioManager",
+    screen: GraphicsSurface | None = None,
+    audio_manager_service: AudioManager,
     grid_manager: Any | None = None,
 ) -> EditorContext:
     """Factory helper for editor-specific tooling."""

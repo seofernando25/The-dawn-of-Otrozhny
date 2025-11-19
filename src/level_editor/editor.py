@@ -1,6 +1,6 @@
 import enum
 from collections.abc import Sequence
-from typing import  override
+from typing import override
 
 from config import EDITOR_CONFIG
 from core.audio import AudioManager
@@ -19,7 +19,6 @@ from ui import HudScreen
 from scenes.loop_runner import SceneHandler, run_scene
 from core.backend.api import Clock, Event, GraphicsSurface
 from . import tools as editor_tools
-
 
 
 class EditorTools(enum.Enum):

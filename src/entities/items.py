@@ -1,3 +1,4 @@
+from typing import override
 from utils import math_helpers
 from config import COLLISION_DISTANCES
 from .base import SpriteEntity
@@ -8,6 +9,7 @@ class Collectible(SpriteEntity):
         super().__init__(start_pos, "collectible", context=context)
         self.collected = False
 
+    @override
     def update(self, dt):
         if not self.collected:
             player = self._player()
@@ -25,11 +27,13 @@ class Gate(SpriteEntity):
         self.open = False
         self._grid_pos: tuple[int, int] | None = None
 
+    @override
     def set_context(self, context):
         super().set_context(context)
         self._grid_pos = (int(self.px), int(self.py))
         self._apply_grid_state()
 
+    @override
     def update(self, dt):
         if not self.open:
             player = self._player()
@@ -71,6 +75,7 @@ class Key(SpriteEntity):
         super().__init__(start_pos, "key", context=context)
         self.collected = False
 
+    @override
     def update(self, dt):
         if not self.collected:
             player = self._player()

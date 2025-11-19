@@ -35,9 +35,7 @@ class _MixerState:
             self._initialized = False
         return self._initialized
 
-    def ensure_channel(
-        self, channel: "Channel | None" = None
-    ) -> "Channel | None":
+    def ensure_channel(self, channel: Channel | None = None) -> "Channel | None":
         """Get or create an audio channel."""
         if not self.ensure_initialized():
             return None
@@ -57,7 +55,7 @@ def ensure_initialized() -> bool:
 
 
 def ensure_channel(
-    channel: "Channel | None" = None,
+    channel: Channel | None = None,
 ) -> "Channel | None":
     """Get or create an audio channel."""
     return _MIXER_STATE.ensure_channel(channel)
@@ -84,7 +82,7 @@ def _normalize_volume(volume: VolumeInput) -> tuple[float, float] | None:
 def play_sound_low_level(
     sound: "Sound | None",
     *,
-    channel: "Channel | None" = None,
+    channel: Channel | None = None,
     loops: int = 0,
     maxtime: int = 0,
     fade_ms: int = 0,
@@ -94,13 +92,13 @@ def play_sound_low_level(
     """Low-level function to play a Sound object using the backend abstraction."""
     if sound is None:
         return channel
-    
+
     channel = ensure_channel(channel)
     if channel is None:
         return None
     if channel.get_busy() and not force:
         return channel
-    
+
     channel.play(sound, loops=loops, maxtime=maxtime, fade_ms=fade_ms)
     normalized_volume = _normalize_volume(volume)
     if normalized_volume is not None:
@@ -122,9 +120,9 @@ class AudioManager:
 
     def __init__(self):
         self._channels: dict[str, "Channel"] = {}
-        self._active_ui_sound: "Sound | None" = None
+        self._active_ui_sound: Sound | None = None
         self._mixer_state: _MixerState = _MixerState()
-        self._music_channel: "Channel | None" = None
+        self._music_channel: Channel | None = None
         result = self._mixer_state.ensure_initialized()
         _ = result  # Suppress unused call result
 
@@ -156,9 +154,7 @@ class AudioManager:
             LOGGER.error(f"Failed to play sound {pack}/{sound_id}: {e}")
             return None
 
-    def play_music(
-        self, music_id: str, pack: str = "music"
-    ) -> "Channel | None":
+    def play_music(self, music_id: str, pack: str = "music") -> "Channel | None":
         """Play looping background music and return the dedicated music channel if successful."""
         try:
             music = assets.get_cached_audio(pack, music_id)

@@ -47,9 +47,7 @@ class MenuScene(SceneHandler):
         backend.input.set_event_grab(False)
 
     @override
-    def handle_events(
-        self, events: list[Event], keys_pressed: Sequence[bool]
-    ) -> bool:
+    def handle_events(self, events: list[Event], keys_pressed: Sequence[bool]) -> bool:
         """Handle quit and keyboard events."""
         for event in events:
             if event.type == QUIT:

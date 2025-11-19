@@ -1,6 +1,6 @@
 import enum
 import math
-from typing import  cast
+from typing import cast
 
 import numpy as np
 
@@ -344,7 +344,9 @@ def render_walls(screen: "GraphicsSurface", entity: "Agent") -> None:
             if target_width <= 0 or target_height <= 0:
                 continue
 
-            img = backend.graphics.scale_surface(scaled_sprite, (target_width, target_height))
+            img = backend.graphics.scale_surface(
+                scaled_sprite, (target_width, target_height)
+            )
             img_width = img.get_width()
             img_height = img.get_height()
             blit_surface(

@@ -1,5 +1,5 @@
 import math
-from typing import  cast
+from typing import cast, override
 
 from config import ENTITY_DEFAULTS
 from core import assets
@@ -32,7 +32,7 @@ class Entity:
     ):
         self.px: float = float(start_pos[0])
         self.py: float = float(start_pos[1])
-        self.context: "GameContext | None" = context
+        self.context: GameContext | None = context
 
     def update(self, dt: float) -> None:
         pass
@@ -93,7 +93,7 @@ class SpriteEntity(Entity):
         super().__init__(start_pos, context=context)
         self.agent_pack_name = agent_pack_name
 
-    def get_sprite(self, _cam: object) -> "GraphicsSurface | None":
+    def get_sprite(self, _cam: object) -> GraphicsSurface | None:
         return assets.get_sprite(self.agent_pack_name, 0)
 
 
@@ -123,6 +123,7 @@ class Agent(SpriteEntity):
         self.cameraYawSens = 0.0
         self.cameraPitchSens = 0.0
 
+    @override
     def update(self, dt: float) -> None:
         return super().update(dt)
 
@@ -176,12 +177,13 @@ class SpriteAgent(Agent):
         fov_depth: float,
         agent_pack: str,
         *,
-        context: "GameContext | None" = None,
+        context: GameContext | None = None,
     ):
         super().__init__(start_pos, fov, move_speed, fov_depth, context=context)
         self.agent_pack_name = agent_pack
 
-    def get_sprite(self, camObj: object) -> "GraphicsSurface":
+    @override
+    def get_sprite(self, camObj: object) -> GraphicsSurface:
         backend = get_backend()
         angle = math.atan2(self.dirY, self.dirX)
         if not hasattr(camObj, "get_pos"):

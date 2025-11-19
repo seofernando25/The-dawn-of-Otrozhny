@@ -1,7 +1,7 @@
 # Script used mainly to draw "otherEffects.py" on the screen
 # eg: main menu's Sierpinski triangle
 import random
-from typing import  override
+from typing import override
 
 from core import colors
 from core.backend import get_backend
@@ -36,9 +36,7 @@ class ChaosObject:
             point = self.drawn_points[len(self.drawn_points) - 1 - x]
             # Ensure point is exactly 2 elements for type safety
             center: tuple[float, float] = (float(point[0]), float(point[1]))
-            backend.graphics.draw_circle(
-                self._surface, self.color, center, 1
-            )
+            backend.graphics.draw_circle(self._surface, self.color, center, 1)
         self.updates_before_draw = 0
         blit_surface(
             screen,

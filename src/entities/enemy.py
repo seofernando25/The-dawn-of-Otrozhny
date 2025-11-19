@@ -1,4 +1,5 @@
 import math
+from typing import override
 from config import ENEMY_CONFIG
 from physics import pathfinding
 from renderer.raycast import generate_distance_table
@@ -41,6 +42,7 @@ class Enemy(SpriteAgent):
             )
         return context.enemy_state
 
+    @override
     def update(self, dt):
         """Update enemy AI behavior."""
         generate_distance_table(self)
@@ -113,10 +115,7 @@ class Enemy(SpriteAgent):
             pathfinding_dist = ENEMY_CONFIG["pathfinding_target_distance"]
             from .node import Node
 
-            if (
-                isinstance(self.target, Node)
-                and targetDistance < pathfinding_dist
-            ):
+            if isinstance(self.target, Node) and targetDistance < pathfinding_dist:
                 self.timeGuarded += dt
                 patrol_rot = ENEMY_CONFIG["patrol_rotation_speed"]
                 rotation_speed = math.radians(patrol_rot) * dt

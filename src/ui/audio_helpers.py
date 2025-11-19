@@ -1,4 +1,3 @@
-
 from core import assets
 from core.audio import AudioManager
 from core.backend import get_backend
@@ -17,6 +16,6 @@ def get_ui_activation_sound(
     filenames = assets.list_asset_files("music", "Active_UI")
     if not filenames:
         return None
-    
+
     backend = get_backend()
     return backend.audio.load_sound(filenames[0])

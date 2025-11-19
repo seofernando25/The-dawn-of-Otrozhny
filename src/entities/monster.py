@@ -1,5 +1,6 @@
 import math
 import random
+from typing import override
 from utils import math_helpers
 from config import ENEMY_CONFIG, DAMAGE_CONFIG, SOUND_CONFIG
 from .enemy import Enemy
@@ -11,6 +12,7 @@ class Monster(Enemy):
     def __init__(self, start_pos, patrolPoint=None, *, context=None):
         super().__init__(start_pos, patrolPoint=patrolPoint, context=context)
 
+    @override
     def update(self, dt):
         """Update monster behavior including attacks and sounds."""
         super().update(dt)

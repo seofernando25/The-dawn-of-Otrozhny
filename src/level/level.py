@@ -51,7 +51,7 @@ class Level:
         This method sets context on all entities (both grid entities and node entities)
         and updates the context with the player reference if found.
         """
-        context.update_level(self)  
+        context.update_level(self)
 
         # Attach context to all grid entities
         for entity in self.grid_entities:

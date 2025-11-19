@@ -20,16 +20,16 @@ class VerticalList:
         self.px: int = px
         self.py: int = py
         backend = get_backend()
-        font = backend.graphics.load_font(FONT_PATH, renderer_config.HUD_CELL_TITLE_FONT_SIZE)
+        font = backend.graphics.load_font(
+            FONT_PATH, renderer_config.HUD_CELL_TITLE_FONT_SIZE
+        )
         for line in self.items:
             width, _ = font.size(line)
             self.objects.append(
-                HudButton(
-                    width, renderer_config.HUD_CELL_TITLE_FONT_SIZE, line
-                )
+                HudButton(width, renderer_config.HUD_CELL_TITLE_FONT_SIZE, line)
             )
 
-    def draw(self, screen: "GraphicsSurface | None" = None) -> None:
+    def draw(self, screen: GraphicsSurface | None = None) -> None:
         """Draw the vertical list."""
         for button in self.objects:
             button.redraw()

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import  cast
+from typing import cast
 
 from core.context import GameContext
 from entities.enemy_state import EnemyStateManager

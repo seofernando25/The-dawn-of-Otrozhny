@@ -1,6 +1,5 @@
 """HUD button component."""
 
-
 from config import renderer_config
 from core import colors
 from core.backend import get_backend
@@ -17,10 +16,12 @@ class HudButton:
         h: float,
         text: str = "None",
         *,
-        activated_sound: "Sound | None" = None,
+        activated_sound: Sound | None = None,
     ):
         backend = get_backend()
-        self._surface: GraphicsSurface = backend.graphics.create_surface((int(w), int(h)))
+        self._surface: GraphicsSurface = backend.graphics.create_surface(
+            (int(w), int(h))
+        )
         self.isActive: bool = False
         # If false the surface have to be redrawn step by step
         self.protected: bool = True
@@ -29,7 +30,7 @@ class HudButton:
         self.title: str = ""
         self.indexColor: list[colors.ColorValue] = [colors.WHITE] * 3
         self._dirty: bool = True
-        self._activated_sound: "Sound | None" = activated_sound
+        self._activated_sound: Sound | None = activated_sound
 
     def get_width(self) -> int:
         """Get the width of the button surface."""
@@ -51,7 +52,7 @@ class HudButton:
         """Fill the button surface with a color."""
         self._surface.fill(color)
 
-    def blit(self, source: "GraphicsSurface", dest: tuple[float, float]) -> None:
+    def blit(self, source: GraphicsSurface, dest: tuple[float, float]) -> None:
         """Blit a source surface onto this button surface."""
         self._surface.blit(source, dest)
 

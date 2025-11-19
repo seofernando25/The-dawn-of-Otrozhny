@@ -47,19 +47,22 @@ K_v: int = 118
 K_x: int = 120
 K_z: int = 122
 
+
 # Event types
 class Event:
     """Base event class for backend-agnostic events."""
+
     def __init__(self, type: int, **kwargs):
         self.type = type
         self.key: int | None = None  # Key code for keyboard events
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+
 # Graphics surface interface
 class GraphicsSurface(ABC):
     """Abstract interface for graphics surfaces and drawing operations."""
-    
+
     @abstractmethod
     def get_size(self) -> tuple[int, int]:
         """Get the width and height of the surface."""
@@ -74,7 +77,9 @@ class GraphicsSurface(ABC):
         return self.get_size()[1]
 
     @abstractmethod
-    def blit(self, source: GraphicsSurface, dest: tuple[Coordinate, Coordinate] | Coordinate):
+    def blit(
+        self, source: GraphicsSurface, dest: tuple[Coordinate, Coordinate] | Coordinate
+    ):
         """Draw the source surface onto this surface at the destination."""
         pass
 
@@ -101,7 +106,7 @@ class GraphicsSurface(ABC):
 
 class Font(ABC):
     """Abstract interface for font rendering."""
-    
+
     @abstractmethod
     def render(self, text: str, antialias: bool, color: ColorValue) -> GraphicsSurface:
         """Render text to a surface."""
@@ -115,7 +120,7 @@ class Font(ABC):
 
 class Texture(ABC):
     """Abstract interface for textures/images."""
-    
+
     @abstractmethod
     def get_size(self) -> tuple[int, int]:
         """Get the width and height of the texture."""
@@ -124,7 +129,7 @@ class Texture(ABC):
 
 class GraphicsBackend(ABC):
     """Main graphics backend interface."""
-    
+
     @abstractmethod
     def create_surface(self, size: tuple[int, int]) -> GraphicsSurface:
         """Create a new surface with the given size."""
@@ -151,7 +156,9 @@ class GraphicsBackend(ABC):
         pass
 
     @abstractmethod
-    def set_display_mode(self, size: tuple[int, int], flags: int = 0) -> GraphicsSurface:
+    def set_display_mode(
+        self, size: tuple[int, int], flags: int = 0
+    ) -> GraphicsSurface:
         """Set the display mode and return the surface."""
         pass
 
@@ -166,32 +173,59 @@ class GraphicsBackend(ABC):
         pass
 
     @abstractmethod
-    def draw_rect(self, surface: GraphicsSurface, color: ColorValue, rect: tuple[Coordinate, Coordinate, Coordinate, Coordinate]):
+    def draw_rect(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        rect: tuple[Coordinate, Coordinate, Coordinate, Coordinate],
+    ):
         """Draw a rectangle on the surface."""
         pass
 
     @abstractmethod
-    def draw_circle(self, surface: GraphicsSurface, color: ColorValue, center: tuple[Coordinate, Coordinate], radius: int):
+    def draw_circle(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        center: tuple[Coordinate, Coordinate],
+        radius: int,
+    ):
         """Draw a circle on the surface."""
         pass
 
     @abstractmethod
-    def draw_line(self, surface: GraphicsSurface, color: ColorValue, start_pos: tuple[Coordinate, Coordinate], end_pos: tuple[Coordinate, Coordinate], width: int = 1):
+    def draw_line(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        start_pos: tuple[Coordinate, Coordinate],
+        end_pos: tuple[Coordinate, Coordinate],
+        width: int = 1,
+    ):
         """Draw a line on the surface."""
         pass
 
     @abstractmethod
-    def draw_polygon(self, surface: GraphicsSurface, color: ColorValue, points: list[tuple[Coordinate, Coordinate]]):
+    def draw_polygon(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        points: list[tuple[Coordinate, Coordinate]],
+    ):
         """Draw a polygon on the surface."""
         pass
 
     @abstractmethod
-    def scale_surface(self, surface: GraphicsSurface, size: tuple[int, int]) -> GraphicsSurface:
+    def scale_surface(
+        self, surface: GraphicsSurface, size: tuple[int, int]
+    ) -> GraphicsSurface:
         """Scale a surface to a new size."""
         pass
 
     @abstractmethod
-    def flip_surface(self, surface: GraphicsSurface, flip_x: bool, flip_y: bool) -> GraphicsSurface:
+    def flip_surface(
+        self, surface: GraphicsSurface, flip_x: bool, flip_y: bool
+    ) -> GraphicsSurface:
         """Flip a surface horizontally and/or vertically."""
         pass
 
@@ -203,7 +237,7 @@ class GraphicsBackend(ABC):
 
 class InputBackend(ABC):
     """Input backend interface for handling events and input states."""
-    
+
     @abstractmethod
     def get_events(self) -> list[Event]:
         """Get all pending events."""
@@ -252,18 +286,22 @@ class InputBackend(ABC):
 
 class Sound(ABC):
     """Abstract interface for audio sounds."""
-    
+
     @abstractmethod
-    def play(self, loops: int = 0, maxtime: int = 0, fade_ms: int = 0) -> Channel | None:
+    def play(
+        self, loops: int = 0, maxtime: int = 0, fade_ms: int = 0
+    ) -> Channel | None:
         """Play the sound."""
         pass
 
 
 class Channel(ABC):
     """Abstract interface for audio channels."""
-    
+
     @abstractmethod
-    def play(self, sound: Sound, loops: int = 0, maxtime: int = 0, fade_ms: int = 0) -> None:
+    def play(
+        self, sound: Sound, loops: int = 0, maxtime: int = 0, fade_ms: int = 0
+    ) -> None:
         """Play a sound on this channel."""
         pass
 
@@ -285,9 +323,15 @@ class Channel(ABC):
 
 class AudioBackend(ABC):
     """Audio backend interface."""
-    
+
     @abstractmethod
-    def init(self, frequency: int = 44100, size: int = -16, channels: int = 2, buffer: int = 512) -> bool:
+    def init(
+        self,
+        frequency: int = 44100,
+        size: int = -16,
+        channels: int = 2,
+        buffer: int = 512,
+    ) -> bool:
         """Initialize the audio system."""
         pass
 
@@ -314,7 +358,7 @@ class AudioBackend(ABC):
 
 class Clock(ABC):
     """Abstract interface for timing and frame rate control."""
-    
+
     @abstractmethod
     def tick(self, framerate: int = 0) -> int:
         """Control the frame rate and return the time since the last call."""
@@ -333,7 +377,7 @@ class Clock(ABC):
 
 class Backend(ABC):
     """Main backend interface that combines all subsystems."""
-    
+
     @property
     @abstractmethod
     def graphics(self) -> GraphicsBackend:

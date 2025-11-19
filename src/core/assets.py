@@ -48,8 +48,9 @@ def get_sprite(sprite_pack: str, sprite_position: int) -> "GraphicsSurface | Non
         sprite_path = filenames[sprite_position]
     except IndexError:
         sprite_path = filenames[0]
-    
+
     from core.backend import get_backend
+
     backend = get_backend()
     image = backend.graphics.load_image(sprite_path)
     image.set_colorkey((152, 0, 136))
@@ -58,7 +59,7 @@ def get_sprite(sprite_pack: str, sprite_position: int) -> "GraphicsSurface | Non
 
 def get_audio(folder: str, state: str) -> "Sound | None":
     from core.backend import get_backend
-    
+
     cache_key = (folder, state)
     cached_sounds = _AUDIO_CACHE.get(cache_key)
     if cached_sounds:
@@ -68,7 +69,7 @@ def get_audio(folder: str, state: str) -> "Sound | None":
     if not filenames:
         LOGGER.warning("Audio folder '%s/%s' is missing.", folder, state)
         return None
-    
+
     backend = get_backend()
     sounds = [backend.audio.load_sound(path) for path in filenames]
     _AUDIO_CACHE[cache_key] = sounds
@@ -78,12 +79,12 @@ def get_audio(folder: str, state: str) -> "Sound | None":
 @lru_cache(maxsize=8)
 def get_cached_audio(folder_name: str, sub_folder: str) -> "Sound | None":
     from core.backend import get_backend
-    
+
     filenames = list_asset_files(folder_name, sub_folder)
     if not filenames:
         LOGGER.warning("Cached audio folder '%s/%s' missing.", folder_name, sub_folder)
         return None
-    
+
     backend = get_backend()
     return backend.audio.load_sound(filenames[0])
 

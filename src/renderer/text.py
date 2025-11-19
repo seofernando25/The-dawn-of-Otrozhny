@@ -1,6 +1,6 @@
 # Functions to draw text on the screen
 import os
-from typing import  TypeAlias
+from typing import TypeAlias
 
 from core import colors
 from core.backend import get_backend
@@ -21,7 +21,9 @@ FONT_PATH = os.path.join(dir_path, "assets", "fonts", FONT_NAME)
 
 def text_object(
     text: str, font: "Font", color: colors.ColorValue = colors.WHITE
-) -> tuple["GraphicsSurface", tuple[tuple[int, int], tuple[int, int]]]:  # Returns (surface, rect)
+) -> tuple[
+    "GraphicsSurface", tuple[tuple[int, int], tuple[int, int]]
+]:  # Returns (surface, rect)
     text_surface = font.render(str(text), True, color)
     # Since we can't easily get the rect from our abstract surface, we'll make a simple rect
     width, height = font.size(str(text))

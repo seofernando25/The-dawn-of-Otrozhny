@@ -6,7 +6,7 @@ This module provides a reusable implementation.
 """
 
 from collections.abc import Sequence
-from typing import  Protocol
+from typing import Protocol
 
 from core import colors
 from core.backend import get_backend
@@ -46,13 +46,12 @@ class SceneHandler(Protocol):
 class SimpleSceneHandler:
     """Base class for simple scenes that just handle quit events."""
 
-    def handle_events(
-        self, events: list[Event], keys_pressed: Sequence[bool]
-    ) -> bool:
+    def handle_events(self, events: list[Event], keys_pressed: Sequence[bool]) -> bool:
         """Handle basic quit events and return True if should quit."""
         _ = keys_pressed
         from core.backend.api import QUIT, KEYDOWN
         from core.backend.api import K_q
+
         for event in events:
             if event.type == QUIT:
                 return True
@@ -69,8 +68,8 @@ class SimpleSceneHandler:
 
 def run_scene(
     scene_handler: SceneHandler,
-    clock: "Clock | None" = None,
-    bg_color: tuple[int, int, int] = colors.BLACK,
+    clock: Clock | None = None,
+    bg_color: colors.ColorValue = colors.BLACK,
 ) -> bool:
     """Run a scene via the unified loop pattern and return False when it requests to quit."""
     backend = get_backend()
@@ -101,8 +100,8 @@ def run_scene(
 def run_scene_with_hud(
     scene_handler: SceneHandler,
     hud: HudLike,
-    clock: "Clock | None" = None,
-    bg_color: tuple[int, int, int] = colors.BLACK,
+    clock: Clock | None = None,
+    bg_color: colors.ColorValue = colors.BLACK,
 ) -> bool | GameState:
     """Run a HUD-enabled scene loop and return False when the handler or HUD requests exit."""
     backend = get_backend()

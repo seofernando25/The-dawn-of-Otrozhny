@@ -49,6 +49,7 @@ class InputSystem:
     ) -> GameState | None:
         """Process game-level input like quit and menu."""
         from core.backend.api import K_q, QUIT
+
         # Check for quit to menu (holding Q)
         if self._is_key_pressed(keys_pressed, K_q):
             return GameState.Menu
@@ -79,6 +80,7 @@ class InputSystem:
             K_a,
             K_d,
         )
+
         player_obj = cast(Player | None, self.context.player)
         if player_obj is None:
             return

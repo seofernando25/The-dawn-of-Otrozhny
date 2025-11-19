@@ -1,4 +1,4 @@
-from typing import  cast
+from typing import cast
 
 from config import renderer_config
 from core import colors
@@ -15,9 +15,9 @@ class RenderSystem:
 
     def __init__(self, context: GameContext):
         self.context: GameContext = context
-        self._first_person_surface: "GraphicsSurface | None" = None
+        self._first_person_surface: GraphicsSurface | None = None
 
-    def render_frame(self, clock: "Clock") -> None:
+    def render_frame(self, clock: Clock) -> None:
         """Render a complete frame including first-person view and debug info."""
         # Screen should always be set in context, but fallback for safety
         screen = self.context.screen
@@ -51,7 +51,7 @@ class RenderSystem:
             15,
         )
 
-    def render_minimap(self, minimap_surface: "GraphicsSurface") -> None:
+    def render_minimap(self, minimap_surface: GraphicsSurface) -> None:
         """Render the minimap to the provided surface."""
         player_obj = cast(Player | None, self.context.player)
         if player_obj is None:

@@ -1,6 +1,6 @@
 import copy
 from collections.abc import Sequence
-from typing import Callable, TypeVar, override
+from typing import override
 
 from core import assets
 from core.audio import AudioManager
@@ -74,16 +74,6 @@ def _create_game_context_from_map(
     return context
 
 
-_OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
-
-try:
-    from typing import override
-except ImportError:  # pragma: no cover
-
-    def override(func: _OverrideFunc, /) -> _OverrideFunc:
-        return func
-
-
 class MapSelectionScene(SceneHandler):
     """Scene handler for the map selection screen."""
 
@@ -105,6 +95,7 @@ class MapSelectionScene(SceneHandler):
         keys_pressed: Sequence[bool],
     ) -> bool:
         from core.backend.api import K_RETURN, K_q, QUIT, KEYDOWN
+
         _ = keys_pressed
         for event in events:
             if event.type == QUIT:

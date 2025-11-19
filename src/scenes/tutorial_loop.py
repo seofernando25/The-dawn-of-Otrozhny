@@ -3,22 +3,13 @@ Tutorial loop module - displays tutorial tabs with briefing/map editor/items/ene
 """
 
 from collections.abc import Sequence
-from typing import Callable, TypeVar
+from typing import override
 
 from config import renderer_config
 from renderer.text import message_display_L
 from scenes.loop_runner import SceneHandler
 from ui import HudScreen, menu_tabs
 from core.backend.api import Event, GraphicsSurface
-
-_OverrideFunc = TypeVar("_OverrideFunc", bound=Callable[..., object])
-
-try:
-    from typing import override
-except ImportError:  # pragma: no cover
-
-    def override(func: _OverrideFunc, /) -> _OverrideFunc:
-        return func
 
 
 class TutorialScene(SceneHandler):
@@ -38,12 +29,13 @@ class TutorialScene(SceneHandler):
     ) -> bool:
         _ = keys_pressed
         from core.backend.api import QUIT, KEYDOWN, K_q
+
         """Handle quit events."""
         for event in events:
             if event.type == QUIT:
                 return True
             elif event.type == KEYDOWN:
-                if hasattr(event, 'key') and event.key == K_q:
+                if hasattr(event, "key") and event.key == K_q:
                     return True
         return False
 

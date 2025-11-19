@@ -8,6 +8,7 @@ using pygame as the underlying library.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import override
 
 from core.backend.api import ColorValue, Coordinate
 
@@ -30,7 +31,7 @@ from core.backend.api import (
 
 class PygameGraphicsSurface(GraphicsSurface):
     """Pygame implementation of GraphicsSurface."""
-    
+
     def __init__(self, surface: pygame.Surface):
         self._surface = surface
 
@@ -38,58 +39,72 @@ class PygameGraphicsSurface(GraphicsSurface):
         """Get the underlying pygame surface (for internal use)."""
         return self._surface
 
+    @override
     def get_size(self) -> tuple[int, int]:
         return self._surface.get_size()
 
-    def blit(self, source: GraphicsSurface, dest: tuple[Coordinate, Coordinate] | Coordinate):
+    @override
+    def blit(
+        self, source: GraphicsSurface, dest: tuple[Coordinate, Coordinate] | Coordinate
+    ):
         # Normalize dest to always be a tuple (pygame requires tuple, not single Coordinate)
         if isinstance(dest, (int, float)):
             dest_tuple: tuple[Coordinate, Coordinate] = (dest, dest)
         else:
             dest_tuple = dest
-        
+
         if isinstance(source, PygameGraphicsSurface):
             _ = self._surface.blit(source._surface, dest_tuple)
         elif isinstance(source, pygame.Surface):
             # Allow direct pygame.Surface for backward compatibility
             _ = self._surface.blit(source, dest_tuple)
         else:
-            raise TypeError(f"Expected PygameGraphicsSurface or pygame.Surface, got {type(source)}")
+            raise TypeError(
+                f"Expected PygameGraphicsSurface or pygame.Surface, got {type(source)}"
+            )
 
+    @override
     def fill(self, color: ColorValue):
         self._surface.fill(color)
 
+    @override
     def convert(self) -> GraphicsSurface:
         converted_surface = self._surface.convert()
         return PygameGraphicsSurface(converted_surface)
 
+    @override
     def set_alpha(self, alpha: int | None):
         self._surface.set_alpha(alpha)
 
+    @override
     def set_colorkey(self, color: ColorValue | None):
         self._surface.set_colorkey(color)
 
 
 class PygameFont(Font):
     """Pygame implementation of Font."""
-    
+
     def __init__(self, font: pygame.font.Font):
         self._font = font
 
+    @override
+    @override
     def render(self, text: str, antialias: bool, color: ColorValue):
         rendered_surface = self._font.render(str(text), antialias, color)
         return PygameGraphicsSurface(rendered_surface)
 
+    @override
     def size(self, text: str) -> tuple[int, int]:
         return self._font.size(str(text))
 
 
 class PygameTexture(Texture):
     """Pygame implementation of Texture."""
-    
+
     def __init__(self, surface: pygame.Surface):
         self._surface = surface
 
+    @override
     def get_size(self) -> tuple[int, int]:
         return self._surface.get_size()
 
@@ -100,11 +115,13 @@ class PygameTexture(Texture):
 
 class PygameGraphicsBackend(GraphicsBackend):
     """Pygame implementation of GraphicsBackend."""
-    
+
+    @override
     def create_surface(self, size: tuple[int, int]) -> GraphicsSurface:
         surface = pygame.Surface(size)
         return PygameGraphicsSurface(surface)
 
+    @override
     def load_texture(self, filepath: str) -> Texture:
         surface = pygame.image.load(filepath)
         # Use convert_alpha if display is initialized, otherwise return as-is
@@ -113,6 +130,7 @@ class PygameGraphicsBackend(GraphicsBackend):
             surface = surface.convert_alpha()
         return PygameTexture(surface)
 
+    @override
     def load_image(self, filepath: str) -> GraphicsSurface:
         """Load an image from a file as a GraphicsSurface."""
         surface = pygame.image.load(filepath)
@@ -121,26 +139,33 @@ class PygameGraphicsBackend(GraphicsBackend):
             surface = surface.convert_alpha()
         return PygameGraphicsSurface(surface)
 
+    @override
     def load_font(self, filepath: str, size: int) -> Font:
         font = pygame.font.Font(filepath, size)
         return PygameFont(font)
 
+    @override
     def get_display_surface(self) -> GraphicsSurface:
         surface = pygame.display.get_surface()
         if surface is None:
             raise RuntimeError("No display surface available")
         return PygameGraphicsSurface(surface)
 
-    def set_display_mode(self, size: tuple[int, int], flags: int = 0) -> GraphicsSurface:
+    @override
+    def set_display_mode(
+        self, size: tuple[int, int], flags: int = 0
+    ) -> GraphicsSurface:
         # Use default pygame flags if none specified
         if flags == 0:
             flags = pygame.DOUBLEBUF | pygame.HWSURFACE
         surface = pygame.display.set_mode(size, flags)
         return PygameGraphicsSurface(surface)
 
+    @override
     def set_caption(self, caption: str) -> None:
         pygame.display.set_caption(caption)
 
+    @override
     def set_icon(self, icon: Texture) -> None:
         if isinstance(icon, PygameTexture):
             pygame.display.set_icon(icon.get_pygame_surface())
@@ -152,41 +177,78 @@ class PygameGraphicsBackend(GraphicsBackend):
             return surface.get_pygame_surface()
         if isinstance(surface, pygame.Surface):
             return surface
-        raise TypeError(f"Expected GraphicsSurface or pygame.Surface, got {type(surface)}")
+        raise TypeError(
+            f"Expected GraphicsSurface or pygame.Surface, got {type(surface)}"
+        )
 
-    def draw_rect(self, surface: GraphicsSurface, color: ColorValue, rect: tuple[Coordinate, Coordinate, Coordinate, Coordinate]):
+    @override
+    def draw_rect(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        rect: tuple[Coordinate, Coordinate, Coordinate, Coordinate],
+    ):
         target = self._resolve_surface(surface)
         _ = pygame.draw.rect(target, color, rect)
 
-    def draw_circle(self, surface: GraphicsSurface, color: ColorValue, center: tuple[Coordinate, Coordinate], radius: int):
+    @override
+    def draw_circle(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        center: tuple[Coordinate, Coordinate],
+        radius: int,
+    ):
         target = self._resolve_surface(surface)
         _ = pygame.draw.circle(target, color, center, radius)
 
-    def draw_line(self, surface: GraphicsSurface, color: ColorValue, start_pos: tuple[Coordinate, Coordinate], end_pos: tuple[Coordinate, Coordinate], width: int = 1):
+    @override
+    def draw_line(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        start_pos: tuple[Coordinate, Coordinate],
+        end_pos: tuple[Coordinate, Coordinate],
+        width: int = 1,
+    ):
         target = self._resolve_surface(surface)
         _ = pygame.draw.line(target, color, start_pos, end_pos, width)
 
-    def draw_polygon(self, surface: GraphicsSurface, color: ColorValue, points: list[tuple[Coordinate, Coordinate]]):
+    @override
+    def draw_polygon(
+        self,
+        surface: GraphicsSurface,
+        color: ColorValue,
+        points: list[tuple[Coordinate, Coordinate]],
+    ):
         target = self._resolve_surface(surface)
         _ = pygame.draw.polygon(target, color, points)
 
-    def scale_surface(self, surface: GraphicsSurface, size: tuple[int, int]) -> GraphicsSurface:
+    @override
+    def scale_surface(
+        self, surface: GraphicsSurface, size: tuple[int, int]
+    ) -> GraphicsSurface:
         target = self._resolve_surface(surface)
         scaled = pygame.transform.scale(target, size)
         return PygameGraphicsSurface(scaled)
 
-    def flip_surface(self, surface: GraphicsSurface, flip_x: bool, flip_y: bool) -> GraphicsSurface:
+    @override
+    def flip_surface(
+        self, surface: GraphicsSurface, flip_x: bool, flip_y: bool
+    ) -> GraphicsSurface:
         target = self._resolve_surface(surface)
         flipped = pygame.transform.flip(target, flip_x, flip_y)
         return PygameGraphicsSurface(flipped)
 
+    @override
     def flip(self) -> None:
         pygame.display.flip()
 
 
 class PygameInputBackend(InputBackend):
     """Pygame implementation of InputBackend."""
-    
+
+    @override
     def get_events(self) -> list[Event]:
         pygame_events = pygame.event.get()
         events = []
@@ -196,7 +258,7 @@ class PygameInputBackend(InputBackend):
             event_obj = Event(type=event.type)
             # Copy all non-callable attributes from pygame event
             for attr_name in dir(event):
-                if attr_name.startswith('_'):
+                if attr_name.startswith("_"):
                     continue
                 try:
                     attr_value = getattr(event, attr_name)
@@ -211,27 +273,35 @@ class PygameInputBackend(InputBackend):
             events.append(event_obj)
         return events
 
+    @override
     def get_pressed_keys(self) -> Sequence[bool]:
         return pygame.key.get_pressed()
 
+    @override
     def get_mouse_pos(self) -> tuple[int, int]:
         return pygame.mouse.get_pos()
 
+    @override
     def get_mouse_rel(self) -> tuple[int, int]:
         return pygame.mouse.get_rel()
 
+    @override
     def get_mouse_pressed(self) -> tuple[bool, bool, bool]:
         return pygame.mouse.get_pressed()
 
+    @override
     def set_mouse_pos(self, pos: tuple[int, int]) -> None:
         pygame.mouse.set_pos(pos)
 
+    @override
     def set_mouse_visible(self, visible: bool) -> None:
         pygame.mouse.set_visible(visible)
 
+    @override
     def set_event_grab(self, grabbed: bool) -> None:
         pygame.event.set_grab(grabbed)
 
+    @override
     def set_allowed_events(self, event_types: list[str]) -> None:
         # Map string event names to pygame constants
         event_map = {
@@ -261,7 +331,7 @@ class PygameInputBackend(InputBackend):
 
 class PygameSound(Sound):
     """Pygame implementation of Sound."""
-    
+
     def __init__(self, sound: pygame.mixer.Sound):
         self._sound = sound
 
@@ -269,6 +339,7 @@ class PygameSound(Sound):
         """Get the underlying pygame sound (for internal use)."""
         return self._sound
 
+    @override
     def play(self, loops: int = 0, maxtime: int = 0, fade_ms: int = 0):
         channel = self._sound.play(loops, maxtime, fade_ms)
         return PygameChannel(channel)
@@ -276,30 +347,43 @@ class PygameSound(Sound):
 
 class PygameChannel(Channel):
     """Pygame implementation of Channel."""
-    
+
     def __init__(self, channel: pygame.mixer.Channel):
         self._channel = channel
 
-    def play(self, sound: Sound, loops: int = 0, maxtime: int = 0, fade_ms: int = 0) -> None:
+    @override
+    def play(
+        self, sound: Sound, loops: int = 0, maxtime: int = 0, fade_ms: int = 0
+    ) -> None:
         if isinstance(sound, PygameSound):
             self._channel.play(sound.get_pygame_sound(), loops, maxtime, fade_ms)
         else:
             raise TypeError(f"Expected PygameSound, got {type(sound)}")
 
+    @override
     def stop(self) -> None:
         self._channel.stop()
 
+    @override
     def get_busy(self) -> bool:
         return self._channel.get_busy()
 
+    @override
     def set_volume(self, left: float, right: float) -> None:
         self._channel.set_volume(left, right)
 
 
 class PygameAudioBackend(AudioBackend):
     """Pygame implementation of AudioBackend."""
-    
-    def init(self, frequency: int = 44100, size: int = -16, channels: int = 2, buffer: int = 512) -> bool:
+
+    @override
+    def init(
+        self,
+        frequency: int = 44100,
+        size: int = -16,
+        channels: int = 2,
+        buffer: int = 512,
+    ) -> bool:
         try:
             pygame.mixer.pre_init(frequency, size, channels, buffer)
             pygame.mixer.init()
@@ -307,33 +391,40 @@ class PygameAudioBackend(AudioBackend):
         except pygame.error:
             return False
 
+    @override
     def load_sound(self, filepath: str) -> Sound:
         sound = pygame.mixer.Sound(filepath)
         return PygameSound(sound)
 
+    @override
     def get_init(self) -> bool:
         return bool(pygame.mixer.get_init())
 
+    @override
     def find_channel(self, force: bool = False) -> Channel | None:
         channel = pygame.mixer.find_channel(force)
         return PygameChannel(channel)
 
+    @override
     def pre_init(self, frequency: int, size: int, channels: int, buffer: int) -> None:
         pygame.mixer.pre_init(frequency, size, channels, buffer)
 
 
 class PygameClock(Clock):
     """Pygame implementation of Clock."""
-    
+
     def __init__(self):
         self._clock = pygame.time.Clock()
 
+    @override
     def tick(self, framerate: int = 0) -> int:
         return self._clock.tick(framerate)
 
+    @override
     def get_time(self) -> int:
         return self._clock.get_time()
 
+    @override
     def get_fps(self) -> float:
         return self._clock.get_fps()
 
@@ -388,25 +479,31 @@ class PygameBackend(Backend):
         self._clock = PygameClock()
 
     @property
+    @override
     def graphics(self):
         return self._graphics
 
     @property
+    @override
     def input(self):
         return self._input
 
     @property
+    @override
     def audio(self):
         return self._audio
 
     @property
+    @override
     def clock(self):
         return self._clock
 
+    @override
     def init(self) -> bool:
         pygame.init()
         # Update the api module constants to reflect the actual pygame values
         import core.backend.api as api
+
         api.QUIT = QUIT
         api.KEYDOWN = KEYDOWN
         api.KEYUP = KEYUP
@@ -440,5 +537,6 @@ class PygameBackend(Backend):
         api.K_z = K_z
         return True
 
+    @override
     def quit(self) -> None:
         pygame.quit()

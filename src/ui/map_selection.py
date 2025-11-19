@@ -8,13 +8,22 @@ from renderer.text import blit_surface
 from utils import math_helpers
 from ui.button import HudButton
 from ui.helpers import resolve_screen
-from core.backend.api import Event, GraphicsSurface, K_DOWN, K_LEFT, K_RIGHT, K_UP, KEYDOWN, Sound
+from core.backend.api import (
+    Event,
+    GraphicsSurface,
+    K_DOWN,
+    K_LEFT,
+    K_RIGHT,
+    K_UP,
+    KEYDOWN,
+    Sound,
+)
 
 
 class MapSelectionScreen:
     """Screen for selecting maps in a grid layout."""
 
-    def __init__(self, *, activated_sound: "Sound | None" = None):
+    def __init__(self, *, activated_sound: Sound | None = None):
         backend = get_backend()
         self._surface = backend.graphics.create_surface(
             (renderer_config.SCREEN_WIDTH, renderer_config.SCREEN_HEIGHT)
@@ -35,7 +44,7 @@ class MapSelectionScreen:
                 button.redraw()
                 button.protected = False
 
-    def draw(self, screen: "GraphicsSurface | None" = None) -> None:
+    def draw(self, screen: GraphicsSurface | None = None) -> None:
         """Draw the map selection screen."""
         backend = get_backend()
         _ = self._surface.fill(colors.BLACK)
@@ -51,7 +60,10 @@ class MapSelectionScreen:
                 )
 
         backend.graphics.draw_circle(
-            self._surface, colors.WHITE, (int(self._pointer_x), int(self._pointer_y)), 10
+            self._surface,
+            colors.WHITE,
+            (int(self._pointer_x), int(self._pointer_y)),
+            10,
         )
         target_screen = resolve_screen(screen)
         blit_surface(target_screen, self._surface, (0, 0))

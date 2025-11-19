@@ -8,18 +8,18 @@ from ui.button import HudButton
 from core.backend.api import GraphicsSurface, Sound
 
 
-def _resolve_screen(screen: "GraphicsSurface | None" = None) -> "GraphicsSurface":
+def _resolve_screen(screen: GraphicsSurface | None = None) -> GraphicsSurface:
     """Resolve screen surface, using global screen if none provided."""
     return screen if screen is not None else get_screen()
 
 
-def resolve_screen(screen: "GraphicsSurface | None" = None) -> "GraphicsSurface":
+def resolve_screen(screen: GraphicsSurface | None = None) -> GraphicsSurface:
     """Public wrapper around `_resolve_screen` for external modules."""
     return _resolve_screen(screen)
 
 
 def render_hud_surfaces(
-    hud_viewport: "GraphicsSurface", hud_cell_surfaces: list[HudButton]
+    hud_viewport: GraphicsSurface, hud_cell_surfaces: list[HudButton]
 ) -> None:
     """Render HUD cell surfaces onto the HUD viewport."""
     row = 0
@@ -40,7 +40,7 @@ def render_hud_surfaces(
 
 
 def generate_hud_surfaces(
-    hud_surface: "GraphicsSurface", *, activated_sound: "Sound | None" = None
+    hud_surface: GraphicsSurface, *, activated_sound: Sound | None = None
 ) -> list[HudButton]:
     """Generate HUD button surfaces for a HUD viewport."""
     hud_cell_surfaces: list[HudButton] = []
@@ -60,10 +60,10 @@ def generate_hud_surfaces(
     return hud_cell_surfaces
 
 
-def generate_hud_viewport() -> "GraphicsSurface":
+def generate_hud_viewport() -> GraphicsSurface:
     """Generate the main HUD viewport surface."""
     from core.backend import get_backend
-    
+
     _ = get_screen()
     hud_width = renderer_config.SCREEN_WIDTH - renderer_config.VIEWPORT_X_OFFSET * 2
     hud_height = (

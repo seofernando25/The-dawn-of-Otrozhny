@@ -15,8 +15,8 @@ VIEWPORT_HEIGHT = renderer_config.VIEWPORT_HEIGHT
 
 
 def render_first_person_canvas(
-    entity: Agent, *, canvas: "GraphicsSurface | None" = None
-) -> "GraphicsSurface":
+    entity: Agent, *, canvas: GraphicsSurface | None = None
+) -> GraphicsSurface:
     """Render first-person view to a canvas surface."""
     backend = get_backend()
     if canvas is None:
@@ -28,7 +28,7 @@ def render_first_person_canvas(
     return canvas
 
 
-def render_first_person(screen: "GraphicsSurface", entity: Agent) -> None:
+def render_first_person(screen: GraphicsSurface, entity: Agent) -> None:
     """Render the complete first-person view (walls, floor, ceiling)."""
     raycast.generate_distance_table(entity)
     screen.fill(colors.ALMOST_BLACK)
